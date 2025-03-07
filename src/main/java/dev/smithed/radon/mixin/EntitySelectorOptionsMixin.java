@@ -32,9 +32,6 @@ import java.util.function.Predicate;
 
 @Mixin(EntitySelectorOptions.class)
 public class EntitySelectorOptionsMixin {
-    @Unique
-    private static final RegistryWrapper.WrapperLookup registries = BuiltinRegistries.createWrapperLookup();
-
     @Shadow
     private static void putOption(String id, EntitySelectorOptions.SelectorHandler handler, Predicate<EntitySelectorReader> condition, Text description) {}
 
@@ -74,10 +71,10 @@ public class EntitySelectorOptionsMixin {
                         if (entity instanceof ServerPlayerEntity player && nbt.equals("SelectedItem")) {
                             ItemStack itemStack = player.getInventory().getMainHandStack();
                             if (!itemStack.isEmpty()) {
-                                nbtCompound2.put("SelectedItem", itemStack.toNbt(registries, new NbtCompound()));
+                                nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
                             }
                         } else {
-                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt, registries);
+                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt, entity.getRegistryManager());
                             if (nbtCompound2 == null)
                                 break;
                         }
@@ -88,7 +85,7 @@ public class EntitySelectorOptionsMixin {
                     if (entity instanceof ServerPlayerEntity player) {
                         ItemStack itemStack = player.getInventory().getMainHandStack();
                         if (!itemStack.isEmpty()) {
-                            nbtCompound2.put("SelectedItem", itemStack.toNbt(registries, new NbtCompound()));
+                            nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
                         }
                     }
                 }
