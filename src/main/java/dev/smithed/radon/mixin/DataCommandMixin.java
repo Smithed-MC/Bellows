@@ -27,6 +27,7 @@ import java.util.List;
 
 @Mixin(DataCommand.class)
 public abstract class DataCommandMixin {
+
     @Shadow @Final static SimpleCommandExceptionType MERGE_FAILED_EXCEPTION;
     @Shadow @Final static SimpleCommandExceptionType GET_MULTIPLE_EXCEPTION;
 
