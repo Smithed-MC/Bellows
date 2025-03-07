@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -17,6 +18,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(CachedBlockPosition.class)
 public abstract class CachedBlockPositionMixin {
+    @Shadow
+    @Final
+    private WorldView world;
+    @Shadow
+    @Final
+    private BlockPos pos;
 
     @Redirect(method = "getBlockState()Lnet/minecraft/block/BlockState;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldView;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
     public BlockState radon_getBlockState(WorldView world, BlockPos pos) {

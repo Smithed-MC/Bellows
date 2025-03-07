@@ -13,6 +13,8 @@ import net.minecraft.command.ReturnValueConsumer;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.BuiltinRegistries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.command.ExecuteCommand;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
@@ -21,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -31,7 +34,6 @@ import java.util.function.IntFunction;
 
 @Mixin(ExecuteCommand.class)
 public class ExecuteCommandMixin {
-
     @Shadow @Final static Dynamic2CommandExceptionType BLOCKS_TOOBIG_EXCEPTION;
 
     /**
@@ -42,7 +44,7 @@ public class ExecuteCommandMixin {
             method = "countPathMatches(Lnet/minecraft/command/DataCommandObject;Lnet/minecraft/command/argument/NbtPathArgumentType$NbtPath;)I",
             at = @At("HEAD"), cancellable = true, locals = LocalCapture.CAPTURE_FAILEXCEPTION
     )
-    private static void radon_getNbt(DataCommandObject object, NbtPathArgumentType.NbtPath path, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException {
+    private static void radon_countPathMatches(DataCommandObject object, NbtPathArgumentType.NbtPath path, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException {
         if(Radon.CONFIG.nbtOptimizations && object instanceof IDataCommandObjectMixin mixin) {
             NbtCompound nbt = mixin.getNbtFiltered(path.toString());
             if(nbt != null)
@@ -123,8 +125,8 @@ public class ExecuteCommandMixin {
                                         return;
                                     }
 
-                                    NbtCompound nbtCompound = blockEntity.createNbt();
-                                    NbtCompound nbtCompound2 = blockEntity2.createNbt();
+                                    NbtCompound nbtCompound = blockEntity.createNbt(blockEntity.getWorld().getRegistryManager());
+                                    NbtCompound nbtCompound2 = blockEntity2.createNbt(blockEntity2.getWorld().getRegistryManager());
                                     if (!nbtCompound.equals(nbtCompound2)) {
                                         cir.setReturnValue(OptionalInt.empty());
                                         return;

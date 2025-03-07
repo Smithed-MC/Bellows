@@ -31,11 +31,11 @@ public abstract class WorldMixin implements WorldAccess, AutoCloseable, IWorldEx
             return Blocks.VOID_AIR.getDefaultState();
         } else {
             WorldChunk worldChunk = this.getChunk(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ()));
-            if(this.getChunkManager() instanceof ServerChunkManager manager) {
-                ChunkTicketManager tickets = manager.threadedAnvilChunkStorage.getTicketManager();
-                int level = 33 + ChunkStatus.getDistanceFromFull(ChunkStatus.FULL);
-                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), level, worldChunk.getPos());
-            }
+//            if(this.getChunkManager() instanceof ServerChunkManager manager) {
+//                ChunkTicketManager tickets = manager.chunkLoadingManager.getTicketManager();
+//                int level = 33 + ChunkStatus.(ChunkStatus.FULL);
+//                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), level, worldChunk.getPos());
+//            }
             return worldChunk.getBlockState(pos);
         }
     }
@@ -49,11 +49,11 @@ public abstract class WorldMixin implements WorldAccess, AutoCloseable, IWorldEx
         } else {
             WorldChunk worldChunk = this.getWorldChunk(pos);
             BlockEntity blockEntity = worldChunk.getBlockEntity(pos, WorldChunk.CreationType.IMMEDIATE);
-            if(this.getChunkManager() instanceof ServerChunkManager manager) {
-                ChunkTicketManager tickets = manager.threadedAnvilChunkStorage.getTicketManager();
-                int level = 33 + ChunkStatus.getDistanceFromFull(ChunkStatus.FULL);
-                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), level, worldChunk.getPos());
-            }
+//            if(this.getChunkManager() instanceof ServerChunkManager manager) {
+//                ChunkTicketManager tickets = manager.chunkLoadingManager.getTicketManager();
+//                int level = 33 + ChunkStatus.getDistanceFromFull(ChunkStatus.FULL);
+//                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), level, worldChunk.getPos());
+//            }
             return blockEntity;
         }
     }

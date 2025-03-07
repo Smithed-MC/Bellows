@@ -9,6 +9,7 @@ import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.AffineTransformation;
 import org.jetbrains.annotations.Nullable;
@@ -47,8 +48,8 @@ public abstract class DisplayEntityMixin extends EntityMixin {
     @Shadow abstract void setGlowColorOverride(int glowColorOverride);
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 //TODO: add billboard
                 case "brightness" -> {
@@ -79,8 +80,8 @@ public abstract class DisplayEntityMixin extends EntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             switch (topLevelNbt) {
                 case "transformation" -> {

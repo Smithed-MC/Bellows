@@ -9,6 +9,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerData;
@@ -32,9 +33,9 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
     @Shadow long lastGossipDecayTime;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         VillagerEntity entity = ((VillagerEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 case "FoodLevel" -> nbt.putByte("FoodLevel", (byte) this.foodLevel);
                 case "Gossips" -> nbt.put("Gossips", (NbtElement) this.gossip.serialize(NbtOps.INSTANCE));
@@ -62,14 +63,17 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         VillagerEntity entity = ((VillagerEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             switch (topLevelNbt) {
                 case "Offers" -> {
-                    if (nbt.contains("Offers", 10))
-                        this.offers = new TradeOfferList(nbt.getCompound("Offers"));
+                    if (nbt.contains("Offers", 10)) {
+                        var result = TradeOfferList.CODEC.parse(this.getRegistryManager().getOps(NbtOps.INSTANCE), nbt.get("Offers"));
+
+                        result.ifSuccess(offers -> this.offers = offers);
+                    }
                 }
                 case "FoodLevel" -> {
                     if (nbt.contains("FoodLevel", 1))

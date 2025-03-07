@@ -6,9 +6,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -16,24 +20,31 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
+
 @Mixin(MobEntity.class)
 public abstract class MobEntityMixin extends LivingEntityMixin implements ICustomNBTMixin {
 
-    @Shadow boolean persistent;
-    @Shadow DefaultedList<ItemStack> armorItems;
-    @Shadow DefaultedList<ItemStack> handItems;
-    @Shadow float[] handDropChances;
-    @Shadow float[] armorDropChances;
-    @Shadow Entity holdingEntity;
-    @Shadow NbtCompound leashNbt;
-    @Shadow Identifier lootTable;
-    @Shadow long lootTableSeed;
+    @Shadow
+    boolean persistent;
+    @Shadow
+    DefaultedList<ItemStack> armorItems;
+    @Shadow
+    DefaultedList<ItemStack> handItems;
+    @Shadow
+    float[] handDropChances;
+    @Shadow
+    float[] armorDropChances;
+    @Shadow
+    private Optional<RegistryKey<LootTable>> lootTable;
+    @Shadow
+    long lootTableSeed;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        MobEntity entity = ((MobEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        MobEntity entity = ((MobEntity) (Object) this);
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 case "CanPickUpLoot":
                     nbt.putBoolean("CanPickUpLoot", entity.canPickUpLoot());
@@ -48,7 +59,7 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
                         ItemStack itemStack = (ItemStack) var3.next();
                         nbtCompound = new NbtCompound();
                         if (!itemStack.isEmpty()) {
-                            itemStack.writeNbt(nbtCompound);
+                            itemStack.toNbt(registries, nbtCompound);
                         }
                     }
                     nbt.put("ArmorItems", nbtList);
@@ -60,7 +71,7 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
                         ItemStack itemStack2 = (ItemStack) var11.next();
                         nbtCompound2 = new NbtCompound();
                         if (!itemStack2.isEmpty()) {
-                            itemStack2.writeNbt(nbtCompound2);
+                            itemStack2.toNbt(registries, nbtCompound2);
                         }
                     }
                     nbt.put("HandItems", nbtList2);
@@ -88,24 +99,6 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
 
                     nbt.put("HandDropChances", nbtList4);
                     break;
-                case "Leash":
-                    if (this.holdingEntity != null) {
-                        nbtCompound2 = new NbtCompound();
-                        if (this.holdingEntity instanceof LivingEntity) {
-                            UUID uUID = this.holdingEntity.getUuid();
-                            nbtCompound2.putUuid("UUID", uUID);
-                        } else if (this.holdingEntity instanceof AbstractDecorationEntity) {
-                            BlockPos blockPos = ((AbstractDecorationEntity) this.holdingEntity).getDecorationBlockPos();
-                            nbtCompound2.putInt("X", blockPos.getX());
-                            nbtCompound2.putInt("Y", blockPos.getY());
-                            nbtCompound2.putInt("Z", blockPos.getZ());
-                        }
-
-                        nbt.put("Leash", nbtCompound2);
-                    } else if (this.leashNbt != null) {
-                        nbt.put("Leash", this.leashNbt.copy());
-                    }
-                    break;
                 case "LeftHanded":
                     nbt.putBoolean("LeftHanded", entity.isLeftHanded());
                     break;
@@ -130,9 +123,9 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        MobEntity entity = ((MobEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        MobEntity entity = ((MobEntity) (Object) this);
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             NbtList nbtList;
             switch (topLevelNbt) {
@@ -145,7 +138,8 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
                     if (nbt.contains("ArmorItems", 9)) {
                         nbtList = nbt.getList("ArmorItems", 10);
                         for (int i = 0; i < this.armorItems.size(); ++i) {
-                            this.armorItems.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
+                            int finalI = i;
+                            ItemStack.fromNbt(registries, nbtList.getCompound(i)).ifPresent(item -> this.armorItems.set(finalI, item));
                         }
                     }
                 }
@@ -153,7 +147,9 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
                     if (nbt.contains("HandItems", 9)) {
                         nbtList = nbt.getList("HandItems", 10);
                         for (int i = 0; i < this.handItems.size(); ++i) {
-                            this.handItems.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
+
+                            int finalI = i;
+                            ItemStack.fromNbt(registries, nbtList.getCompound(i)).ifPresent(item -> this.handItems.set(finalI, item));
                         }
                     }
                 }
@@ -173,15 +169,7 @@ public abstract class MobEntityMixin extends LivingEntityMixin implements ICusto
                         }
                     }
                 }
-                case "Leash" -> {
-                    if (nbt.contains("Leash", 10))
-                        this.leashNbt = nbt.getCompound("Leash");
-                }
                 case "LeftHanded" -> entity.setLeftHanded(nbt.getBoolean("LeftHanded"));
-                case "Tag" -> {
-                    if (nbt.contains("DeathLootTable", 8))
-                        this.lootTable = new Identifier(nbt.getString("DeathLootTable"));
-                }
                 case "DeathLootTableSeed" -> this.lootTableSeed = nbt.getLong("DeathLootTableSeed");
                 case "NoAI" -> entity.setAiDisabled(nbt.getBoolean("NoAI"));
                 default -> {

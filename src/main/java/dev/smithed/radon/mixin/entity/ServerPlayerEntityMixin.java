@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerRecipeBook;
 import net.minecraft.util.Identifier;
@@ -39,9 +40,9 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
     @Shadow SculkShriekerWarningManager sculkShriekerWarningManager;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         ServerPlayerEntity entity = ((ServerPlayerEntity) (Object) this);
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 case "playerGameType":
                     nbt.putInt("playerGameType", entity.interactionManager.getGameMode().getId());
@@ -126,9 +127,9 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         ServerPlayerEntity entity = ((ServerPlayerEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             switch (topLevelNbt) {
                 case "enteredNetherPosition" -> {
@@ -138,11 +139,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                     }
                 }
                 case "seenCredits" -> this.seenCredits = nbt.getBoolean("seenCredits");
-                case "recipeBook" -> {
-                    if (nbt.contains("recipeBook", 10)) {
-                        this.recipeBook.readNbt(nbt.getCompound("recipeBook"), entity.server.getRecipeManager());
-                    }
-                }
                 case "SpawnForced" -> this.spawnForced = nbt.getBoolean("SpawnForced");
                 case "SpawnAngle" -> this.spawnAngle = nbt.getFloat("SpawnAngle");
                 case "SpawnDimension" -> {

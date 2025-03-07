@@ -7,15 +7,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.NbtPredicate;
+import net.minecraft.registry.BuiltinRegistries;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 @Mixin(NbtPredicate.class)
 public class NbtPredicateMixin {
-
     @Shadow @Final private NbtCompound nbt;
 
     /**
@@ -34,10 +33,10 @@ public class NbtPredicateMixin {
                 if (entity instanceof ServerPlayerEntity player && topNbt.equals("SelectedItem")) {
                     ItemStack itemStack = player.getInventory().getMainHandStack();
                     if (!itemStack.isEmpty()) {
-                        nbt.put("SelectedItem", itemStack.writeNbt(new NbtCompound()));
+                        nbt.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
                     }
                 } else {
-                    nbt = mixin.writeNbtFiltered(nbt, topNbt);
+                    nbt = mixin.writeNbtFiltered(nbt, topNbt, entity.getRegistryManager());
                     if (nbt == null)
                         break;
                 }

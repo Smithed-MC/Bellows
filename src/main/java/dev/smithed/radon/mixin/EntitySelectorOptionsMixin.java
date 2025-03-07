@@ -12,14 +12,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,6 +32,8 @@ import java.util.function.Predicate;
 
 @Mixin(EntitySelectorOptions.class)
 public class EntitySelectorOptionsMixin {
+    @Unique
+    private static final RegistryWrapper.WrapperLookup registries = BuiltinRegistries.createWrapperLookup();
 
     @Shadow
     private static void putOption(String id, EntitySelectorOptions.SelectorHandler handler, Predicate<EntitySelectorReader> condition, Text description) {}
@@ -48,7 +53,7 @@ public class EntitySelectorOptionsMixin {
                     entityext.getSelectorContainer().notSelectorTags.add(string);
                 else
                     entityext.getSelectorContainer().selectorTags.add(string);
-            reader.setPredicate((entity) -> {
+            reader.addPredicate((entity) -> {
                 if ("".equals(string)) {
                     return entity.getCommandTags().isEmpty() != bl;
                 } else {
@@ -60,7 +65,7 @@ public class EntitySelectorOptionsMixin {
         putOption("nbt", (reader) -> {
             boolean bl = reader.readNegationCharacter();
             NbtCompound nbtCompound = (new StringNbtReader(reader.getReader())).parseCompound();
-            reader.setPredicate((entity) -> {
+            reader.addPredicate((entity) -> {
                 NbtCompound nbtCompound2 = null;
                 if(Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
                     nbtCompound2 = new NbtCompound();
@@ -69,10 +74,10 @@ public class EntitySelectorOptionsMixin {
                         if (entity instanceof ServerPlayerEntity player && nbt.equals("SelectedItem")) {
                             ItemStack itemStack = player.getInventory().getMainHandStack();
                             if (!itemStack.isEmpty()) {
-                                nbtCompound2.put("SelectedItem", itemStack.writeNbt(new NbtCompound()));
+                                nbtCompound2.put("SelectedItem", itemStack.toNbt(registries, new NbtCompound()));
                             }
                         } else {
-                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt);
+                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt, registries);
                             if (nbtCompound2 == null)
                                 break;
                         }
@@ -83,7 +88,7 @@ public class EntitySelectorOptionsMixin {
                     if (entity instanceof ServerPlayerEntity player) {
                         ItemStack itemStack = player.getInventory().getMainHandStack();
                         if (!itemStack.isEmpty()) {
-                            nbtCompound2.put("SelectedItem", itemStack.writeNbt(new NbtCompound()));
+                            nbtCompound2.put("SelectedItem", itemStack.toNbt(registries, new NbtCompound()));
                         }
                     }
                 }
@@ -95,10 +100,10 @@ public class EntitySelectorOptionsMixin {
         putOption("type", (reader) -> {
             reader.setSuggestionProvider((builder, consumer) -> {
                 CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.getIds(), builder, String.valueOf('!'));
-                CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.streamTags().map(TagKey::id), builder, "!#");
+                CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.streamTags().map(t -> t.getTag().id()), builder, "!#");
                 if (!reader.excludesEntityType()) {
                     CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.getIds(), builder);
-                    CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.streamTags().map(TagKey::id), builder, String.valueOf('#'));
+                    CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.streamTags().map(t -> t.getTag().id()), builder, String.valueOf('#'));
                 }
 
                 return builder.buildFuture();
@@ -120,23 +125,26 @@ public class EntitySelectorOptionsMixin {
                         entityext.getSelectorContainer().isTypeTag = true;
                         entityext.getSelectorContainer().isNotType = bl;
                     }
-                    reader.setPredicate((entity) -> entity.getType().isIn(tagKey) != bl);
+                    reader.addPredicate((entity) -> entity.getType().isIn(tagKey) != bl);
                 } else {
                     Identifier identifier = Identifier.fromCommandInput(reader.getReader());
-                    EntityType<?> entityType = (EntityType)Registries.ENTITY_TYPE.getOrEmpty(identifier).orElseThrow(() -> {
+
+                    EntityType<?> entityType = Registries.ENTITY_TYPE.getOptionalValue(identifier).orElseThrow(() -> {
                         reader.getReader().setCursor(i);
                         return EntitySelectorOptions.INVALID_TYPE_EXCEPTION.createWithContext(reader.getReader(), identifier.toString());
                     });
+
                     if (Objects.equals(EntityType.PLAYER, entityType) && !bl) {
                         reader.setIncludesNonPlayers(false);
                     }
+
                     if(Radon.CONFIG.entitySelectorOptimizations && reader instanceof IEntitySelectorReaderExtender entityext) {
                         entityext.getSelectorContainer().type = identifier.toString();
                         entityext.getSelectorContainer().isTypeTag = false;
                         entityext.getSelectorContainer().isNotType = bl;
                     }
 
-                    reader.setPredicate((entity) -> Objects.equals(entityType, entity.getType()) != bl);
+                    reader.addPredicate((entity) -> Objects.equals(entityType, entity.getType()) != bl);
                     if (!bl) {
                         reader.setEntityType(entityType);
                     }

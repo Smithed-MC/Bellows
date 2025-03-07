@@ -3,6 +3,7 @@ package dev.smithed.radon.mixin.entity;
 import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,9 +15,9 @@ public abstract class WanderingTraderEntityMixin extends MerchantEntityMixin {
     @Shadow int despawnDelay;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         WanderingTraderEntity entity = ((WanderingTraderEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 case "DespawnDelay" -> nbt.putInt("DespawnDelay", this.despawnDelay);
                 case "WanderTarget" -> {
@@ -33,9 +34,9 @@ public abstract class WanderingTraderEntityMixin extends MerchantEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         WanderingTraderEntity entity = ((WanderingTraderEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             switch (topLevelNbt) {
                 case "DespawnDelay" -> {
@@ -44,7 +45,7 @@ public abstract class WanderingTraderEntityMixin extends MerchantEntityMixin {
                 }
                 case "WanderTarget" -> {
                     if (nbt.contains("WanderTarget"))
-                        this.wanderTarget = NbtHelper.toBlockPos(nbt.getCompound("WanderTarget"));
+                        NbtHelper.toBlockPos(nbt,"WanderTarget").ifPresent(pos -> this.wanderTarget = pos);
                 }
                 default -> {
                     return false;

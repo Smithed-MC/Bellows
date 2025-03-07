@@ -35,12 +35,12 @@ public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
     @Shadow abstract int getAppendLimit();
 
     @Inject(method = "appendEntitiesFromWorld", at=@At("HEAD"), cancellable = true)
-    void appendEntitiesFromWorldInject(List<Entity> entities, ServerWorld world, Vec3d pos, Predicate<Entity> predicate, CallbackInfo ci) {
+    void appendEntitiesFromWorldInject(List<Entity> entities, ServerWorld world, @Nullable Box box, Predicate<Entity> predicate, CallbackInfo ci) {
         int i = this.getAppendLimit();
         if (entities.size() < i) {
             if(Radon.CONFIG.entitySelectorOptimizations && world instanceof IServerWorldExtender extender) {
-                if (this.box != null) {
-                    world.collectEntitiesByType(this.entityFilter, this.box.offset(pos), predicate, entities, i);
+                if (box != null) {
+                    world.collectEntitiesByType(this.entityFilter, box, predicate, entities, i);
                 } else {
                     extender.collectEntitiesByType(this.entityFilter, predicate, entities, i, container);
                 }

@@ -3,6 +3,7 @@ package dev.smithed.radon.mixin.entity;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,10 +22,10 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
     @Shadow static void writeFlag(byte flags, NbtCompound nbt, String nbtKey, byte flag) {}
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
-                case "text" -> nbt.putString("text", Text.Serialization.toJsonString(this.getText()));
+                case "text" -> nbt.putString("text", Text.Serialization.toJsonString(this.getText(), registries));
                 case "line_width" -> nbt.putInt("line_width", this.getLineWidth());
                 case "background" -> nbt.putInt("background", this.getBackground());
                 case "text_opacity" -> nbt.putByte("text_opacity", this.getTextOpacity());
@@ -46,8 +47,8 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             switch (topLevelNbt) {
                 case "line_width" -> {

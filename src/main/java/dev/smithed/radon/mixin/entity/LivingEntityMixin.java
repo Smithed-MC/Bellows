@@ -12,6 +12,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Shadow abstract void setPositionInBed(BlockPos pos);
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         LivingEntity entity = ((LivingEntity)(Object)this);
 
         switch (topLevelNbt) {
@@ -51,13 +52,13 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
 
                     while (var3.hasNext()) {
                         StatusEffectInstance statusEffectInstance = (StatusEffectInstance) var3.next();
-                        nbtList.add(statusEffectInstance.writeNbt(new NbtCompound()));
+                        nbtList.add(statusEffectInstance.writeNbt());
                     }
 
                     nbt.put("ActiveEffects", nbtList);
                 }
             }
-            case "FallFlying" -> nbt.putBoolean("FallFlying", entity.isFallFlying());
+            case "FallFlying" -> nbt.putBoolean("FallFlying", entity.isGliding());
             case "SleepingX", "SleepingY", "SleepingZ" -> entity.getSleepingPosition().ifPresent((pos) -> {
                 nbt.putInt("SleepingX", pos.getX());
                 nbt.putInt("SleepingY", pos.getY());
@@ -79,7 +80,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         LivingEntity entity = ((LivingEntity)(Object)this);
         if(!nbt.contains(topLevelNbt))
             return false;
@@ -96,7 +97,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
                         NbtCompound nbtCompound = nbtList.getCompound(i);
                         StatusEffectInstance statusEffectInstance = StatusEffectInstance.fromNbt(nbtCompound);
                         if (statusEffectInstance != null) {
-                            this.activeStatusEffects.put(statusEffectInstance.getEffectType(), statusEffectInstance);
+                            this.activeStatusEffects.put(statusEffectInstance.getEffectType().value(), statusEffectInstance);
                         }
                     }
                 }

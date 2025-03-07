@@ -16,6 +16,7 @@ import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.DataCommand;
 import net.minecraft.server.command.ServerCommandSource;
@@ -61,10 +62,10 @@ public abstract class BlockDataObjectMixin implements IDataCommandObjectMixin {
     public NbtCompound getNbtFiltered(String path) {
         NbtCompound nbtCompound = null;
         if (Radon.CONFIG.nbtOptimizations && this.blockEntity instanceof IEntityMixin mixin)
-            nbtCompound = mixin.writeNbtFiltered(new NbtCompound(), path);
+            nbtCompound = mixin.writeNbtFiltered(new NbtCompound(), path, this.blockEntity.getWorld().getRegistryManager());
         if(nbtCompound == null) {
             Radon.logDebugFormat("Failed to write nbt data at %s with %s", path, this.blockEntity.getClass());
-            nbtCompound = this.blockEntity.createNbtWithIdentifyingData();
+            nbtCompound = this.blockEntity.createNbtWithIdentifyingData(this.blockEntity.getWorld().getRegistryManager());
         }
         Radon.logDebugFormat("Retrieved NBT for %s -> %s", this.blockEntity.getClass(), nbtCompound);
         return nbtCompound;
@@ -74,7 +75,7 @@ public abstract class BlockDataObjectMixin implements IDataCommandObjectMixin {
     public boolean setNbtFiltered(NbtCompound nbt, String path) {
         if(this.blockEntity instanceof IEntityMixin mixin) {
             BlockState blockState = this.blockEntity.getWorld().getBlockState(this.pos);
-            if(mixin.readNbtFiltered(nbt, path)) {
+            if(mixin.readNbtFiltered(nbt, path, this.blockEntity.getWorld().getRegistryManager())) {
                 this.blockEntity.markDirty();
                 this.blockEntity.getWorld().updateListeners(this.pos, blockState, blockState, 3);
                 return true;

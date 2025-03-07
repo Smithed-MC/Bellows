@@ -17,6 +17,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.GlobalPos;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -28,26 +29,36 @@ import java.util.Objects;
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICustomNBTMixin {
 
-    @Shadow PlayerInventory inventory;
-    @Shadow int sleepTimer;
-    @Shadow int enchantmentTableSeed;
-    @Shadow HungerManager hungerManager;
-    @Shadow PlayerAbilities abilities;
-    @Shadow EnderChestInventory enderChestInventory;
-    @Shadow abstract void setShoulderEntityRight(NbtCompound entityNbt);
-    @Shadow abstract void setShoulderEntityLeft(NbtCompound entityNbt);
+    @Shadow
+    PlayerInventory inventory;
+    @Shadow
+    int sleepTimer;
+    @Shadow
+    int enchantingTableSeed;
+    @Shadow
+    HungerManager hungerManager;
+    @Shadow
+    PlayerAbilities abilities;
+    @Shadow
+    EnderChestInventory enderChestInventory;
+
+    @Shadow
+    abstract void setShoulderEntityRight(NbtCompound entityNbt);
+
+    @Shadow
+    abstract void setShoulderEntityLeft(NbtCompound entityNbt);
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        PlayerEntity entity = ((PlayerEntity)(Object)this);
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        PlayerEntity entity = ((PlayerEntity) (Object) this);
 
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 case "DataVersion" ->
                         nbt.putInt("DataVersion", SharedConstants.getGameVersion().getSaveVersion().getId());
                 case "Inventory" -> {
                     if (this.inventory instanceof IFilteredNbtList mixin)
-                        nbt.put("Inventory", mixin.writeNbtFiltered(new NbtList(), path.toString()));
+                        nbt.put("Inventory", mixin.writeNbtFiltered(new NbtList(), path.toString(), registries));
                     else
                         nbt.put("Inventory", this.inventory.writeNbt(new NbtList()));
                 }
@@ -56,16 +67,16 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICu
                 case "XpP" -> nbt.putFloat("XpP", entity.experienceProgress);
                 case "XpLevel" -> nbt.putInt("XpLevel", entity.experienceLevel);
                 case "XpTotal" -> nbt.putInt("XpTotal", entity.totalExperience);
-                case "XpSeed" -> nbt.putInt("XpSeed", this.enchantmentTableSeed);
+                case "XpSeed" -> nbt.putInt("XpSeed", this.enchantingTableSeed);
                 case "Score" -> nbt.putInt("Score", entity.getScore());
                 case "foodLevel", "foodTickTimer", "foodSaturationLevel", "foodExhaustionLevel" ->
                         this.hungerManager.writeNbt(nbt);
                 case "abilities" -> this.abilities.writeNbt(nbt);
                 case "EnderItems" -> {
                     if (this.enderChestInventory instanceof IFilteredNbtList mixin)
-                        nbt.put("EnderItems", mixin.writeNbtFiltered(new NbtList(), path.toString()));
+                        nbt.put("EnderItems", mixin.writeNbtFiltered(new NbtList(), path.toString(), registries));
                     else
-                        nbt.put("EnderItems", this.enderChestInventory.toNbtList());
+                        nbt.put("EnderItems", this.enderChestInventory.toNbtList(registries));
                 }
                 case "ShoulderEntityLeft" -> {
                     if (!entity.getShoulderEntityLeft().isEmpty()) {
@@ -94,9 +105,9 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICu
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        PlayerEntity entity = ((PlayerEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+        PlayerEntity entity = ((PlayerEntity) (Object) this);
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
 
             switch (topLevelNbt) {
                 case "Inventory" -> {
@@ -109,9 +120,9 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICu
                 case "XpLevel" -> entity.experienceLevel = nbt.getInt("XpLevel");
                 case "XpTotal" -> entity.totalExperience = nbt.getInt("XpTotal");
                 case "XpSeed" -> {
-                    this.enchantmentTableSeed = nbt.getInt("XpSeed");
-                    if (this.enchantmentTableSeed == 0) {
-                        this.enchantmentTableSeed = this.random.nextInt();
+                    this.enchantingTableSeed = nbt.getInt("XpSeed");
+                    if (this.enchantingTableSeed == 0) {
+                        this.enchantingTableSeed = this.random.nextInt();
                     }
                 }
                 case "Score" -> entity.setScore(nbt.getInt("Score"));
@@ -120,7 +131,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICu
                 case "abilities" -> this.abilities.readNbt(nbt);
                 case "EnderItems" -> {
                     if (nbt.contains("EnderItems", 9))
-                        this.enderChestInventory.readNbtList(nbt.getList("EnderItems", 10));
+                        this.enderChestInventory.readNbtList(nbt.getList("EnderItems", 10), registries);
                 }
                 case "ShoulderEntityLeft" -> {
                     if (nbt.contains("ShoulderEntityLeft", 10))
@@ -142,7 +153,6 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICu
                     return false;
                 }
             }
-
 
 
         }
