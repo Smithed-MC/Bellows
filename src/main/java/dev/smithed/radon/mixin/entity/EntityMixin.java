@@ -14,6 +14,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.server.function.CommandFunctionManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
