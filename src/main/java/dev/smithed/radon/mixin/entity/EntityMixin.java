@@ -29,7 +29,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -137,7 +136,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     /**
      * add entity to tag cache when tags are added via NBT data
      */
-    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void radon_readNbt(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("Tags", 9) && this.world instanceof IServerWorldExtender world && world.getEntityIndex().get(uuid) != null && world.getEntityIndex() instanceof IEntityIndexExtender index) {
             NbtList nbtList4 = nbt.getList("Tags", 8);

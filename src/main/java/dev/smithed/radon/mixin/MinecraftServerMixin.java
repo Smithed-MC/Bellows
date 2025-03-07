@@ -4,14 +4,12 @@ import com.mojang.datafixers.DataFixer;
 import dev.smithed.radon.mixin_interface.IMinecraftServerExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.resource.*;
 import net.minecraft.server.*;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.util.ApiServices;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.minecraft.world.SaveProperties;
-import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.net.Proxy;
 import java.util.*;
@@ -28,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<ServerTask> implements CommandOutput, AutoCloseable, IMinecraftServerExtender {
+
     public MinecraftServerMixin(String string) {
         super(string);
     }
@@ -44,7 +42,10 @@ public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<Serve
      * @author ImCoolYeah105
      * Injects into constructor to build entityTypes map on load
      */
-    @Inject(method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorage$Session;Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/server/SaveLoader;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/util/ApiServices;Lnet/minecraft/server/WorldGenerationProgressListenerFactory;)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
+    @Inject(
+            method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorage$Session;Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/server/SaveLoader;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/util/ApiServices;Lnet/minecraft/server/WorldGenerationProgressListenerFactory;)V",
+            at = @At("TAIL")
+    )
     private void radon_init(Thread serverThread, LevelStorage.Session session, ResourcePackManager dataPackManager, SaveLoader saveLoader, Proxy proxy, DataFixer dataFixer, ApiServices apiServices, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo cr) {
         this.constructEntityTypes();
     }

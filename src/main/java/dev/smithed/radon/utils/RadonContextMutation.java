@@ -1,10 +1,15 @@
 package dev.smithed.radon.utils;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.smithed.radon.Radon;
+import dev.smithed.radon.mixin_interface.IDataCommandObjectMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.mixin_interface.IWorldExtender;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.command.DataCommandObject;
+import net.minecraft.command.EntityDataObject;
+import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
@@ -48,6 +53,27 @@ public class RadonContextMutation {
         }
         Radon.logDebugFormat("Failed to read nbt %s at %s with %s", nbt, path, blockEntity.getClass());
         return false;
+    }
+
+    public static NbtCompound getDataCommandObjectNbt(NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject) throws CommandSyntaxException {
+        NbtCompound nbtCompound = null;
+        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
+            nbtCompound = mixin.getNbtFiltered(nbtPath.toString());
+        }
+
+        if(nbtCompound != null) {
+            return nbtCompound;
+        } else {
+            return dataCommandObject.getNbt();
+        }
+    }
+
+    public static void setDataCommandObjectNbt(NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject, NbtCompound nbtCompound) throws CommandSyntaxException {
+        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
+            mixin.setNbtFiltered(nbtCompound, nbtPath.toString());
+        } else {
+            dataCommandObject.setNbt(nbtCompound);
+        }
     }
 
 }

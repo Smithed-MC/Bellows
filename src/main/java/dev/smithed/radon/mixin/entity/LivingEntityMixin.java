@@ -2,6 +2,7 @@ package dev.smithed.radon.mixin.entity;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
@@ -82,8 +83,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
         LivingEntity entity = ((LivingEntity)(Object)this);
-        if(!nbt.contains(topLevelNbt))
-            return false;
+
         switch (topLevelNbt) {
             case "AbsorptionAmount" -> entity.setAbsorptionAmount(nbt.getFloat("AbsorptionAmount"));
             case "Attributes" -> {
@@ -106,7 +106,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
                 if (nbt.contains("Health", 99))
                     entity.setHealth(nbt.getFloat("Health"));
             }
-            case "HurtTime" -> entity.hurtTime = nbt.getShort("HurtTime");
+            case "HurtTime" -> {
+                entity.hurtTime = nbt.getShort("HurtTime");
+            }
             case "DeathTime" -> entity.deathTime = nbt.getShort("DeathTime");
             case "HurtByTimestamp" -> this.lastAttackedTime = nbt.getInt("HurtByTimestamp");
             case "Team" -> {

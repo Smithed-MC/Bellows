@@ -7,12 +7,8 @@ import dev.smithed.radon.mixin_interface.IDataCommandObjectMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.command.EntityDataObject;
-import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.MarkerEntity;
-import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.NbtPredicate;
@@ -26,12 +22,8 @@ import java.util.UUID;
 @Mixin(EntityDataObject.class)
 public class EntityDataObjectMixin implements IDataCommandObjectMixin {
 
-    @Final
-    @Shadow
-    Entity entity;
-    @Final
-    @Shadow
-    static SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION;
+    @Final @Shadow Entity entity;
+    @Final @Shadow static SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION;
 
     @Override
     public NbtCompound getNbtFiltered(String path) {

@@ -46,7 +46,6 @@ public abstract class ItemDisplayEntityMixin extends DisplayEntityMixin {
 
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        Radon.logDebugFormat("test = %s, %s, %s", nbt, path);
         if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
             switch (topLevelNbt) {
                 case "item" -> ItemStack.fromNbt(registries, nbt.getCompound("item")).ifPresent(this::setItemStack);
