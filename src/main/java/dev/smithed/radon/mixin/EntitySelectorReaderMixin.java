@@ -18,7 +18,7 @@ public class EntitySelectorReaderMixin implements IEntitySelectorReaderExtender 
      * get the constructed return value and inject additional data
      */
     @Inject(method = "build", at = @At("RETURN"), cancellable = true)
-    private void radon_buildInject(CallbackInfoReturnable<EntitySelector> cir) {
+    private void radon_build(CallbackInfoReturnable<EntitySelector> cir) {
         if(cir.getReturnValue() instanceof IEntitySelectorExtender extender) {
             extender.setContainer(this.container);
             cir.setReturnValue((EntitySelector) extender);

@@ -22,12 +22,11 @@ import java.util.function.Predicate;
 @Mixin(EntitySelector.class)
 public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
 
-    @Shadow private Box box;
     @Shadow private TypeFilter<Entity, ?> entityFilter;
     @Shadow abstract int getAppendLimit();
 
     @Inject(method = "appendEntitiesFromWorld", at=@At("HEAD"), cancellable = true)
-    void appendEntitiesFromWorldInject(List<Entity> entities, ServerWorld world, @Nullable Box box, Predicate<Entity> predicate, CallbackInfo ci) {
+    void radon_appendEntitiesFromWorld(List<Entity> entities, ServerWorld world, @Nullable Box box, Predicate<Entity> predicate, CallbackInfo ci) {
         int i = this.getAppendLimit();
         if (entities.size() < i) {
             if(Radon.CONFIG.entitySelectorOptimizations && world instanceof IServerWorldExtender extender) {

@@ -12,17 +12,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -41,59 +38,7 @@ public class EntitySelectorOptionsMixin {
      * It may be better to inject data directly, but lambda support is suspect.
      */
     @Inject(method = "register()V", at = @At("TAIL"))
-    private static void register(CallbackInfo ci) {
-        putOption("tag", (reader) -> {
-            boolean bl = reader.readNegationCharacter();
-            String string = reader.getReader().readUnquotedString();
-            if(Radon.CONFIG.entitySelectorOptimizations && reader instanceof IEntitySelectorReaderExtender entityext)
-                if(bl)
-                    entityext.getSelectorContainer().notSelectorTags.add(string);
-                else
-                    entityext.getSelectorContainer().selectorTags.add(string);
-            reader.addPredicate((entity) -> {
-                if ("".equals(string)) {
-                    return entity.getCommandTags().isEmpty() != bl;
-                } else {
-                    return entity.getCommandTags().contains(string) != bl;
-                }
-            });
-        }, (reader) -> true, Text.translatable("argument.entity.options.tag.description"));
-
-        putOption("nbt", (reader) -> {
-            boolean bl = reader.readNegationCharacter();
-            NbtCompound nbtCompound = (new StringNbtReader(reader.getReader())).parseCompound();
-            reader.addPredicate((entity) -> {
-                NbtCompound nbtCompound2 = null;
-                if(Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
-                    nbtCompound2 = new NbtCompound();
-                    String[] topLevelNbt = NBTUtils.getTopLevelPaths(nbtCompound);
-                    for(String nbt: topLevelNbt) {
-                        if (entity instanceof ServerPlayerEntity player && nbt.equals("SelectedItem")) {
-                            ItemStack itemStack = player.getInventory().getMainHandStack();
-                            if (!itemStack.isEmpty()) {
-                                nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
-                            }
-                        } else {
-                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt, entity.getRegistryManager());
-                            if (nbtCompound2 == null)
-                                break;
-                        }
-                    }
-                }
-                if(nbtCompound2 == null) {
-                    nbtCompound2 = entity.writeNbt(new NbtCompound());
-                    if (entity instanceof ServerPlayerEntity player) {
-                        ItemStack itemStack = player.getInventory().getMainHandStack();
-                        if (!itemStack.isEmpty()) {
-                            nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
-                        }
-                    }
-                }
-                Radon.logDebugFormat("nbt = %s", nbtCompound);
-                return NbtHelper.matches(nbtCompound, nbtCompound2, true) != bl;
-            });
-        }, (reader) -> true, Text.translatable("argument.entity.options.nbt.description"));
-
+    private static void radon_register(CallbackInfo ci) {
         putOption("type", (reader) -> {
             reader.setSuggestionProvider((builder, consumer) -> {
                 CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.getIds(), builder, String.valueOf('!'));
@@ -149,6 +94,58 @@ public class EntitySelectorOptionsMixin {
 
             }
         }, (reader) -> !reader.selectsEntityType(), Text.translatable("argument.entity.options.type.description"));
+
+        putOption("tag", (reader) -> {
+            boolean bl = reader.readNegationCharacter();
+            String string = reader.getReader().readUnquotedString();
+            if(Radon.CONFIG.entitySelectorOptimizations && reader instanceof IEntitySelectorReaderExtender entityext)
+                if(bl)
+                    entityext.getSelectorContainer().notSelectorTags.add(string);
+                else
+                    entityext.getSelectorContainer().selectorTags.add(string);
+            reader.addPredicate((entity) -> {
+                if ("".equals(string)) {
+                    return entity.getCommandTags().isEmpty() != bl;
+                } else {
+                    return entity.getCommandTags().contains(string) != bl;
+                }
+            });
+        }, (reader) -> true, Text.translatable("argument.entity.options.tag.description"));
+
+        putOption("nbt", (reader) -> {
+            boolean bl = reader.readNegationCharacter();
+            NbtCompound nbtCompound = (new StringNbtReader(reader.getReader())).parseCompound();
+            reader.addPredicate((entity) -> {
+                NbtCompound nbtCompound2 = null;
+                if(Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
+                    nbtCompound2 = new NbtCompound();
+                    String[] topLevelNbt = NBTUtils.getTopLevelPaths(nbtCompound);
+                    for(String nbt: topLevelNbt) {
+                        if (entity instanceof ServerPlayerEntity player && nbt.equals("SelectedItem")) {
+                            ItemStack itemStack = player.getInventory().getMainHandStack();
+                            if (!itemStack.isEmpty()) {
+                                nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
+                            }
+                        } else {
+                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt, entity.getRegistryManager());
+                            if (nbtCompound2 == null)
+                                break;
+                        }
+                    }
+                }
+                if(nbtCompound2 == null) {
+                    nbtCompound2 = entity.writeNbt(new NbtCompound());
+                    if (entity instanceof ServerPlayerEntity player) {
+                        ItemStack itemStack = player.getInventory().getMainHandStack();
+                        if (!itemStack.isEmpty()) {
+                            nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
+                        }
+                    }
+                }
+                Radon.logDebugFormat("nbt = %s", nbtCompound);
+                return NbtHelper.matches(nbtCompound, nbtCompound2, true) != bl;
+            });
+        }, (reader) -> true, Text.translatable("argument.entity.options.nbt.description"));
     }
 
 }
