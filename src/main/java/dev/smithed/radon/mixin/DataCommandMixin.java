@@ -28,7 +28,10 @@ public abstract class DataCommandMixin {
      * @author ImCoolYeah105
      * Redirects DataCommandObject.getData() to mixin.getNbtFiltered() if possible.
      */
-    @Redirect(method = "getNbt()Lnet/minecraft/nbt/NbtElement;", at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;getNbt()Lnet/minecraft/nbt/NbtCompound;"))
+    @Redirect(
+            method = "getNbt(Lnet/minecraft/command/argument/NbtPathArgumentType;Lnet/minecraft/command/DataCommandObject;)Lnet/minecraft/nbt/NbtElement;",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;getNbt()Lnet/minecraft/nbt/NbtCompound;")
+    )
     private static NbtCompound radon_getNbt(DataCommandObject dataCommandObject, NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject2) throws CommandSyntaxException {
         return RadonContextMutation.getDataCommandObjectNbt(nbtPath, dataCommandObject);
     }
@@ -136,7 +139,7 @@ public abstract class DataCommandMixin {
      * Redirects executeRemove call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      */
     @Redirect(
-            method = "getValuesByPath(Lnet/minecraft/command/DataCommandObject;Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/command/DataCommand$ObjectType;)Ljava/util/List;",
+            method = "getValuesByPath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/command/DataCommand$ObjectType;)Ljava/util/List;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;getNbt()Lnet/minecraft/nbt/NbtCompound;")
     )
     private static NbtCompound radon_getValuesByPath(DataCommandObject dataCommandObject, CommandContext<ServerCommandSource> context, DataCommand.ObjectType objectType) throws CommandSyntaxException {
