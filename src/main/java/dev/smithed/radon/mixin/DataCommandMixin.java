@@ -140,7 +140,7 @@ public abstract class DataCommandMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;getNbt()Lnet/minecraft/nbt/NbtCompound;")
     )
     private static NbtCompound radon_getValuesByPath(DataCommandObject dataCommandObject, CommandContext<ServerCommandSource> context, DataCommand.ObjectType objectType) throws CommandSyntaxException {
-        NbtPathArgumentType.NbtPath nbtPath = NbtPathArgumentType.getNbtPath(context, "targetPath");
+        NbtPathArgumentType.NbtPath nbtPath = NbtPathArgumentType.getNbtPath(context, "sourcePath");
         return RadonContextMutation.getDataCommandObjectNbt(nbtPath, dataCommandObject);
     }
 

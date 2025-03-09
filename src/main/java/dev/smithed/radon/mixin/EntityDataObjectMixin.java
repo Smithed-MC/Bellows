@@ -6,7 +6,6 @@ import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IDataCommandObjectMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.utils.NBTUtils;
-import dev.smithed.radon.utils.RadonContextMutation;
 import net.minecraft.command.EntityDataObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,6 +24,8 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
     @Final @Shadow Entity entity;
     @Final @Shadow static SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION;
 
+    private static final int MIN_ENTITY_NBT_SIZE = 19; //this is how many NBT tags the base entity class contains
+
     @Override
     public NbtCompound getNbtFiltered(String path) {
         NbtCompound nbtCompound = null;
@@ -41,10 +42,12 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
             }
         }
         if (nbtCompound == null) {
-            Radon.logDebugFormat("Failed to get NBT data at %s for %s", path, this.entity.getClass());
+            Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s'", path, this.entity.getClass());
             nbtCompound = NbtPredicate.entityToNbt(this.entity);
+            Radon.logDebugFormat("Retrieved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
+        } else {
+            Radon.logDebugFormat("Retrieved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
         }
-        Radon.logDebugFormat("Retrieved NBT for %s -> %s", this.entity.getClass(), nbtCompound);
         return nbtCompound;
     }
 
@@ -67,14 +70,17 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
         } else {
             UUID uUID = this.entity.getUuid();
             if (this.entity instanceof IEntityMixin mixin && mixin.readNbtFiltered(nbt, path)) {
-                if (Radon.CONFIG.debug)
-                    Radon.logDebugFormat("Set NBT for %s -> %s", this.entity.getClass(), nbt);
+                Radon.logDebugFormat("Saved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbt);
                 this.entity.setUuid(uUID);
                 return true;
-            } else {
-                Radon.logDebugFormat("Failed to save NBT data %s at %s for %s", nbt, path, this.entity.getClass());
-                return false;
             }
+            if(nbt.getSize() >= MIN_ENTITY_NBT_SIZE) {
+                this.entity.readNbt(nbt);
+                Radon.logDebugFormat("Saved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbt);
+            } else {
+                Radon.logDebugFormat("Failed to save NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbt);
+            }
+            return false;
         }
     }
 
