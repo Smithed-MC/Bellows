@@ -1,16 +1,16 @@
 package dev.smithed.radon.mixin.entity;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.block.entity.SculkShriekerWarningManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerRecipeBook;
 import net.minecraft.util.Identifier;
@@ -18,12 +18,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Objects;
+import java.util.Set;
 
 
 @Mixin(ServerPlayerEntity.class)
@@ -38,12 +40,23 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
     @Shadow float spawnAngle;
     @Shadow RegistryKey<World> spawnPointDimension;
     @Shadow SculkShriekerWarningManager sculkShriekerWarningManager;
+    @Shadow boolean spawnExtraParticlesOnFall;
+    @Nullable @Shadow BlockPos startRaidPos;
+    @Shadow @Final Set<EnderPearlEntity> enderPearls;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         ServerPlayerEntity entity = ((ServerPlayerEntity) (Object) this);
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
+                case "warden_spawn_tracker":
+                    DataResult<NbtElement> var10000 = SculkShriekerWarningManager.CODEC.encodeStart(NbtOps.INSTANCE, this.sculkShriekerWarningManager);
+                    Logger var10001 = LOGGER;
+                    Objects.requireNonNull(var10001);
+                    var10000.resultOrPartial(var10001::error).ifPresent((encoded) -> {
+                        nbt.put("warden_spawn_tracker", encoded);
+                    });
+                    break;
                 case "playerGameType":
                     nbt.putInt("playerGameType", entity.interactionManager.getGameMode().getId());
                     break;
@@ -103,21 +116,49 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                     break;
                 case "SpawnDimension":
                     if (this.spawnPointPosition != null) {
-                        DataResult<NbtElement> var10000 = Identifier.CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPointDimension.getValue());
-                        Logger var10001 = Radon.LOGGER;
-                        Objects.requireNonNull(var10001);
-                        var10000.resultOrPartial(var10001::error).ifPresent((nbtElement) -> {
+                        DataResult<NbtElement> var10002 = Identifier.CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPointDimension.getValue());
+                        Logger var10003 = Radon.LOGGER;
+                        Objects.requireNonNull(var10003);
+                        var10002.resultOrPartial(var10003::error).ifPresent((nbtElement) -> {
                             nbt.put("SpawnDimension", nbtElement);
                         });
                     }
                     break;
-                case "warden_spawn_tracker":
-                    DataResult<NbtElement> var10000 = SculkShriekerWarningManager.CODEC.encodeStart(NbtOps.INSTANCE, this.sculkShriekerWarningManager);
-                    Logger var10001 = LOGGER;
-                    Objects.requireNonNull(var10001);
-                    var10000.resultOrPartial(var10001::error).ifPresent((encoded) -> {
-                        nbt.put("warden_spawn_tracker", encoded);
-                    });
+                case "spawn_extra_particles_on_fall":
+                    nbt.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
+                    break;
+                case "raid_omen_position":
+                    if (this.startRaidPos != null) {
+                        var10000 = BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, this.startRaidPos);
+                        var10001 = LOGGER;
+                        Objects.requireNonNull(var10001);
+                        var10000.resultOrPartial(var10001::error).ifPresent((encoded) -> {
+                            nbt.put("raid_omen_position", encoded);
+                        });
+                    }
+                    break;
+                case "ender_pearls":
+                    if (!this.enderPearls.isEmpty()) {
+                        NbtList nbtList = new NbtList();
+
+                        for (EnderPearlEntity enderPearlEntity : this.enderPearls) {
+                            if (enderPearlEntity.isRemoved()) {
+                                LOGGER.warn("Trying to save removed ender pearl, skipping");
+                            } else {
+                                NbtCompound nbtCompound = new NbtCompound();
+                                enderPearlEntity.saveNbt(nbtCompound);
+                                DataResult<NbtElement> var10004 = Identifier.CODEC.encodeStart(NbtOps.INSTANCE, enderPearlEntity.getWorld().getRegistryKey().getValue());
+                                Logger var10005 = LOGGER;
+                                Objects.requireNonNull(var10005);
+                                var10004.resultOrPartial(var10005::error).ifPresent((dimension) -> {
+                                    nbtCompound.put("ender_pearl_dimension", dimension);
+                                });
+                                nbtList.add(nbtCompound);
+                            }
+                        }
+
+                        nbt.put("ender_pearls", nbtList);
+                    }
                     break;
                 default:
                     return false;
@@ -126,38 +167,4 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
         return true;
     }
 
-    @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        ServerPlayerEntity entity = ((ServerPlayerEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
-
-            switch (topLevelNbt) {
-                case "enteredNetherPosition" -> {
-                    if (nbt.contains("enteredNetherPosition", 10)) {
-                        NbtCompound nbtCompound = nbt.getCompound("enteredNetherPosition");
-                        this.enteredNetherPos = new Vec3d(nbtCompound.getDouble("x"), nbtCompound.getDouble("y"), nbtCompound.getDouble("z"));
-                    }
-                }
-                case "seenCredits" -> this.seenCredits = nbt.getBoolean("seenCredits");
-                case "SpawnForced" -> this.spawnForced = nbt.getBoolean("SpawnForced");
-                case "SpawnAngle" -> this.spawnAngle = nbt.getFloat("SpawnAngle");
-                case "SpawnDimension" -> {
-                    DataResult<RegistryKey<World>> var10001 = World.CODEC.parse(NbtOps.INSTANCE, nbt.get("SpawnDimension"));
-                    Logger var10002 = Radon.LOGGER;
-                    Objects.requireNonNull(var10002);
-                    this.spawnPointDimension = var10001.resultOrPartial(var10002::error).orElse(World.OVERWORLD);
-                }
-                case "SpawnX", "SpawnY", "SpawnZ" -> {
-                    int i = nbt.contains("SpawnX", 99) ? nbt.getInt("SpawnX") : this.spawnPointPosition.getX();
-                    int j = nbt.contains("SpawnY", 99) ? nbt.getInt("SpawnY") : this.spawnPointPosition.getY();
-                    int k = nbt.contains("SpawnZ", 99) ? nbt.getInt("SpawnZ") : this.spawnPointPosition.getZ();
-                    this.spawnPointPosition = new BlockPos(i, j, k);
-                }
-                default -> {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 }

@@ -1,6 +1,5 @@
 package dev.smithed.radon.mixin.entity;
 
-import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
@@ -13,16 +12,14 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.function.CommandFunctionManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -32,68 +29,38 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
 
-    @Shadow
-    @Final
-    static TrackedData<EntityPose> POSE;
-    @Shadow
-    @Final
-    Random random;
-    @Shadow
-    World world;
-    @Shadow
-    DataTracker dataTracker;
-    @Shadow
-    Entity vehicle;
-    @Shadow
-    int fireTicks;
-    @Shadow
-    boolean onGround;
-    @Shadow
-    boolean invulnerable;
-    @Shadow
-    int portalCooldown;
-    @Shadow
-    boolean glowing;
-    @Shadow
-    boolean hasVisualFire;
-    @Shadow
-    Set<String> commandTags;
-    @Shadow
-    UUID uuid;
-    @Shadow
-    float fallDistance;
-    @Shadow
-    String uuidString;
-    @Shadow
-    boolean firstUpdate;
+    @Shadow @Final static Logger LOGGER;
+    @Shadow @Final static TrackedData<EntityPose> POSE;
+    @Shadow World world;
+    @Shadow DataTracker dataTracker;
+    @Shadow Entity vehicle;
+    @Shadow int fireTicks;
+    @Shadow boolean onGround;
+    @Shadow boolean invulnerable;
+    @Shadow int portalCooldown;
+    @Shadow boolean glowing;
+    @Shadow boolean hasVisualFire;
+    @Shadow Set<String> commandTags;
+    @Shadow UUID uuid;
+    @Shadow float fallDistance;
+    @Shadow String uuidString;
+    @Shadow boolean firstUpdate;
+    @Shadow @Final static TrackedData<Optional<Text>> CUSTOM_NAME;
 
-    @Shadow
-    abstract void refreshPosition();
-
-    @Shadow
-    abstract void setRotation(float yaw, float pitch);
-
-    @Shadow
-    abstract boolean shouldSetPositionOnLoad();
-
-    @Shadow
-    abstract NbtList toNbtList(double... values);
-
-    @Shadow
-    abstract NbtList toNbtList(float... values);
-
-    @Shadow
-    abstract void setFlag(int index, boolean value);
-
-
-    @Shadow
-    protected abstract DynamicRegistryManager getRegistryManager();
+    @Shadow abstract void refreshPosition();
+    @Shadow abstract void setRotation(float yaw, float pitch);
+    @Shadow abstract boolean shouldSetPositionOnLoad();
+    @Shadow abstract NbtList toNbtList(double... values);
+    @Shadow abstract NbtList toNbtList(float... values);
+    @Shadow abstract void setFlag(int index, boolean value);
+    @Shadow protected abstract DynamicRegistryManager getRegistryManager();
 
     /**
      * @author ImCoolYeah105
@@ -150,17 +117,17 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     }
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         return false;
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         return false;
     }
 
     @Override
-    public NbtCompound writeNbtFiltered(NbtCompound nbt, String path, RegistryWrapper.WrapperLookup registries) {
+    public NbtCompound writeNbtFiltered(NbtCompound nbt, String path) {
         String topLevelNbt = path.split("[\\.\\{\\[]")[0];
         Entity entity = ((Entity) (Object) this);
 
@@ -204,7 +171,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                 case "CustomName":
                     Text text = entity.getCustomName();
                     if (text != null) {
-                        nbt.putString("CustomName", Text.Serialization.toJsonString(text, registries));
+                        nbt.putString("CustomName", Text.Serialization.toJsonString(text, this.getRegistryManager()));
                     }
                     break;
                 case "CustomNameVisible":
@@ -272,7 +239,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     }
                     break;
                 default:
-                    if (this.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries))
+                    if (this.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt))
                         return nbt;
                     else
                         return null;
@@ -287,7 +254,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     }
 
     @Override
-    public boolean readNbtFiltered(NbtCompound nbt, String path, RegistryWrapper.WrapperLookup registries) {
+    public boolean readNbtFiltered(NbtCompound nbt, String path) {
         String topLevelNbt = path.split("[\\[.{]")[0];
         Entity entity = ((Entity) (Object) this);
 
@@ -335,11 +302,15 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     this.uuidString = this.uuid.toString();
                 }
                 case "CustomName" -> {
-                    String string = nbt.getString("CustomName");
-                    try {
-                        entity.setCustomName(Text.Serialization.fromJson(string, registries));
-                    } catch (Exception var16) {
-                        Radon.LOGGER.warn("Failed to parse entity custom name {}", string, var16);
+                    if (nbt.contains("CustomName", 8)) {
+                        String string = nbt.getString("CustomName");
+                        try {
+                            entity.setCustomName(Text.Serialization.fromJson(string, this.getRegistryManager()));
+                        } catch (Exception var16) {
+                            LOGGER.warn("Failed to parse entity custom name {}", string, var16);
+                        }
+                    } else {
+                        this.dataTracker.set(CUSTOM_NAME, Optional.empty());
                     }
                 }
                 case "CustomNameVisible" -> entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible"));
@@ -362,7 +333,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     }
                 }
                 default -> {
-                    if (this.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
+                    if (this.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
                         if (this.shouldSetPositionOnLoad())
                             this.refreshPosition();
 //                        if (topLevelNbt.equals("ArmorItems") || topLevelNbt.equals("HandItems"))

@@ -5,7 +5,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 
 public interface IEntityMixin {
-    NbtCompound writeNbtFiltered(NbtCompound nbt, String path, RegistryWrapper.WrapperLookup registries);
-    boolean readNbtFiltered(NbtCompound nbt, String path, RegistryWrapper.WrapperLookup registries);
+    NbtCompound writeNbtFiltered(NbtCompound nbt, String path);
+    boolean readNbtFiltered(NbtCompound nbt, String path);
 
 }

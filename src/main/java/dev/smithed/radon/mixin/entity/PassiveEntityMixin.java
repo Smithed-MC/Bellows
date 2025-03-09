@@ -3,7 +3,6 @@ package dev.smithed.radon.mixin.entity;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -13,9 +12,9 @@ public abstract class PassiveEntityMixin extends MobEntityMixin implements ICust
     @Shadow int forcedAge;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         PassiveEntity entity = ((PassiveEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
                 case "Age" -> nbt.putInt("Age", entity.getBreedingAge());
                 case "ForcedAge" -> nbt.putInt("ForcedAge", this.forcedAge);
@@ -28,9 +27,9 @@ public abstract class PassiveEntityMixin extends MobEntityMixin implements ICust
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         PassiveEntity entity = ((PassiveEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
 
             switch (topLevelNbt) {
                 case "Age" -> entity.setBreedingAge(nbt.getInt("Age"));

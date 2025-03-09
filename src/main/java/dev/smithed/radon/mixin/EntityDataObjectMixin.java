@@ -12,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.NbtPredicate;
-import net.minecraft.registry.RegistryWrapper;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,12 +31,12 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
             if (path.startsWith("{")) {
                 nbtCompound = new NbtCompound();
                 for (String str : NBTUtils.getTopLevelPaths(path)) {
-                    nbtCompound = getFilteredNbt(mixin, nbtCompound, str, this.entity.getRegistryManager());
+                    nbtCompound = getFilteredNbt(mixin, nbtCompound, str);
                     if (nbtCompound == null)
                         break;
                 }
             } else {
-                nbtCompound = getFilteredNbt(mixin, new NbtCompound(), path, this.entity.getRegistryManager());
+                nbtCompound = getFilteredNbt(mixin, new NbtCompound(), path);
             }
         }
         if (nbtCompound == null) {
@@ -48,14 +47,15 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
         return nbtCompound;
     }
 
-    private NbtCompound getFilteredNbt(IEntityMixin mixin, NbtCompound nbtCompound, String path, RegistryWrapper.WrapperLookup registries) {
+    private NbtCompound getFilteredNbt(IEntityMixin mixin, NbtCompound nbtCompound, String path) {
         if (this.entity instanceof PlayerEntity player && path.startsWith("SelectedItem")) {
             ItemStack itemStack = player.getInventory().getMainHandStack();
-            if (!itemStack.isEmpty())
-                nbtCompound.put("SelectedItem", itemStack.toNbt(registries, new NbtCompound()));
+            if (!itemStack.isEmpty()) {
+                nbtCompound.put("SelectedItem", itemStack.toNbt(player.getRegistryManager()));
+            }
             return nbtCompound;
         } else {
-            return mixin.writeNbtFiltered(nbtCompound, path, registries);
+            return mixin.writeNbtFiltered(nbtCompound, path);
         }
     }
 
@@ -65,7 +65,7 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
             throw INVALID_ENTITY_EXCEPTION.create();
         } else {
             UUID uUID = this.entity.getUuid();
-            if (this.entity instanceof IEntityMixin mixin && mixin.readNbtFiltered(nbt, path, this.entity.getRegistryManager())) {
+            if (this.entity instanceof IEntityMixin mixin && mixin.readNbtFiltered(nbt, path)) {
                 if (Radon.CONFIG.debug)
                     Radon.logDebugFormat("Set NBT for %s -> %s", this.entity.getClass(), nbt);
                 this.entity.setUuid(uUID);
@@ -76,5 +76,10 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
                 return false;
             }
         }
+    }
+
+    @Override
+    public Object getContents() {
+        return this.entity;
     }
 }

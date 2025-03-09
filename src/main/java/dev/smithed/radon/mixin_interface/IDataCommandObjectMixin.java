@@ -10,4 +10,6 @@ public interface IDataCommandObjectMixin {
     NbtCompound getNbtFiltered(String path) throws CommandSyntaxException;
     boolean setNbtFiltered(NbtCompound nbt, String path) throws CommandSyntaxException;
 
+    Object getContents();
+
 }

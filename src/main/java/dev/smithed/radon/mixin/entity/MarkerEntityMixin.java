@@ -3,7 +3,6 @@ package dev.smithed.radon.mixin.entity;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.entity.MarkerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -12,9 +11,8 @@ public abstract class MarkerEntityMixin extends EntityMixin implements ICustomNB
     @Shadow NbtCompound data;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        MarkerEntity entity = ((MarkerEntity) (Object) this);
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             if (topLevelNbt.equals("data")) {
                 nbt.put("data", this.data.copy());
             } else {
@@ -25,12 +23,9 @@ public abstract class MarkerEntityMixin extends EntityMixin implements ICustomNB
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        MarkerEntity entity = ((MarkerEntity)(Object)this);
-        if(!nbt.contains(topLevelNbt))
-            return false;
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         if (topLevelNbt.equals("data")) {
-            this.data = nbt.getCompound("data");
+            this.data = nbt.getCompound("data").copy();
         } else {
             return false;
         }

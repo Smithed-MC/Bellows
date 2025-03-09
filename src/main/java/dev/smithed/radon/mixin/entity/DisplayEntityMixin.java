@@ -1,7 +1,6 @@
 package dev.smithed.radon.mixin.entity;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.Brightness;
@@ -9,9 +8,9 @@ import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.AffineTransformation;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -34,6 +33,8 @@ public abstract class DisplayEntityMixin extends EntityMixin {
     @Shadow abstract float getDisplayWidth();
     @Shadow abstract float getDisplayHeight();
     @Shadow abstract int getGlowColorOverride();
+    @Shadow @Final abstract DisplayEntity.BillboardMode getBillboardMode();
+    @Shadow @Final abstract int getTeleportDuration();
 
     @Shadow abstract void setTransformation(AffineTransformation transformation);
     @Shadow abstract void setInterpolationDuration(int interpolationDuration);
@@ -46,31 +47,36 @@ public abstract class DisplayEntityMixin extends EntityMixin {
     @Shadow abstract void setDisplayHeight(float height);
     @Shadow abstract void setShadowStrength(float shadowStrength);
     @Shadow abstract void setGlowColorOverride(int glowColorOverride);
+    @Shadow @Final abstract void setTeleportDuration(int teleportDuration);
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
-                //TODO: add billboard
-                case "brightness" -> {
-                    Brightness brightness = this.getBrightnessUnpacked();
-                    if (brightness != null) {
-                        Brightness.CODEC.encodeStart(NbtOps.INSTANCE, brightness).result().ifPresent((brightnessx) -> {
-                            nbt.put("brightness", brightnessx);
-                        });
-                    }
-                }
                 case "transformation" ->
-                        AffineTransformation.ANY_CODEC.encodeStart(NbtOps.INSTANCE, getTransformation(this.dataTracker)).result().ifPresent((transformations) -> {
+                        AffineTransformation.ANY_CODEC.encodeStart(NbtOps.INSTANCE, getTransformation(this.dataTracker)).ifSuccess((transformations) -> {
                             nbt.put("transformation", transformations);
                         });
+                case "billboard" ->
+                        DisplayEntity.BillboardMode.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardMode()).ifSuccess((billboard) -> {
+                            nbt.put("billboard", billboard);
+                        });
                 case "interpolation_duration" -> nbt.putInt("interpolation_duration", this.getInterpolationDuration());
+                case "teleport_duration" -> nbt.putInt("teleport_duration", this.getTeleportDuration());
                 case "view_range" -> nbt.putFloat("view_range", this.getViewRange());
                 case "shadow_radius" -> nbt.putFloat("shadow_radius", this.getShadowRadius());
                 case "shadow_strength" -> nbt.putFloat("shadow_strength", this.getShadowStrength());
                 case "width" -> nbt.putFloat("width", this.getDisplayWidth());
                 case "height" -> nbt.putFloat("height", this.getDisplayHeight());
                 case "glow_color_override" -> nbt.putInt("glow_color_override", this.getGlowColorOverride());
+                case "brightness" -> {
+                    Brightness brightness = this.getBrightnessUnpacked();
+                    if (brightness != null) {
+                        Brightness.CODEC.encodeStart(NbtOps.INSTANCE, brightness).ifSuccess((brightnessx) -> {
+                            nbt.put("brightness", brightnessx);
+                        });
+                    }
+                }
                 default -> {
                     return false;
                 }
@@ -80,8 +86,8 @@ public abstract class DisplayEntityMixin extends EntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
 
             switch (topLevelNbt) {
                 case "transformation" -> {
@@ -95,29 +101,6 @@ public abstract class DisplayEntityMixin extends EntityMixin {
                                 Util.addPrefix("Display entity", var10002::error))
                                 .ifPresent((pair) -> this.setTransformation(pair.getFirst())
                         );
-                    }
-                }
-                case "billboard" -> {
-                    if (nbt.contains("billboard", 8)) {
-                        DataResult<Pair<DisplayEntity.BillboardMode, NbtElement>> var10000;
-                        var10000 = DisplayEntity.BillboardMode.CODEC.decode(NbtOps.INSTANCE, nbt.get("billboard"));
-                        Logger var10002 = LOGGER;
-                        Objects.requireNonNull(var10002);
-                        var10000.resultOrPartial(Util.addPrefix("Display entity", var10002::error)).ifPresent((pair) -> {
-                            this.setBillboardMode(pair.getFirst());
-                        });
-                    }}
-                case "brightness" -> {
-                    if (nbt.contains("brightness", 10)) {
-                        DataResult<Pair<Brightness, NbtElement>> var10000;
-                        var10000 = Brightness.CODEC.decode(NbtOps.INSTANCE, nbt.get("brightness"));
-                        Logger var10002 = LOGGER;
-                        Objects.requireNonNull(var10002);
-                        var10000.resultOrPartial(Util.addPrefix("Display entity", var10002::error)).ifPresent((pair) -> {
-                            this.setBrightness(pair.getFirst());
-                        });
-                    } else {
-                        this.setBrightness(null);
                     }
                 }
                 case "interpolation_duration" -> {
@@ -134,6 +117,23 @@ public abstract class DisplayEntityMixin extends EntityMixin {
                         this.setStartInterpolation(i);
                     }
                 }
+                case "teleport_duration" -> {
+                    int i;
+                    if (nbt.contains("teleport_duration", 99)) {
+                        i = nbt.getInt("teleport_duration");
+                        this.setTeleportDuration(MathHelper.clamp(i, 0, 59));
+                    }
+                }
+                case "billboard" -> {
+                    if (nbt.contains("billboard", 8)) {
+                        DataResult<Pair<DisplayEntity.BillboardMode, NbtElement>> var10000 =
+                            DisplayEntity.BillboardMode.CODEC.decode(NbtOps.INSTANCE, nbt.get("billboard"));
+                        Logger var10002 = LOGGER;
+                        Objects.requireNonNull(var10002);
+                        var10000.resultOrPartial(Util.addPrefix("Display entity", var10002::error)).ifPresent((pair) -> {
+                            this.setBillboardMode(pair.getFirst());
+                        });
+                    }}
                 case "view_range" -> {
                     if (nbt.contains("view_range", 99)) {
                         this.setViewRange(nbt.getFloat("view_range"));
@@ -158,6 +158,19 @@ public abstract class DisplayEntityMixin extends EntityMixin {
                     if (nbt.contains("glow_color_override", 99)) {
                         this.setGlowColorOverride(nbt.getInt("glow_color_override"));
                     }}
+                case "brightness" -> {
+                    if (nbt.contains("brightness", 10)) {
+                        DataResult<Pair<Brightness, NbtElement>> var10000
+                                = Brightness.CODEC.decode(NbtOps.INSTANCE, nbt.get("brightness"));
+                        Logger var10002 = LOGGER;
+                        Objects.requireNonNull(var10002);
+                        var10000.resultOrPartial(Util.addPrefix("Display entity", var10002::error)).ifPresent((pair) -> {
+                            this.setBrightness(pair.getFirst());
+                        });
+                    } else {
+                        this.setBrightness(null);
+                    }
+                }
                 default -> {
                     return false;
                 }

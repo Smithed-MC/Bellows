@@ -6,8 +6,8 @@ import net.minecraft.registry.RegistryWrapper;
 
 public interface ICustomNBTMixin {
 
-    boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries);
+    boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt);
 
-    boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries);
+    boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt);
 
 }

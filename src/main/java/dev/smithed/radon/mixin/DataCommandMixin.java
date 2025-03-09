@@ -2,7 +2,6 @@ package dev.smithed.radon.mixin;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IDataCommandObjectMixin;
 import dev.smithed.radon.utils.NBTUtils;
@@ -22,14 +21,12 @@ import java.util.List;
 @Mixin(DataCommand.class)
 public abstract class DataCommandMixin {
 
-    @Shadow @Final static SimpleCommandExceptionType MERGE_FAILED_EXCEPTION;
-
     /**
      * @author ImCoolYeah105
      * Redirects DataCommandObject.getData() to mixin.getNbtFiltered() if possible.
      */
     @Redirect(
-            method = "getNbt(Lnet/minecraft/command/argument/NbtPathArgumentType;Lnet/minecraft/command/DataCommandObject;)Lnet/minecraft/nbt/NbtElement;",
+            method = "getNbt(Lnet/minecraft/command/argument/NbtPathArgumentType$NbtPath;Lnet/minecraft/command/DataCommandObject;)Lnet/minecraft/nbt/NbtElement;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;getNbt()Lnet/minecraft/nbt/NbtCompound;")
     )
     private static NbtCompound radon_getNbt(DataCommandObject dataCommandObject, NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject2) throws CommandSyntaxException {

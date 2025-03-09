@@ -127,7 +127,7 @@ public class EntitySelectorOptionsMixin {
                                 nbtCompound2.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager(), new NbtCompound()));
                             }
                         } else {
-                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt, entity.getRegistryManager());
+                            nbtCompound2 = mixin.writeNbtFiltered(nbtCompound2, nbt);
                             if (nbtCompound2 == null)
                                 break;
                         }

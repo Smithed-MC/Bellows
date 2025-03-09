@@ -2,14 +2,12 @@ package dev.smithed.radon.mixin.entity;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
-import dev.smithed.radon.Radon;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Util;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,11 +25,14 @@ public abstract class ItemDisplayEntityMixin extends DisplayEntityMixin {
     @Shadow abstract void setTransformationMode(ModelTransformationMode transformationMode);
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        DisplayEntity.ItemDisplayEntity entity = ((DisplayEntity.ItemDisplayEntity) (Object) this);
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
-                case "item" -> nbt.put("item", this.getItemStack().toNbt(registries, new NbtCompound()));
+                case "item" -> {
+                    if (!this.getItemStack().isEmpty()) {
+                        nbt.put("item", this.getItemStack().toNbt(this.getRegistryManager()));
+                    }
+                }
                 case "DuplicationCooldown" ->
                     ModelTransformationMode.CODEC.encodeStart(NbtOps.INSTANCE, this.getTransformationMode()).result().ifPresent((nbtx) -> {
                     nbt.put("item_display", nbtx);
@@ -45,10 +46,16 @@ public abstract class ItemDisplayEntityMixin extends DisplayEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
-                case "item" -> ItemStack.fromNbt(registries, nbt.getCompound("item")).ifPresent(this::setItemStack);
+                case "item" -> {
+                    if (nbt.contains("item")) {
+                        this.setItemStack(ItemStack.fromNbt(this.getRegistryManager(), nbt.getCompound("item")).orElse(ItemStack.EMPTY));
+                    } else {
+                        this.setItemStack(ItemStack.EMPTY);
+                    }
+                }
                 case "item_display" -> {
                     if (nbt.contains("item_display", 8)) {
                         DataResult<Pair<ModelTransformationMode, NbtElement>> var10000 = ModelTransformationMode.CODEC.decode(NbtOps.INSTANCE, nbt.get("item_display"));

@@ -2,7 +2,6 @@ package dev.smithed.radon.mixin.entity;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
@@ -13,7 +12,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
@@ -36,7 +34,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Shadow abstract void setPositionInBed(BlockPos pos);
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         LivingEntity entity = ((LivingEntity)(Object)this);
 
         switch (topLevelNbt) {
@@ -81,7 +79,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         LivingEntity entity = ((LivingEntity)(Object)this);
 
         switch (topLevelNbt) {

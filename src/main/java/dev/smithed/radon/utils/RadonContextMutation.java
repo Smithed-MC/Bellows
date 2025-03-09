@@ -33,7 +33,7 @@ public class RadonContextMutation {
     public static NbtCompound getBlockNbtFiltered(BlockEntity blockEntity, String path) {
         NbtCompound nbtCompound = null;
         if (Radon.CONFIG.nbtOptimizations && blockEntity instanceof IEntityMixin mixin)
-            nbtCompound = mixin.writeNbtFiltered(new NbtCompound(), path, blockEntity.getWorld().getRegistryManager());
+            nbtCompound = mixin.writeNbtFiltered(new NbtCompound(), path);
         if(nbtCompound == null) {
             Radon.logDebugFormat("Failed to write nbt data at %s with %s", path, blockEntity.getClass());
             nbtCompound = blockEntity.createNbtWithIdentifyingData(blockEntity.getWorld().getRegistryManager());
@@ -45,7 +45,7 @@ public class RadonContextMutation {
     public static boolean writeBlockNbtFiltered(BlockEntity blockEntity, BlockPos pos, NbtCompound nbt, String path) {
         if (blockEntity instanceof IEntityMixin mixin) {
             BlockState blockState = blockEntity.getWorld().getBlockState(pos);
-            if (mixin.readNbtFiltered(nbt, path, blockEntity.getWorld().getRegistryManager())) {
+            if (mixin.readNbtFiltered(nbt, path)) {
                 blockEntity.markDirty();
                 blockEntity.getWorld().updateListeners(pos, blockState, blockState, 3);
                 return true;
@@ -58,7 +58,14 @@ public class RadonContextMutation {
     public static NbtCompound getDataCommandObjectNbt(NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject) throws CommandSyntaxException {
         NbtCompound nbtCompound = null;
         if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
-            nbtCompound = mixin.getNbtFiltered(nbtPath.toString());
+            try {
+                nbtCompound = mixin.getNbtFiltered(nbtPath.toString());
+            } catch (Exception e) {
+                System.out.println("FAILED data: " + nbtPath + ", " + dataCommandObject.getNbt());
+                System.out.println(e.getMessage());
+                e.printStackTrace(System.err);
+                throw e;
+            }
         }
 
         if(nbtCompound != null) {

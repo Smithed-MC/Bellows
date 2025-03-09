@@ -3,7 +3,6 @@ package dev.smithed.radon.mixin.entity;
 import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,14 +14,13 @@ public abstract class WanderingTraderEntityMixin extends MerchantEntityMixin {
     @Shadow int despawnDelay;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
-        WanderingTraderEntity entity = ((WanderingTraderEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
                 case "DespawnDelay" -> nbt.putInt("DespawnDelay", this.despawnDelay);
-                case "WanderTarget" -> {
+                case "wander_target" -> {
                     if (this.wanderTarget != null) {
-                        nbt.put("WanderTarget", NbtHelper.fromBlockPos(this.wanderTarget));
+                        nbt.put("wander_target", NbtHelper.fromBlockPos(this.wanderTarget));
                     }
                 }
                 default -> {
@@ -34,19 +32,16 @@ public abstract class WanderingTraderEntityMixin extends MerchantEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         WanderingTraderEntity entity = ((WanderingTraderEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
 
             switch (topLevelNbt) {
                 case "DespawnDelay" -> {
                     if (nbt.contains("DespawnDelay", 99))
                         this.despawnDelay = nbt.getInt("DespawnDelay");
                 }
-                case "WanderTarget" -> {
-                    if (nbt.contains("WanderTarget"))
-                        NbtHelper.toBlockPos(nbt,"WanderTarget").ifPresent(pos -> this.wanderTarget = pos);
-                }
+                case "wander_target" -> NbtHelper.toBlockPos(nbt, "wander_target").ifPresent((wanderTarget) -> this.wanderTarget = wanderTarget);
                 default -> {
                     return false;
                 }

@@ -1,15 +1,13 @@
 package dev.smithed.radon.mixin.entity;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import dev.smithed.radon.Radon;
+import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerData;
@@ -31,14 +29,15 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
     @Shadow int experience;
     @Shadow boolean natural;
     @Shadow long lastGossipDecayTime;
+    @Shadow @Final static TrackedData<VillagerData> VILLAGER_DATA;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         VillagerEntity entity = ((VillagerEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt, registries)) {
+        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             switch (topLevelNbt) {
                 case "FoodLevel" -> nbt.putByte("FoodLevel", (byte) this.foodLevel);
-                case "Gossips" -> nbt.put("Gossips", (NbtElement) this.gossip.serialize(NbtOps.INSTANCE));
+                case "Gossips" -> nbt.put("Gossips", this.gossip.serialize(NbtOps.INSTANCE));
                 case "Xp" -> nbt.putInt("Xp", this.experience);
                 case "LastRestock" -> nbt.putLong("LastRestock", this.lastRestockTime);
                 case "LastGossipDecay" -> nbt.putLong("LastGossipDecay", this.lastGossipDecayTime);
@@ -49,10 +48,12 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
                     }
                 }
                 case "VillagerData" -> {
-                    DataResult<NbtElement> data = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, entity.getVillagerData());
-                    Logger logger = Radon.LOGGER;
-                    Objects.requireNonNull(logger);
-                    data.resultOrPartial(logger::error).ifPresent(nbtElement -> nbt.put("VillagerData", nbtElement));
+                    DataResult<NbtElement> var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, entity.getVillagerData());
+                    Logger var10001 = LOGGER;
+                    Objects.requireNonNull(var10001);
+                    var10000.resultOrPartial(var10001::error).ifPresent((nbtElement) -> {
+                        nbt.put("VillagerData", nbtElement);
+                    });
                 }
                 default -> {
                     return false;
@@ -63,9 +64,9 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt, RegistryWrapper.WrapperLookup registries) {
+    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         VillagerEntity entity = ((VillagerEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt, registries)) {
+        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
 
             switch (topLevelNbt) {
                 case "Offers" -> {
@@ -81,7 +82,7 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
                 }
                 case "Gossips" -> {
                     NbtList nbtList = nbt.getList("Gossips", 10);
-                    this.gossip.deserialize(new Dynamic(NbtOps.INSTANCE, nbtList));
+                    this.gossip.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbtList));
                 }
                 case "Xp" -> {
                     if (nbt.contains("Xp", 3))
@@ -93,10 +94,12 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
                 case "AssignProfessionWhenSpawned" -> this.natural = nbt.getBoolean("AssignProfessionWhenSpawned");
                 case "VillagerData" -> {
                     if (nbt.contains("VillagerData", 10)) {
-                        DataResult<VillagerData> dataResult = VillagerData.CODEC.parse(new Dynamic(NbtOps.INSTANCE, nbt.get("VillagerData")));
-                        Logger logger = Radon.LOGGER;
-                        Objects.requireNonNull(logger);
-                        dataResult.resultOrPartial(logger::error).ifPresent(entity::setVillagerData);
+                        DataResult<VillagerData> var10000 = VillagerData.CODEC.parse(NbtOps.INSTANCE, nbt.get("VillagerData"));
+                        Logger var10001 = LOGGER;
+                        Objects.requireNonNull(var10001);
+                        var10000.resultOrPartial(var10001::error).ifPresent((villagerData) -> {
+                            this.dataTracker.set(VILLAGER_DATA, villagerData);
+                        });
                     }
                 }
                 default -> {
