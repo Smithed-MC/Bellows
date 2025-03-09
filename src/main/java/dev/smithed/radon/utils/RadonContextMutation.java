@@ -8,7 +8,6 @@ import dev.smithed.radon.mixin_interface.IWorldExtender;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.command.DataCommandObject;
-import net.minecraft.command.EntityDataObject;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
@@ -58,14 +57,7 @@ public class RadonContextMutation {
     public static NbtCompound getDataCommandObjectNbt(NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject) throws CommandSyntaxException {
         NbtCompound nbtCompound = null;
         if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
-            try {
-                nbtCompound = mixin.getNbtFiltered(nbtPath.toString());
-            } catch (Exception e) {
-                System.out.println("FAILED data: " + nbtPath + ", " + dataCommandObject.getNbt());
-                System.out.println(e.getMessage());
-                e.printStackTrace(System.err);
-                throw e;
-            }
+            nbtCompound = mixin.getNbtFiltered(nbtPath.toString());
         }
 
         if(nbtCompound != null) {

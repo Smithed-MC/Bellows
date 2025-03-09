@@ -4,8 +4,6 @@
   "package": "dev.smithed.radon.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "TestCommandManagerMixin",
-
     "BlockDataObjectMixin",
     "CachedBlockPositionMixin",
     "DataCommandMixin",

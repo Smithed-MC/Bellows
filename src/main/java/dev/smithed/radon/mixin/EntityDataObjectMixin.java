@@ -6,6 +6,7 @@ import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IDataCommandObjectMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.utils.NBTUtils;
+import dev.smithed.radon.utils.RadonContextMutation;
 import net.minecraft.command.EntityDataObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -71,8 +72,7 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
                 this.entity.setUuid(uUID);
                 return true;
             } else {
-                if (Radon.CONFIG.debug)
-                    Radon.logDebugFormat("Failed to save NBT data %s at %s for %s", nbt, path, this.entity.getClass());
+                Radon.logDebugFormat("Failed to save NBT data %s at %s for %s", nbt, path, this.entity.getClass());
                 return false;
             }
         }
