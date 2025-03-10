@@ -34,7 +34,7 @@ public class Radon implements ModInitializer {
         public boolean nbtOptimizations = true;
         public boolean entitySelectorOptimizations = true;
         public boolean fixBlockAccessForceload = true;
-
+        public boolean concurrentFunctions = false;
     }
 
 }

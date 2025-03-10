@@ -33,7 +33,11 @@
     "entity.VillagerEntityMixin",
     "entity.WanderingTraderEntityMixin",
     "misc.EnderChestInventoryMixin",
-    "misc.PlayerInventoryMixin"
+    "misc.PlayerInventoryMixin",
+    "server.function.CommandFunctionManagerMixin",
+    "server.function.FunctionTimerCallbackMixin",
+    "server.function.TimerMixin",
+    "world.ChunkTicketManagerMixin"
   ],
   "client": [],
   "injectors": {
