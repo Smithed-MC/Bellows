@@ -10,6 +10,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Util;
 import net.minecraft.village.TradeOfferList;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -18,6 +19,7 @@ import java.util.Objects;
 @Mixin(MerchantEntity.class)
 public abstract class MerchantEntityMixin extends PassiveEntityMixin implements ICustomNBTMixin {
 
+    @Shadow @Final private static Logger LOGGER;
     @Shadow TradeOfferList offers;
 
     @Override

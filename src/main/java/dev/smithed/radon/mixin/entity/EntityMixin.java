@@ -36,7 +36,7 @@ import java.util.UUID;
 @Mixin(Entity.class)
 public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
 
-    @Shadow @Final static Logger LOGGER;
+    @Shadow @Final private static Logger LOGGER;
     @Shadow @Final static TrackedData<EntityPose> POSE;
     @Shadow World world;
     @Shadow DataTracker dataTracker;

@@ -26,7 +26,7 @@ import java.util.Optional;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends EntityMixin implements ICustomNBTMixin {
 
-    @Shadow @Final static Logger LOGGER;
+    @Shadow @Final private static Logger LOGGER;
     @Shadow int lastAttackedTime;
     @Shadow Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
     @Shadow Brain<?> brain;

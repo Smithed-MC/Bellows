@@ -19,6 +19,7 @@ import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICustomNBTMixin {
 
+    @Shadow @Final private static Logger LOGGER;
     @Shadow int sleepTimer;
     @Shadow int enchantingTableSeed;
     @Shadow PlayerInventory inventory;

@@ -31,7 +31,7 @@ import java.util.Set;
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implements ICustomNBTMixin {
 
-    @Shadow @Final static Logger LOGGER;
+    @Shadow @Final private static Logger LOGGER;
     @Shadow @Final ServerRecipeBook recipeBook;
     @Shadow Vec3d enteredNetherPos;
     @Shadow boolean seenCredits;

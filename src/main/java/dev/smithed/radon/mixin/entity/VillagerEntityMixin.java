@@ -22,6 +22,7 @@ import java.util.Objects;
 @Mixin(VillagerEntity.class)
 public abstract class VillagerEntityMixin extends MerchantEntityMixin {
 
+    @Shadow @Final private static Logger LOGGER;
     @Shadow int foodLevel;
     @Shadow VillagerGossips gossip;
     @Shadow long lastRestockTime;
