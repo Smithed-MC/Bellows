@@ -95,12 +95,17 @@ public abstract class DataCommandMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;setNbt(Lnet/minecraft/nbt/NbtCompound;)V")
     )
     private static void radon_executeMerge_write(DataCommandObject dataCommandObject, NbtCompound nbtCompound, ServerCommandSource source, DataCommandObject object, NbtCompound nbt) throws CommandSyntaxException {
-        if (nbtCompound.getSize() == nbt.getSize() && Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
+        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
             String[] topLevelNbt = NBTUtils.getTopLevelPaths(nbtCompound);
+            boolean success = true;
             for(String topNbt: topLevelNbt) {
-                mixin.setNbtFiltered(nbtCompound, topNbt);
+                if(!mixin.setNbtFiltered(nbtCompound, topNbt)) {
+                    success = false;
+                    break;
+                }
             }
-            return;
+            if(success)
+                return;
         }
         dataCommandObject.setNbt(nbtCompound);
     }
