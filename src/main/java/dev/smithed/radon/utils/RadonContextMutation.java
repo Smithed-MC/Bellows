@@ -68,7 +68,7 @@ public class RadonContextMutation {
     }
 
     public static void setDataCommandObjectNbt(NbtPathArgumentType.NbtPath nbtPath, DataCommandObject dataCommandObject, NbtCompound nbtCompound) throws CommandSyntaxException {
-        if (nbtCompound.getSize() == 1 && Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
+        if (nbtCompound.getSize() <= 1 && Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataCommandObjectMixin mixin) {
             mixin.setNbtFiltered(nbtCompound, nbtPath.toString());
         } else {
             dataCommandObject.setNbt(nbtCompound);
