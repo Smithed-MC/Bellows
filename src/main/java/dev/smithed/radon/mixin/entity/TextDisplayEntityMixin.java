@@ -27,24 +27,25 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
 
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
-            switch (topLevelNbt) {
-                case "text" -> Text.Serialization.toJsonString(this.getText(), this.getRegistryManager());
-                case "line_width" -> nbt.putInt("line_width", this.getLineWidth());
-                case "background" -> nbt.putInt("background", this.getBackground());
-                case "text_opacity" -> nbt.putByte("text_opacity", this.getTextOpacity());
-                case "shadow", "see_through", "default_background", "alignment" -> {
-                    byte b = this.getDisplayFlags();
-                    writeFlag(b, nbt, "shadow", (byte) 1);
-                    writeFlag(b, nbt, "see_through", (byte) 2);
-                    writeFlag(b, nbt, "default_background", (byte) 4);
-                    DisplayEntity.TextDisplayEntity.TextAlignment.CODEC.encodeStart(NbtOps.INSTANCE, DisplayEntity.TextDisplayEntity.getAlignment(b)).result().ifPresent((nbtElement) -> {
-                        nbt.put("alignment", nbtElement);
-                    });
-                }
-                default -> {
-                    return false;
-                }
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "text" -> Text.Serialization.toJsonString(this.getText(), this.getRegistryManager());
+            case "line_width" -> nbt.putInt("line_width", this.getLineWidth());
+            case "background" -> nbt.putInt("background", this.getBackground());
+            case "text_opacity" -> nbt.putByte("text_opacity", this.getTextOpacity());
+            case "shadow", "see_through", "default_background", "alignment" -> {
+                byte b = this.getDisplayFlags();
+                writeFlag(b, nbt, "shadow", (byte) 1);
+                writeFlag(b, nbt, "see_through", (byte) 2);
+                writeFlag(b, nbt, "default_background", (byte) 4);
+                DisplayEntity.TextDisplayEntity.TextAlignment.CODEC.encodeStart(NbtOps.INSTANCE, DisplayEntity.TextDisplayEntity.getAlignment(b)).result().ifPresent((nbtElement) -> {
+                    nbt.put("alignment", nbtElement);
+                });
+            }
+            default -> {
+                return false;
             }
         }
         return true;
@@ -53,53 +54,50 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         DisplayEntity.TextDisplayEntity entity = ((DisplayEntity.TextDisplayEntity) (Object) this);
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "line_width" -> {
+                if (nbt.contains("line_width", 99)) {
+                    this.setLineWidth(nbt.getInt("line_width"));
+                }
+            }
+            case "text_opacity" -> {
+                if (nbt.contains("text_opacity", 99)) {
+                    this.setTextOpacity(nbt.getByte("text_opacity"));
+                }
+            }
+            case "background" -> {
+                if (nbt.contains("background", 99)) {
+                    this.setBackground(nbt.getInt("background"));
+                }
+            }
+            case "text" -> {
+                if (nbt.contains("text", 8)) {
+                    String string = nbt.getString("text");
 
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
-            switch (topLevelNbt) {
-                case "line_width" -> {
-                    if (nbt.contains("line_width", 99)) {
-                        this.setLineWidth(nbt.getInt("line_width"));
-                    }
-                }
-                case "text_opacity" -> {
-                    if (nbt.contains("text_opacity", 99)) {
-                        this.setTextOpacity(nbt.getByte("text_opacity"));
-                    }
-                }
-                case "background" -> {
-                    if (nbt.contains("background", 99)) {
-                        this.setBackground(nbt.getInt("background"));
-                    }
-                }
-                case "text" -> {
-                    if (nbt.contains("text", 8)) {
-                        String string = nbt.getString("text");
-
-                        try {
-                            Text text = Text.Serialization.fromJson(string, this.getRegistryManager());
-                            if (text != null) {
-                                World var7 = entity.getWorld();
-                                if (var7 instanceof ServerWorld serverWorld) {
-                                    ServerCommandSource serverCommandSource = entity.getCommandSource(serverWorld).withLevel(2);
-                                    Text text2 = Texts.parse(serverCommandSource, text, entity, 0);
-                                    entity.setText(text2);
-                                    break;
-                                }
-                                entity.setText(Text.empty());
+                    try {
+                        Text text = Text.Serialization.fromJson(string, this.getRegistryManager());
+                        if (text != null) {
+                            World var7 = entity.getWorld();
+                            if (var7 instanceof ServerWorld serverWorld) {
+                                ServerCommandSource serverCommandSource = entity.getCommandSource(serverWorld).withLevel(2);
+                                Text text2 = Texts.parse(serverCommandSource, text, entity, 0);
+                                entity.setText(text2);
+                                break;
                             }
-                        } catch (Exception var9) {
-                            Radon.LOGGER.warn("Failed to parse display entity text {}", string, var9);
+                            entity.setText(Text.empty());
                         }
+                    } catch (Exception var9) {
+                        Radon.LOGGER.warn("Failed to parse display entity text {}", string, var9);
                     }
                 }
-                default -> {
-                    return false;
-                }
+            }
+            default -> {
+                return false;
             }
         }
         return true;
-
-
-
     }
 }

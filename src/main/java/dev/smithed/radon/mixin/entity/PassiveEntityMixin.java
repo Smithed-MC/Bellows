@@ -14,13 +14,14 @@ public abstract class PassiveEntityMixin extends MobEntityMixin implements ICust
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         PassiveEntity entity = ((PassiveEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
-            switch (topLevelNbt) {
-                case "Age" -> nbt.putInt("Age", entity.getBreedingAge());
-                case "ForcedAge" -> nbt.putInt("ForcedAge", this.forcedAge);
-                default -> {
-                    return false;
-                }
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "Age" -> nbt.putInt("Age", entity.getBreedingAge());
+            case "ForcedAge" -> nbt.putInt("ForcedAge", this.forcedAge);
+            default -> {
+                return false;
             }
         }
         return true;
@@ -29,14 +30,14 @@ public abstract class PassiveEntityMixin extends MobEntityMixin implements ICust
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         PassiveEntity entity = ((PassiveEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
-
-            switch (topLevelNbt) {
-                case "Age" -> entity.setBreedingAge(nbt.getInt("Age"));
-                case "ForcedAge" -> this.forcedAge = nbt.getInt("ForcedAge");
-                default -> {
-                    return false;
-                }
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "Age" -> entity.setBreedingAge(nbt.getInt("Age"));
+            case "ForcedAge" -> this.forcedAge = nbt.getInt("ForcedAge");
+            default -> {
+                return false;
             }
         }
         return true;

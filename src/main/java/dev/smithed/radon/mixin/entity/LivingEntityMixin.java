@@ -36,7 +36,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         LivingEntity entity = ((LivingEntity)(Object)this);
-
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
         switch (topLevelNbt) {
             case "Health" -> nbt.putFloat("Health", entity.getHealth());
             case "HurtTime" -> nbt.putShort("HurtTime", (short) entity.hurtTime);
@@ -81,7 +83,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         LivingEntity entity = ((LivingEntity)(Object)this);
-
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
         switch (topLevelNbt) {
             case "AbsorptionAmount" -> entity.setAbsorptionAmount(nbt.getFloat("AbsorptionAmount"));
             case "Attributes" -> {

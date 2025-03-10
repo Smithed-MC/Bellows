@@ -21,7 +21,9 @@ public abstract class ItemEntityMixin extends EntityMixin implements ICustomNBTM
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         ItemEntity entity = ((ItemEntity)(Object)this);
-
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
         switch (topLevelNbt) {
             case "Health" -> nbt.putShort("Health", (short)this.health);
             case "Age" -> nbt.putShort("Age", (short)this.itemAge);
@@ -51,28 +53,27 @@ public abstract class ItemEntityMixin extends EntityMixin implements ICustomNBTM
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         ItemEntity entity = ((ItemEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
-
-            switch (topLevelNbt) {
-                case "Health" -> this.health = nbt.getShort("Health");
-                case "Age" -> this.itemAge = nbt.getShort("Age");
-                case "PickupDelay" -> this.pickupDelay = nbt.getShort("PickupDelay");
-                case "Owner" -> this.owner = nbt.getUuid("Owner");
-                case "Thrower" -> this.throwerUuid = nbt.getUuid("Thrower");
-                case "Item" -> {
-                    if (nbt.contains("Item", 10)) {
-                        NbtCompound nbtCompound = nbt.getCompound("Item");
-                        entity.setStack(ItemStack.fromNbt(this.getRegistryManager(), nbtCompound).orElse(ItemStack.EMPTY));
-                    } else {
-                        entity.setStack(ItemStack.EMPTY);
-                    }
-                }
-                default -> {
-                    return false;
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "Health" -> this.health = nbt.getShort("Health");
+            case "Age" -> this.itemAge = nbt.getShort("Age");
+            case "PickupDelay" -> this.pickupDelay = nbt.getShort("PickupDelay");
+            case "Owner" -> this.owner = nbt.getUuid("Owner");
+            case "Thrower" -> this.throwerUuid = nbt.getUuid("Thrower");
+            case "Item" -> {
+                if (nbt.contains("Item", 10)) {
+                    NbtCompound nbtCompound = nbt.getCompound("Item");
+                    entity.setStack(ItemStack.fromNbt(this.getRegistryManager(), nbtCompound).orElse(ItemStack.EMPTY));
+                } else {
+                    entity.setStack(ItemStack.EMPTY);
                 }
             }
+            default -> {
+                return false;
+            }
         }
-
         if (entity.getStack().isEmpty()) {
             entity.discard();
         }

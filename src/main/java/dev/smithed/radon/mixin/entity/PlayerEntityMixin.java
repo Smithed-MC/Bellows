@@ -43,65 +43,65 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin implements ICu
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         PlayerEntity entity = ((PlayerEntity) (Object) this);
-
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
-            switch (topLevelNbt) {
-                case "DataVersion" ->
-                        nbt.putInt("DataVersion", SharedConstants.getGameVersion().getSaveVersion().getId());
-                case "Inventory" -> {
-                    if (this.inventory instanceof IPlayerInventoryExtender mixin)
-                        nbt.put("Inventory", mixin.writeNbtFiltered(new NbtList(), path));
-                    else
-                        nbt.put("Inventory", this.inventory.writeNbt(new NbtList()));
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "DataVersion" ->
+                    nbt.putInt("DataVersion", SharedConstants.getGameVersion().getSaveVersion().getId());
+            case "Inventory" -> {
+                if (this.inventory instanceof IPlayerInventoryExtender mixin)
+                    nbt.put("Inventory", mixin.writeNbtFiltered(new NbtList(), path));
+                else
+                    nbt.put("Inventory", this.inventory.writeNbt(new NbtList()));
+            }
+            case "SelectedItemSlot" -> nbt.putInt("SelectedItemSlot", this.inventory.selectedSlot);
+            case "SleepTimer" -> nbt.putShort("SleepTimer", (short) this.sleepTimer);
+            case "XpP" -> nbt.putFloat("XpP", entity.experienceProgress);
+            case "XpLevel" -> nbt.putInt("XpLevel", entity.experienceLevel);
+            case "XpTotal" -> nbt.putInt("XpTotal", entity.totalExperience);
+            case "XpSeed" -> nbt.putInt("XpSeed", this.enchantingTableSeed);
+            case "Score" -> nbt.putInt("Score", entity.getScore());
+            case "foodLevel", "foodTickTimer", "foodSaturationLevel", "foodExhaustionLevel" ->
+                    this.hungerManager.writeNbt(nbt);
+            case "abilities" -> this.abilities.writeNbt(nbt);
+            case "EnderItems" -> {
+                if (this.enderChestInventory instanceof IEnderChestInventoryExtender mixin)
+                    nbt.put("EnderItems", mixin.toNbtListFiltered(path, this.getRegistryManager()));
+                else
+                    nbt.put("EnderItems", this.enderChestInventory.toNbtList(this.getRegistryManager()));
+            }
+            case "ShoulderEntityLeft" -> {
+                if (!entity.getShoulderEntityLeft().isEmpty()) {
+                    nbt.put("ShoulderEntityLeft", entity.getShoulderEntityLeft());
                 }
-                case "SelectedItemSlot" -> nbt.putInt("SelectedItemSlot", this.inventory.selectedSlot);
-                case "SleepTimer" -> nbt.putShort("SleepTimer", (short) this.sleepTimer);
-                case "XpP" -> nbt.putFloat("XpP", entity.experienceProgress);
-                case "XpLevel" -> nbt.putInt("XpLevel", entity.experienceLevel);
-                case "XpTotal" -> nbt.putInt("XpTotal", entity.totalExperience);
-                case "XpSeed" -> nbt.putInt("XpSeed", this.enchantingTableSeed);
-                case "Score" -> nbt.putInt("Score", entity.getScore());
-                case "foodLevel", "foodTickTimer", "foodSaturationLevel", "foodExhaustionLevel" ->
-                        this.hungerManager.writeNbt(nbt);
-                case "abilities" -> this.abilities.writeNbt(nbt);
-                case "EnderItems" -> {
-                    if (this.enderChestInventory instanceof IEnderChestInventoryExtender mixin)
-                        nbt.put("EnderItems", mixin.toNbtListFiltered(path, this.getRegistryManager()));
-                    else
-                        nbt.put("EnderItems", this.enderChestInventory.toNbtList(this.getRegistryManager()));
+            }
+            case "ShoulderEntityRight" -> {
+                if (!entity.getShoulderEntityRight().isEmpty()) {
+                    nbt.put("ShoulderEntityRight", entity.getShoulderEntityRight());
                 }
-                case "ShoulderEntityLeft" -> {
-                    if (!entity.getShoulderEntityLeft().isEmpty()) {
-                        nbt.put("ShoulderEntityLeft", entity.getShoulderEntityLeft());
-                    }
+            }
+            case "LastDeathLocation" -> entity.getLastDeathPos().flatMap((globalPos) -> {
+                DataResult<NbtElement> var10002 = GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, globalPos);
+                Logger var10003 = Radon.LOGGER;
+                Objects.requireNonNull(var10003);
+                return var10002.resultOrPartial(var10003::error);
+            }).ifPresent((nbtElement) -> {
+                nbt.put("LastDeathLocation", nbtElement);
+            });
+            case "current_explosion_impact_pos" -> {
+                if (this.currentExplosionImpactPos != null) {
+                    nbt.put("current_explosion_impact_pos", Vec3d.CODEC.encodeStart(NbtOps.INSTANCE, this.currentExplosionImpactPos).getOrThrow());
                 }
-                case "ShoulderEntityRight" -> {
-                    if (!entity.getShoulderEntityRight().isEmpty()) {
-                        nbt.put("ShoulderEntityRight", entity.getShoulderEntityRight());
-                    }
-                }
-                case "LastDeathLocation" -> entity.getLastDeathPos().flatMap((globalPos) -> {
-                    DataResult<NbtElement> var10002 = GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, globalPos);
-                    Logger var10003 = Radon.LOGGER;
-                    Objects.requireNonNull(var10003);
-                    return var10002.resultOrPartial(var10003::error);
-                }).ifPresent((nbtElement) -> {
-                    nbt.put("LastDeathLocation", nbtElement);
-                });
-                case "current_explosion_impact_pos" -> {
-                    if (this.currentExplosionImpactPos != null) {
-                        nbt.put("current_explosion_impact_pos", Vec3d.CODEC.encodeStart(NbtOps.INSTANCE, this.currentExplosionImpactPos).getOrThrow());
-                    }
-                }
-                case "ignore_fall_damage_from_current_explosion" -> {
-                    nbt.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentExplosion);
-                }
-                case "current_impulse_context_reset_grace_time" -> {
-                    nbt.putInt("current_impulse_context_reset_grace_time", this.currentExplosionResetGraceTime);
-                }
-                default -> {
-                    return false;
-                }
+            }
+            case "ignore_fall_damage_from_current_explosion" -> {
+                nbt.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentExplosion);
+            }
+            case "current_impulse_context_reset_grace_time" -> {
+                nbt.putInt("current_impulse_context_reset_grace_time", this.currentExplosionResetGraceTime);
+            }
+            default -> {
+                return false;
             }
         }
         return true;

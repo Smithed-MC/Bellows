@@ -23,18 +23,19 @@ public abstract class MerchantEntityMixin extends PassiveEntityMixin implements 
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         MerchantEntity entity = ((MerchantEntity)(Object)this);
-        if(!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
-            switch (topLevelNbt) {
-                case "Offers" -> {
-                    TradeOfferList tradeOfferList = entity.getOffers();
-                    if (!tradeOfferList.isEmpty()) {
-                        nbt.put("Offers", TradeOfferList.CODEC.encodeStart(this.getRegistryManager().getOps(NbtOps.INSTANCE), tradeOfferList).getOrThrow());
-                    }
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "Offers" -> {
+                TradeOfferList tradeOfferList = entity.getOffers();
+                if (!tradeOfferList.isEmpty()) {
+                    nbt.put("Offers", TradeOfferList.CODEC.encodeStart(this.getRegistryManager().getOps(NbtOps.INSTANCE), tradeOfferList).getOrThrow());
                 }
-                case "Inventory" -> entity.writeInventory(nbt, this.getRegistryManager());
-                default -> {
-                    return false;
-                }
+            }
+            case "Inventory" -> entity.writeInventory(nbt, this.getRegistryManager());
+            default -> {
+                return false;
             }
         }
         return true;
@@ -43,23 +44,23 @@ public abstract class MerchantEntityMixin extends PassiveEntityMixin implements 
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         MerchantEntity entity = ((MerchantEntity)(Object)this);
-        if (!super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
-
-            switch (topLevelNbt) {
-                case "Offers" -> {
-                    if (nbt.contains("Offers")) {
-                        DataResult<TradeOfferList> var10000 = TradeOfferList.CODEC.parse(this.getRegistryManager().getOps(NbtOps.INSTANCE), nbt.get("Offers"));
-                        Logger var10002 = LOGGER;
-                        Objects.requireNonNull(var10002);
-                        var10000.resultOrPartial(Util.addPrefix("Failed to load offers: ", var10002::warn)).ifPresent((offers) -> {
-                            this.offers = offers;
-                        });
-                    }
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        switch (topLevelNbt) {
+            case "Offers" -> {
+                if (nbt.contains("Offers")) {
+                    DataResult<TradeOfferList> var10000 = TradeOfferList.CODEC.parse(this.getRegistryManager().getOps(NbtOps.INSTANCE), nbt.get("Offers"));
+                    Logger var10002 = LOGGER;
+                    Objects.requireNonNull(var10002);
+                    var10000.resultOrPartial(Util.addPrefix("Failed to load offers: ", var10002::warn)).ifPresent((offers) -> {
+                        this.offers = offers;
+                    });
                 }
-                case "Inventory" -> entity.readInventory(nbt, this.getRegistryManager());
-                default -> {
-                    return false;
-                }
+            }
+            case "Inventory" -> entity.readInventory(nbt, this.getRegistryManager());
+            default -> {
+                return false;
             }
         }
         return true;
