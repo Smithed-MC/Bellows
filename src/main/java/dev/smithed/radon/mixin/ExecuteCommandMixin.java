@@ -56,7 +56,7 @@ public class ExecuteCommandMixin {
                 NbtCompound nbtCompound = RadonContextMutation.getDataCommandObjectNbt(path, object);
                 int i = requestResult ? returnValue : (successful ? 1 : 0);
                 path.put(nbtCompound, nbtSetter.apply(i));
-                object.setNbt(nbtCompound);
+                RadonContextMutation.setDataCommandObjectNbt(path, object, nbtCompound);
             } catch (CommandSyntaxException var8) {}
         }, ReturnValueConsumer::chain);
     }

@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.*;
 
 @Mixin(NbtPredicate.class)
 public class NbtPredicateMixin {
+
     @Shadow @Final private NbtCompound nbt;
 
     /**
@@ -42,7 +43,8 @@ public class NbtPredicateMixin {
 
         if(nbt == null)
             nbt = NbtPredicate.entityToNbt(entity);
-        Radon.logDebugFormat("retrieved predicate nbt -> %s", nbt);
-        return predicate.test(nbt);
+        boolean result = predicate.test(nbt);
+        Radon.logDebugFormat("Predicate = %s, nbt = %s", result, nbt);
+        return result;
     }
 }
