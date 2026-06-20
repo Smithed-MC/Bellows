@@ -15,7 +15,7 @@
   },
 
   "license": "MIT",
-  "accessWidener": "radon.accesswidener",
+  "accessWidener": "radon.classTweaker",
 
   "environment": "*",
   "entrypoints": {

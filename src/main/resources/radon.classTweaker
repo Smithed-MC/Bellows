@@ -1,4 +1,4 @@
-accessWidener v1 named
+classTweaker v1 official
 
 accessible class net/minecraft/server/commands/data/DataCommands$DataManipulator
 accessible class net/minecraft/server/MinecraftServer$ReloadableResources
