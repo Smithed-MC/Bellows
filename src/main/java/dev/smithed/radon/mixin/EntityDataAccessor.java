@@ -3,47 +3,46 @@ package dev.smithed.radon.mixin;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import dev.smithed.radon.Radon;
-import dev.smithed.radon.mixin_interface.IDataCommandObjectMixin;
+import dev.smithed.radon.mixin_interface.IDataAccessorMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.utils.NBTUtils;
-import net.minecraft.command.EntityDataObject;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.predicate.NbtPredicate;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.UUID;
+import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
-@Mixin(EntityDataObject.class)
-public class EntityDataObjectMixin implements IDataCommandObjectMixin {
+@Mixin(net.minecraft.server.commands.data.EntityDataAccessor.class)
+public class EntityDataAccessor implements IDataAccessorMixin {
 
     @Final @Shadow Entity entity;
-    @Final @Shadow static SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION;
+    @Final @Shadow static SimpleCommandExceptionType ERROR_NO_PLAYERS;
 
     private static final int MIN_ENTITY_NBT_SIZE = 19; //this is how many NBT tags the base entity class contains
 
     @Override
-    public NbtCompound getNbtFiltered(String path) {
-        NbtCompound nbtCompound = null;
+    public CompoundTag getNbtFiltered(String path) {
+        CompoundTag nbtCompound = null;
         if (Radon.CONFIG.nbtOptimizations && this.entity instanceof IEntityMixin mixin) {
             if (path.startsWith("{")) {
-                nbtCompound = new NbtCompound();
+                nbtCompound = new CompoundTag();
                 for (String str : NBTUtils.getTopLevelPaths(path)) {
                     nbtCompound = getFilteredNbt(mixin, nbtCompound, str);
                     if (nbtCompound == null)
                         break;
                 }
             } else {
-                nbtCompound = getFilteredNbt(mixin, new NbtCompound(), path);
+                nbtCompound = getFilteredNbt(mixin, new CompoundTag(), path);
             }
         }
         if (nbtCompound == null) {
             Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s'", path, this.entity.getClass());
-            nbtCompound = NbtPredicate.entityToNbt(this.entity);
+            nbtCompound = NbtPredicate.getEntityTagToCompare(this.entity);
             Radon.logDebugFormat("Retrieved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
         } else {
             Radon.logDebugFormat("Retrieved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
@@ -51,31 +50,31 @@ public class EntityDataObjectMixin implements IDataCommandObjectMixin {
         return nbtCompound;
     }
 
-    private NbtCompound getFilteredNbt(IEntityMixin mixin, NbtCompound nbtCompound, String path) {
-        if (this.entity instanceof PlayerEntity player && path.startsWith("SelectedItem")) {
-            ItemStack itemStack = player.getInventory().getMainHandStack();
+    private CompoundTag getFilteredNbt(IEntityMixin mixin, CompoundTag nbtCompound, String path) {
+        if (this.entity instanceof Player player && path.startsWith("SelectedItem")) {
+            ItemStack itemStack = player.getInventory().getSelected();
             if (!itemStack.isEmpty()) {
-                nbtCompound.put("SelectedItem", itemStack.toNbt(player.getRegistryManager()));
+                nbtCompound.put("SelectedItem", itemStack.save(player.registryAccess()));
             }
             return nbtCompound;
         } else {
-            return mixin.writeNbtFiltered(nbtCompound, path);
+            return mixin.saveWithoutIdFiltered(nbtCompound, path);
         }
     }
 
     @Override
-    public boolean setNbtFiltered(NbtCompound nbt, String path) throws CommandSyntaxException {
-        if (this.entity instanceof PlayerEntity) {
-            throw INVALID_ENTITY_EXCEPTION.create();
+    public boolean setNbtFiltered(CompoundTag nbt, String path) throws CommandSyntaxException {
+        if (this.entity instanceof Player) {
+            throw ERROR_NO_PLAYERS.create();
         } else {
-            UUID uUID = this.entity.getUuid();
-            if (this.entity instanceof IEntityMixin mixin && mixin.readNbtFiltered(nbt, path)) {
+            UUID uUID = this.entity.getUUID();
+            if (this.entity instanceof IEntityMixin mixin && mixin.loadFiltered(nbt, path)) {
                 Radon.logDebugFormat("Saved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbt);
-                this.entity.setUuid(uUID);
+                this.entity.setUUID(uUID);
                 return true;
             }
-            if(nbt.getSize() >= MIN_ENTITY_NBT_SIZE) {
-                this.entity.readNbt(nbt);
+            if(nbt.size() >= MIN_ENTITY_NBT_SIZE) {
+                this.entity.load(nbt);
                 Radon.logDebugFormat("Saved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbt);
             } else {
                 Radon.logDebugFormat("Failed to save NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbt);

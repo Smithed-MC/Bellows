@@ -3,14 +3,14 @@ package dev.smithed.radon.mixin;
 import com.mojang.datafixers.DataFixer;
 import dev.smithed.radon.mixin_interface.IMinecraftServerExtender;
 import dev.smithed.radon.utils.NBTUtils;
-import net.minecraft.registry.Registries;
-import net.minecraft.resource.*;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.*;
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.util.ApiServices;
-import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.minecraft.world.SaveProperties;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.util.thread.ReentrantBlockableEventLoop;
+import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.WorldData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,17 +24,17 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<ServerTask> implements CommandOutput, AutoCloseable, IMinecraftServerExtender {
+public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<TickTask> implements CommandSource, AutoCloseable, IMinecraftServerExtender {
 
     public MinecraftServerMixin(String string) {
         super(string);
     }
 
     @Shadow
-    private MinecraftServer.ResourceManagerHolder resourceManagerHolder;
+    private MinecraftServer.ReloadableResources resources;
     @Shadow
     @Final
-    protected SaveProperties saveProperties;
+    protected WorldData worldData;
 
     private final Map<String, Set<String>> entityTypes = new HashMap<>();
 
@@ -43,10 +43,10 @@ public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<Serve
      * Injects into constructor to build entityTypes map on load
      */
     @Inject(
-            method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorage$Session;Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/server/SaveLoader;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/util/ApiServices;Lnet/minecraft/server/WorldGenerationProgressListenerFactory;)V",
+            method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;Lnet/minecraft/server/level/progress/ChunkProgressListenerFactory;)V",
             at = @At("TAIL")
     )
-    private void radon_init(Thread serverThread, LevelStorage.Session session, ResourcePackManager dataPackManager, SaveLoader saveLoader, Proxy proxy, DataFixer dataFixer, ApiServices apiServices, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo cr) {
+    private void radon_init(Thread serverThread, LevelStorageSource.LevelStorageAccess session, PackRepository dataPackManager, WorldStem saveLoader, Proxy proxy, DataFixer dataFixer, Services apiServices, ChunkProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo cr) {
         this.constructEntityTypes();
     }
 
@@ -64,10 +64,10 @@ public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<Serve
 
     private void constructEntityTypes() {
         this.entityTypes.clear();
-        Registries.ENTITY_TYPE.getTags().forEach(tag -> {
+        BuiltInRegistries.ENTITY_TYPE.listTags().forEach(tag -> {
             final Set<String> entries = new HashSet<>();
             tag.forEach(item -> entries.add(NBTUtils.translationToTypeName(item.value().toString())));
-            this.entityTypes.put(tag.getTag().id().toString(), entries);
+            this.entityTypes.put(tag.key().location().toString(), entries);
         });
     }
 

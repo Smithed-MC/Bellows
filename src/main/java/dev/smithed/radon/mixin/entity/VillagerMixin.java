@@ -2,16 +2,16 @@ package dev.smithed.radon.mixin.entity;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.village.TradeOfferList;
-import net.minecraft.village.VillagerData;
-import net.minecraft.village.VillagerGossips;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.gossip.GossipContainer;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerData;
+import net.minecraft.world.item.trading.MerchantOffers;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,39 +19,39 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Objects;
 
-@Mixin(VillagerEntity.class)
-public abstract class VillagerEntityMixin extends MerchantEntityMixin {
+@Mixin(Villager.class)
+public abstract class VillagerMixin extends MerchantMixin {
 
     @Shadow @Final private static Logger LOGGER;
     @Shadow int foodLevel;
-    @Shadow VillagerGossips gossip;
-    @Shadow long lastRestockTime;
-    @Shadow int restocksToday;
-    @Shadow int experience;
-    @Shadow boolean natural;
+    @Shadow GossipContainer gossips;
+    @Shadow long lastRestockGameTime;
+    @Shadow int numberOfRestocksToday;
+    @Shadow int villagerXp;
+    @Shadow boolean assignProfessionWhenSpawned;
     @Shadow long lastGossipDecayTime;
-    @Shadow @Final static TrackedData<VillagerData> VILLAGER_DATA;
+    @Shadow @Final static EntityDataAccessor<VillagerData> DATA_VILLAGER_DATA;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        VillagerEntity entity = ((VillagerEntity)(Object)this);
+    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
+        Villager entity = ((Villager)(Object)this);
         if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }
         switch (topLevelNbt) {
             case "FoodLevel" -> nbt.putByte("FoodLevel", (byte) this.foodLevel);
-            case "Gossips" -> nbt.put("Gossips", this.gossip.serialize(NbtOps.INSTANCE));
-            case "Xp" -> nbt.putInt("Xp", this.experience);
-            case "LastRestock" -> nbt.putLong("LastRestock", this.lastRestockTime);
+            case "Gossips" -> nbt.put("Gossips", this.gossips.store(NbtOps.INSTANCE));
+            case "Xp" -> nbt.putInt("Xp", this.villagerXp);
+            case "LastRestock" -> nbt.putLong("LastRestock", this.lastRestockGameTime);
             case "LastGossipDecay" -> nbt.putLong("LastGossipDecay", this.lastGossipDecayTime);
-            case "RestocksToday" -> nbt.putInt("RestocksToday", this.restocksToday);
+            case "RestocksToday" -> nbt.putInt("RestocksToday", this.numberOfRestocksToday);
             case "AssignProfessionWhenSpawned" -> {
-                if (this.natural) {
+                if (this.assignProfessionWhenSpawned) {
                     nbt.putBoolean("AssignProfessionWhenSpawned", true);
                 }
             }
             case "VillagerData" -> {
-                DataResult<NbtElement> var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, entity.getVillagerData());
+                DataResult<Tag> var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, entity.getVillagerData());
                 Logger var10001 = LOGGER;
                 Objects.requireNonNull(var10001);
                 var10000.resultOrPartial(var10001::error).ifPresent((nbtElement) -> {
@@ -66,15 +66,15 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        VillagerEntity entity = ((VillagerEntity)(Object)this);
+    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
+        Villager entity = ((Villager)(Object)this);
         if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }
         switch (topLevelNbt) {
             case "Offers" -> {
                 if (nbt.contains("Offers", 10)) {
-                    var result = TradeOfferList.CODEC.parse(this.getRegistryManager().getOps(NbtOps.INSTANCE), nbt.get("Offers"));
+                    var result = MerchantOffers.CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), nbt.get("Offers"));
 
                     result.ifSuccess(offers -> this.offers = offers);
                 }
@@ -84,24 +84,24 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
                     this.foodLevel = nbt.getByte("FoodLevel");
             }
             case "Gossips" -> {
-                NbtList nbtList = nbt.getList("Gossips", 10);
-                this.gossip.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbtList));
+                ListTag nbtList = nbt.getList("Gossips", 10);
+                this.gossips.update(new Dynamic<>(NbtOps.INSTANCE, nbtList));
             }
             case "Xp" -> {
                 if (nbt.contains("Xp", 3))
-                    this.experience = nbt.getInt("Xp");
+                    this.villagerXp = nbt.getInt("Xp");
             }
-            case "LastRestock" -> this.lastRestockTime = nbt.getLong("LastRestock");
+            case "LastRestock" -> this.lastRestockGameTime = nbt.getLong("LastRestock");
             case "LastGossipDecay" -> this.lastGossipDecayTime = nbt.getLong("LastGossipDecay");
-            case "RestocksToday" -> this.restocksToday = nbt.getInt("RestocksToday");
-            case "AssignProfessionWhenSpawned" -> this.natural = nbt.getBoolean("AssignProfessionWhenSpawned");
+            case "RestocksToday" -> this.numberOfRestocksToday = nbt.getInt("RestocksToday");
+            case "AssignProfessionWhenSpawned" -> this.assignProfessionWhenSpawned = nbt.getBoolean("AssignProfessionWhenSpawned");
             case "VillagerData" -> {
                 if (nbt.contains("VillagerData", 10)) {
                     DataResult<VillagerData> var10000 = VillagerData.CODEC.parse(NbtOps.INSTANCE, nbt.get("VillagerData"));
                     Logger var10001 = LOGGER;
                     Objects.requireNonNull(var10001);
                     var10000.resultOrPartial(var10001::error).ifPresent((villagerData) -> {
-                        this.dataTracker.set(VILLAGER_DATA, villagerData);
+                        this.entityData.set(DATA_VILLAGER_DATA, villagerData);
                     });
                 }
             }
@@ -109,8 +109,8 @@ public abstract class VillagerEntityMixin extends MerchantEntityMixin {
                 return false;
             }
         }
-        if (this.world instanceof ServerWorld)
-            entity.reinitializeBrain((ServerWorld)this.world);
+        if (this.level instanceof ServerLevel)
+            entity.refreshBrain((ServerLevel)this.level);
         entity.setCanPickUpLoot(true);
         return true;
     }

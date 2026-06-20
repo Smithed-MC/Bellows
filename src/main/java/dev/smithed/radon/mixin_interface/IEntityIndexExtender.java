@@ -1,18 +1,16 @@
 package dev.smithed.radon.mixin_interface;
 
 import dev.smithed.radon.utils.SelectorContainer;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.function.LazyIterationConsumer;
-import net.minecraft.world.entity.EntityLike;
+import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.world.level.entity.EntityAccess;
+import net.minecraft.world.level.entity.EntityTypeTest;
 
-import java.util.Map;
+public interface IEntityIndexExtender<T extends EntityAccess> {
 
-public interface IEntityIndexExtender<T extends EntityLike> {
+    void addEntityToTagMap(String tag, EntityAccess entity);
 
-    void addEntityToTagMap(String tag, EntityLike entity);
+    void removeEntityFromTagMap(String tag, EntityAccess entity);
 
-    void removeEntityFromTagMap(String tag, EntityLike entity);
-
-    <U extends T> void forEachTaggedEntity(TypeFilter<T, U> filter, SelectorContainer container, LazyIterationConsumer<U> action);
+    <U extends T> void forEachTaggedEntity(EntityTypeTest<T, U> filter, SelectorContainer container, AbortableIterationConsumer<U> action);
 
 }

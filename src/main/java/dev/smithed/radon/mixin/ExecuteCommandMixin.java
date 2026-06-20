@@ -3,20 +3,6 @@ package dev.smithed.radon.mixin;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import dev.smithed.radon.utils.RadonContextMutation;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.DataCommandObject;
-import net.minecraft.command.ReturnValueConsumer;
-import net.minecraft.command.argument.NbtPathArgumentType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.server.command.ExecuteCommand;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -26,21 +12,35 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.OptionalInt;
 import java.util.function.IntFunction;
+import net.minecraft.commands.CommandResultCallback;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.commands.ExecuteCommand;
+import net.minecraft.server.commands.data.DataAccessor;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 @Mixin(ExecuteCommand.class)
 public class ExecuteCommandMixin {
 
-    @Shadow @Final static Dynamic2CommandExceptionType BLOCKS_TOOBIG_EXCEPTION;
+    @Shadow @Final static Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE;
 
     /**
      * @author ImCoolYeah105
      * Redirects countPathMatches call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      */
     @Redirect(
-            method = "countPathMatches(Lnet/minecraft/command/DataCommandObject;Lnet/minecraft/command/argument/NbtPathArgumentType$NbtPath;)I",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/command/DataCommandObject;getNbt()Lnet/minecraft/nbt/NbtCompound;")
+            method = "checkMatchingData(Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
-    private static NbtCompound radon_countPathMatches(DataCommandObject object, DataCommandObject object2, NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
+    private static CompoundTag radon_countPathMatches(DataAccessor object, DataAccessor object2, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
         return RadonContextMutation.getDataCommandObjectNbt(path, object);
     }
 
@@ -50,15 +50,15 @@ public class ExecuteCommandMixin {
      * Redirects executeStoreData call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      */
     @Overwrite
-    private static ServerCommandSource executeStoreData(ServerCommandSource source, DataCommandObject object, NbtPathArgumentType.NbtPath path, IntFunction<NbtElement> nbtSetter, boolean requestResult) {
-        return source.mergeReturnValueConsumers((successful, returnValue) -> {
+    private static CommandSourceStack storeData(CommandSourceStack source, DataAccessor object, NbtPathArgument.NbtPath path, IntFunction<Tag> nbtSetter, boolean requestResult) {
+        return source.withCallback((successful, returnValue) -> {
             try {
-                NbtCompound nbtCompound = RadonContextMutation.getDataCommandObjectNbt(path, object);
+                CompoundTag nbtCompound = RadonContextMutation.getDataCommandObjectNbt(path, object);
                 int i = requestResult ? returnValue : (successful ? 1 : 0);
-                path.put(nbtCompound, nbtSetter.apply(i));
+                path.set(nbtCompound, nbtSetter.apply(i));
                 RadonContextMutation.setDataCommandObjectNbt(path, object, nbtCompound);
             } catch (CommandSyntaxException var8) {}
-        }, ReturnValueConsumer::chain);
+        }, CommandResultCallback::chain);
     }
 
     /**
@@ -67,24 +67,24 @@ public class ExecuteCommandMixin {
      * Redirects executeStoreData call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      */
     @Overwrite
-    private static OptionalInt testBlocksCondition(ServerWorld world, BlockPos start, BlockPos end, BlockPos destination, boolean masked) throws CommandSyntaxException {
-        BlockBox blockBox = BlockBox.create(start, end);
-        BlockBox blockBox2 = BlockBox.create(destination, destination.add(blockBox.getDimensions()));
-        BlockPos blockPos = new BlockPos(blockBox2.getMinX() - blockBox.getMinX(), blockBox2.getMinY() - blockBox.getMinY(), blockBox2.getMinZ() - blockBox.getMinZ());
-        int i = blockBox.getBlockCountX() * blockBox.getBlockCountY() * blockBox.getBlockCountZ();
+    private static OptionalInt checkRegions(ServerLevel world, BlockPos start, BlockPos end, BlockPos destination, boolean masked) throws CommandSyntaxException {
+        BoundingBox blockBox = BoundingBox.fromCorners(start, end);
+        BoundingBox blockBox2 = BoundingBox.fromCorners(destination, destination.offset(blockBox.getLength()));
+        BlockPos blockPos = new BlockPos(blockBox2.minX() - blockBox.minX(), blockBox2.minY() - blockBox.minY(), blockBox2.minZ() - blockBox.minZ());
+        int i = blockBox.getXSpan() * blockBox.getYSpan() * blockBox.getZSpan();
         if (i > 32768) {
-            throw BLOCKS_TOOBIG_EXCEPTION.create(32768, i);
+            throw ERROR_AREA_TOO_LARGE.create(32768, i);
         } else {
-            DynamicRegistryManager dynamicRegistryManager = world.getRegistryManager();
+            RegistryAccess dynamicRegistryManager = world.registryAccess();
             int j = 0;
 
-            for(int k = blockBox.getMinZ(); k <= blockBox.getMaxZ(); ++k) {
-                for(int l = blockBox.getMinY(); l <= blockBox.getMaxY(); ++l) {
-                    for(int m = blockBox.getMinX(); m <= blockBox.getMaxX(); ++m) {
+            for(int k = blockBox.minZ(); k <= blockBox.maxZ(); ++k) {
+                for(int l = blockBox.minY(); l <= blockBox.maxY(); ++l) {
+                    for(int m = blockBox.minX(); m <= blockBox.maxX(); ++m) {
                         BlockPos blockPos2 = new BlockPos(m, l, k);
-                        BlockPos blockPos3 = blockPos2.add(blockPos);
+                        BlockPos blockPos3 = blockPos2.offset(blockPos);
                         BlockState blockState = RadonContextMutation.getBlockState(world, blockPos2); //world.getBlockState(blockPos2);
-                        if (!masked || !blockState.isOf(Blocks.AIR)) {
+                        if (!masked || !blockState.is(Blocks.AIR)) {
                             if (blockState != RadonContextMutation.getBlockState(world, blockPos3)) { //if (blockState != world.getBlockState(blockPos3)) {
                                 return OptionalInt.empty();
                             }
@@ -100,12 +100,12 @@ public class ExecuteCommandMixin {
                                     return OptionalInt.empty();
                                 }
 
-                                if (!blockEntity.getComponents().equals(blockEntity2.getComponents())) {
+                                if (!blockEntity.components().equals(blockEntity2.components())) {
                                     return OptionalInt.empty();
                                 }
 
-                                NbtCompound nbtCompound = blockEntity.createComponentlessNbt(dynamicRegistryManager);
-                                NbtCompound nbtCompound2 = blockEntity2.createComponentlessNbt(dynamicRegistryManager);
+                                CompoundTag nbtCompound = blockEntity.saveCustomOnly(dynamicRegistryManager);
+                                CompoundTag nbtCompound2 = blockEntity2.saveCustomOnly(dynamicRegistryManager);
                                 if (!nbtCompound.equals(nbtCompound2)) {
                                     return OptionalInt.empty();
                                 }

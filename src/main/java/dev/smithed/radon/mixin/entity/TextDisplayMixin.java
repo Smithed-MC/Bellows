@@ -1,46 +1,46 @@
 package dev.smithed.radon.mixin.entity;
 
 import dev.smithed.radon.Radon;
-import net.minecraft.entity.decoration.DisplayEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(DisplayEntity.TextDisplayEntity.class)
-public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
+@Mixin(Display.TextDisplay.class)
+public abstract class TextDisplayMixin extends DisplayEntityMixin {
 
-    @Shadow abstract int getBackground();
+    @Shadow abstract int getBackgroundColor();
     @Shadow abstract byte getTextOpacity();
-    @Shadow abstract Text getText();
+    @Shadow abstract Component getText();
     @Shadow abstract int getLineWidth();
-    @Shadow abstract  byte getDisplayFlags();
+    @Shadow abstract  byte getFlags();
     @Shadow abstract void setLineWidth(int lineWidth);
     @Shadow abstract void setTextOpacity(byte textOpacity);
-    @Shadow abstract void setBackground(int background);
-    @Shadow static void writeFlag(byte flags, NbtCompound nbt, String nbtKey, byte flag) {}
+    @Shadow abstract void setBackgroundColor(int background);
+    @Shadow static byte loadFlag(byte flags, CompoundTag nbt, String nbtKey, byte flag) {return 0;}
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
         if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }
         switch (topLevelNbt) {
-            case "text" -> Text.Serialization.toJsonString(this.getText(), this.getRegistryManager());
+            case "text" -> Component.Serializer.toJson(this.getText(), this.registryAccess());
             case "line_width" -> nbt.putInt("line_width", this.getLineWidth());
-            case "background" -> nbt.putInt("background", this.getBackground());
+            case "background" -> nbt.putInt("background", this.getBackgroundColor());
             case "text_opacity" -> nbt.putByte("text_opacity", this.getTextOpacity());
             case "shadow", "see_through", "default_background", "alignment" -> {
-                byte b = this.getDisplayFlags();
-                writeFlag(b, nbt, "shadow", (byte) 1);
-                writeFlag(b, nbt, "see_through", (byte) 2);
-                writeFlag(b, nbt, "default_background", (byte) 4);
-                DisplayEntity.TextDisplayEntity.TextAlignment.CODEC.encodeStart(NbtOps.INSTANCE, DisplayEntity.TextDisplayEntity.getAlignment(b)).result().ifPresent((nbtElement) -> {
+                byte b = this.getFlags();
+                loadFlag(b, nbt, "shadow", (byte) 1);
+                loadFlag(b, nbt, "see_through", (byte) 2);
+                loadFlag(b, nbt, "default_background", (byte) 4);
+                Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, Display.TextDisplay.getAlign(b)).result().ifPresent((nbtElement) -> {
                     nbt.put("alignment", nbtElement);
                 });
             }
@@ -52,8 +52,8 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        DisplayEntity.TextDisplayEntity entity = ((DisplayEntity.TextDisplayEntity) (Object) this);
+    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
+        Display.TextDisplay entity = ((Display.TextDisplay) (Object) this);
         if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }
@@ -70,7 +70,7 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
             }
             case "background" -> {
                 if (nbt.contains("background", 99)) {
-                    this.setBackground(nbt.getInt("background"));
+                    this.setBackgroundColor(nbt.getInt("background"));
                 }
             }
             case "text" -> {
@@ -78,16 +78,16 @@ public abstract class TextDisplayEntityMixin extends DisplayEntityMixin {
                     String string = nbt.getString("text");
 
                     try {
-                        Text text = Text.Serialization.fromJson(string, this.getRegistryManager());
+                        Component text = Component.Serializer.fromJson(string, this.registryAccess());
                         if (text != null) {
-                            World var7 = entity.getWorld();
-                            if (var7 instanceof ServerWorld serverWorld) {
-                                ServerCommandSource serverCommandSource = entity.getCommandSource(serverWorld).withLevel(2);
-                                Text text2 = Texts.parse(serverCommandSource, text, entity, 0);
+                            Level var7 = entity.level();
+                            if (var7 instanceof ServerLevel serverWorld) {
+                                CommandSourceStack serverCommandSource = entity.createCommandSourceStackForNameResolution(serverWorld).withPermission(2);
+                                Component text2 = ComponentUtils.updateForEntity(serverCommandSource, text, entity, 0);
                                 entity.setText(text2);
                                 break;
                             }
-                            entity.setText(Text.empty());
+                            entity.setText(Component.empty());
                         }
                     } catch (Exception var9) {
                         Radon.LOGGER.warn("Failed to parse display entity text {}", string, var9);

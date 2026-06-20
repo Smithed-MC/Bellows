@@ -1,17 +1,17 @@
 package dev.smithed.radon.mixin.entity;
 
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
-import net.minecraft.entity.MarkerEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Marker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(MarkerEntity.class)
-public abstract class MarkerEntityMixin extends EntityMixin implements ICustomNBTMixin {
-    @Shadow NbtCompound data;
+@Mixin(Marker.class)
+public abstract class MarkerMixin extends EntityMixin implements ICustomNBTMixin {
+    @Shadow CompoundTag data;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
         if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }
@@ -24,7 +24,7 @@ public abstract class MarkerEntityMixin extends EntityMixin implements ICustomNB
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
+    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
         if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }

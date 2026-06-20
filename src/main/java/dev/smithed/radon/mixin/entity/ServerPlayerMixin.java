@@ -3,21 +3,21 @@ package dev.smithed.radon.mixin.entity;
 import com.mojang.serialization.DataResult;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
-import net.minecraft.block.entity.SculkShriekerWarningManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerRecipeBook;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.World;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.ServerRecipeBook;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
+import net.minecraft.world.entity.projectile.ThrownEnderpearl;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -28,31 +28,31 @@ import java.util.Objects;
 import java.util.Set;
 
 
-@Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implements ICustomNBTMixin {
+@Mixin(ServerPlayer.class)
+public abstract class ServerPlayerMixin extends PlayerMixin implements ICustomNBTMixin {
 
     @Shadow @Final private static Logger LOGGER;
     @Shadow @Final ServerRecipeBook recipeBook;
-    @Shadow Vec3d enteredNetherPos;
+    @Shadow Vec3 enteredNetherPosition;
     @Shadow boolean seenCredits;
-    @Shadow BlockPos spawnPointPosition;
-    @Shadow boolean spawnForced;
-    @Shadow float spawnAngle;
-    @Shadow RegistryKey<World> spawnPointDimension;
-    @Shadow SculkShriekerWarningManager sculkShriekerWarningManager;
+    @Shadow BlockPos respawnPosition;
+    @Shadow boolean respawnForced;
+    @Shadow float respawnAngle;
+    @Shadow ResourceKey<Level> respawnDimension;
+    @Shadow WardenSpawnTracker wardenSpawnTracker;
     @Shadow boolean spawnExtraParticlesOnFall;
-    @Nullable @Shadow BlockPos startRaidPos;
-    @Shadow @Final Set<EnderPearlEntity> enderPearls;
+    @Nullable @Shadow BlockPos raidOmenPosition;
+    @Shadow @Final Set<ThrownEnderpearl> enderPearls;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        ServerPlayerEntity entity = ((ServerPlayerEntity) (Object) this);
+    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
+        ServerPlayer entity = ((ServerPlayer) (Object) this);
         if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
             return true;
         }
         switch (topLevelNbt) {
             case "warden_spawn_tracker":
-                DataResult<NbtElement> var10000 = SculkShriekerWarningManager.CODEC.encodeStart(NbtOps.INSTANCE, this.sculkShriekerWarningManager);
+                DataResult<Tag> var10000 = WardenSpawnTracker.CODEC.encodeStart(NbtOps.INSTANCE, this.wardenSpawnTracker);
                 Logger var10001 = LOGGER;
                 Objects.requireNonNull(var10001);
                 var10000.resultOrPartial(var10001::error).ifPresent((encoded) -> {
@@ -60,10 +60,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                 });
                 break;
             case "playerGameType":
-                nbt.putInt("playerGameType", entity.interactionManager.getGameMode().getId());
+                nbt.putInt("playerGameType", entity.gameMode.getGameModeForPlayer().getId());
                 break;
             case "previousPlayerGameType":
-                GameMode gameMode = entity.interactionManager.getPreviousGameMode();
+                GameType gameMode = entity.gameMode.getPreviousGameModeForPlayer();
                 if (gameMode != null)
                     nbt.putInt("previousPlayerGameType", gameMode.getId());
                 break;
@@ -71,22 +71,22 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                 nbt.putBoolean("seenCredits", this.seenCredits);
                 break;
             case "enteredNetherPosition":
-                if (this.enteredNetherPos != null) {
-                    NbtCompound nbtCompound = new NbtCompound();
-                    nbtCompound.putDouble("x", this.enteredNetherPos.x);
-                    nbtCompound.putDouble("y", this.enteredNetherPos.y);
-                    nbtCompound.putDouble("z", this.enteredNetherPos.z);
+                if (this.enteredNetherPosition != null) {
+                    CompoundTag nbtCompound = new CompoundTag();
+                    nbtCompound.putDouble("x", this.enteredNetherPosition.x);
+                    nbtCompound.putDouble("y", this.enteredNetherPosition.y);
+                    nbtCompound.putDouble("z", this.enteredNetherPosition.z);
                     nbt.put("enteredNetherPosition", nbtCompound);
                 }
                 break;
             case "RootVehicle":
                 Entity vehicleEntity = entity.getRootVehicle();
                 Entity entity2 = entity.getVehicle();
-                if (entity2 != null && vehicleEntity != entity && entity.hasPlayerRider()) {
-                    NbtCompound nbtCompound2 = new NbtCompound();
-                    NbtCompound nbtCompound3 = new NbtCompound();
-                    entity.saveNbt(nbtCompound3);
-                    nbtCompound2.putUuid("Attach", entity2.getUuid());
+                if (entity2 != null && vehicleEntity != entity && entity.hasExactlyOnePlayerPassenger()) {
+                    CompoundTag nbtCompound2 = new CompoundTag();
+                    CompoundTag nbtCompound3 = new CompoundTag();
+                    entity.save(nbtCompound3);
+                    nbtCompound2.putUUID("Attach", entity2.getUUID());
                     nbtCompound2.put("Entity", nbtCompound3);
                     nbt.put("RootVehicle", nbtCompound2);
                 }
@@ -95,30 +95,30 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                 nbt.put("recipeBook", this.recipeBook.toNbt());
                 break;
             case "Dimension":
-                nbt.putString("Dimension", entity.getWorld().getRegistryKey().getValue().toString());
+                nbt.putString("Dimension", entity.level().dimension().location().toString());
                 break;
             case "SpawnX":
-                if (this.spawnPointPosition != null)
-                    nbt.putInt("SpawnX", this.spawnPointPosition.getX());
+                if (this.respawnPosition != null)
+                    nbt.putInt("SpawnX", this.respawnPosition.getX());
                 break;
             case "SpawnY":
-                if (this.spawnPointPosition != null)
-                    nbt.putInt("SpawnY", this.spawnPointPosition.getY());
+                if (this.respawnPosition != null)
+                    nbt.putInt("SpawnY", this.respawnPosition.getY());
             case "SpawnZ":
-                if (this.spawnPointPosition != null)
-                    nbt.putInt("SpawnZ", this.spawnPointPosition.getZ());
+                if (this.respawnPosition != null)
+                    nbt.putInt("SpawnZ", this.respawnPosition.getZ());
                 break;
             case "SpawnForced":
-                if (this.spawnPointPosition != null)
-                    nbt.putBoolean("SpawnForced", this.spawnForced);
+                if (this.respawnPosition != null)
+                    nbt.putBoolean("SpawnForced", this.respawnForced);
                 break;
             case "SpawnAngle":
-                if (this.spawnPointPosition != null)
-                    nbt.putFloat("SpawnAngle", this.spawnAngle);
+                if (this.respawnPosition != null)
+                    nbt.putFloat("SpawnAngle", this.respawnAngle);
                 break;
             case "SpawnDimension":
-                if (this.spawnPointPosition != null) {
-                    DataResult<NbtElement> var10002 = Identifier.CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPointDimension.getValue());
+                if (this.respawnPosition != null) {
+                    DataResult<Tag> var10002 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, this.respawnDimension.location());
                     Logger var10003 = Radon.LOGGER;
                     Objects.requireNonNull(var10003);
                     var10002.resultOrPartial(var10003::error).ifPresent((nbtElement) -> {
@@ -130,8 +130,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                 nbt.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
                 break;
             case "raid_omen_position":
-                if (this.startRaidPos != null) {
-                    var10000 = BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, this.startRaidPos);
+                if (this.raidOmenPosition != null) {
+                    var10000 = BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, this.raidOmenPosition);
                     var10001 = LOGGER;
                     Objects.requireNonNull(var10001);
                     var10000.resultOrPartial(var10001::error).ifPresent((encoded) -> {
@@ -141,15 +141,15 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin implemen
                 break;
             case "ender_pearls":
                 if (!this.enderPearls.isEmpty()) {
-                    NbtList nbtList = new NbtList();
+                    ListTag nbtList = new ListTag();
 
-                    for (EnderPearlEntity enderPearlEntity : this.enderPearls) {
+                    for (ThrownEnderpearl enderPearlEntity : this.enderPearls) {
                         if (enderPearlEntity.isRemoved()) {
                             LOGGER.warn("Trying to save removed ender pearl, skipping");
                         } else {
-                            NbtCompound nbtCompound = new NbtCompound();
-                            enderPearlEntity.saveNbt(nbtCompound);
-                            DataResult<NbtElement> var10004 = Identifier.CODEC.encodeStart(NbtOps.INSTANCE, enderPearlEntity.getWorld().getRegistryKey().getValue());
+                            CompoundTag nbtCompound = new CompoundTag();
+                            enderPearlEntity.save(nbtCompound);
+                            DataResult<Tag> var10004 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, enderPearlEntity.level().dimension().location());
                             Logger var10005 = LOGGER;
                             Objects.requireNonNull(var10005);
                             var10004.resultOrPartial(var10005::error).ifPresent((dimension) -> {

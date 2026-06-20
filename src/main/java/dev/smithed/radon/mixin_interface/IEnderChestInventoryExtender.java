@@ -1,10 +1,10 @@
 package dev.smithed.radon.mixin_interface;
 
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.ListTag;
 
 public interface IEnderChestInventoryExtender {
 
-    NbtList toNbtListFiltered(String nbt, RegistryWrapper.WrapperLookup registries);
+    ListTag toNbtListFiltered(String nbt, HolderLookup.Provider registries);
 
 }

@@ -1,9 +1,9 @@
 package dev.smithed.radon.mixin_interface;
 
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.ListTag;
 
 public interface IPlayerInventoryExtender {
 
-    NbtList writeNbtFiltered(NbtList nbtList, String nbt);
+    ListTag saveWithoutIdFiltered(ListTag nbtList, String nbt);
 
 }

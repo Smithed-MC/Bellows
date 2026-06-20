@@ -1,8 +1,7 @@
 package dev.smithed.radon.utils;
 
-import net.minecraft.nbt.NbtCompound;
-
 import java.util.Set;
+import net.minecraft.nbt.CompoundTag;
 
 public class NBTUtils {
 
@@ -41,10 +40,10 @@ public class NBTUtils {
         return nbt.split(":(\\[(.*?)\\])*(\\{(.*?)\\})*(.*?),");
     }
 
-    public static String[] getTopLevelPaths(NbtCompound nbt) {
-        Set<String> set = nbt.getKeys();
+    public static String[] getTopLevelPaths(CompoundTag nbt) {
+        Set<String> set = nbt.getAllKeys();
         String[] strings = new String[set.size()];
-        return nbt.getKeys().toArray(strings);
+        return nbt.getAllKeys().toArray(strings);
     }
 
     public static String translationToTypeName(String name) {

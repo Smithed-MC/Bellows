@@ -1,9 +1,9 @@
 package dev.smithed.radon.mixin_interface;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public interface IEntityMixin {
-    NbtCompound writeNbtFiltered(NbtCompound nbt, String path);
-    boolean readNbtFiltered(NbtCompound nbt, String path);
+    CompoundTag saveWithoutIdFiltered(CompoundTag nbt, String path);
+    boolean loadFiltered(CompoundTag nbt, String path);
 
 }

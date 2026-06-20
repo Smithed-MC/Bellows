@@ -1,13 +1,11 @@
 package dev.smithed.radon.mixin_interface;
 
-import net.minecraft.command.argument.NbtPathArgumentType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.nbt.CompoundTag;
 
 public interface ICustomNBTMixin {
 
-    boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt);
+    boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt);
 
-    boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt);
+    boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt);
 
 }

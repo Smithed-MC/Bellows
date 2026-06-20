@@ -4,11 +4,6 @@ import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntitySelectorExtender;
 import dev.smithed.radon.mixin_interface.IServerWorldExtender;
 import dev.smithed.radon.utils.SelectorContainer;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.math.Box;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,22 +13,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.function.Predicate;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 
 @Mixin(EntitySelector.class)
 public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
 
-    @Shadow private TypeFilter<Entity, ?> entityFilter;
-    @Shadow abstract int getAppendLimit();
+    @Shadow private EntityTypeTest<Entity, ?> type;
+    @Shadow abstract int getResultLimit();
 
-    @Inject(method = "appendEntitiesFromWorld", at=@At("HEAD"), cancellable = true)
-    void radon_appendEntitiesFromWorld(List<Entity> entities, ServerWorld world, @Nullable Box box, Predicate<Entity> predicate, CallbackInfo ci) {
-        int i = this.getAppendLimit();
+    @Inject(method = "addEntities", at=@At("HEAD"), cancellable = true)
+    void radon_addEntities(List<Entity> entities, ServerLevel world, @Nullable AABB box, Predicate<Entity> predicate, CallbackInfo ci) {
+        int i = this.getResultLimit();
         if (entities.size() < i) {
             if(Radon.CONFIG.entitySelectorOptimizations && world instanceof IServerWorldExtender extender) {
                 if (box != null) {
-                    world.collectEntitiesByType(this.entityFilter, box, predicate, entities, i);
+                    world.getEntities(this.type, box, predicate, entities, i);
                 } else {
-                    extender.collectEntitiesByType(this.entityFilter, predicate, entities, i, container);
+                    extender.collectEntitiesByType(this.type, predicate, entities, i, container);
                 }
                 ci.cancel();
             }

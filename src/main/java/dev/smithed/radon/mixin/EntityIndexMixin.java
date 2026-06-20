@@ -4,10 +4,11 @@ import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import dev.smithed.radon.utils.SelectorContainer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.function.LazyIterationConsumer;
+import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.level.entity.EntityAccess;
+import net.minecraft.world.level.entity.EntityLookup;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,22 +17,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 
-@Mixin(EntityIndex.class)
-public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityIndexExtender<T> {
+@Mixin(EntityLookup.class)
+public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntityIndexExtender<T> {
 
-    @Shadow abstract <U extends T> void forEach(TypeFilter<T, U> filter, LazyIterationConsumer<U> consumer);
+    @Shadow abstract <U extends T> void getEntities(EntityTypeTest<T, U> filter, AbortableIterationConsumer<U> consumer);
     private static final int REASONABLESEARCHSIZE = 100;
-    private final Map<String, Set<EntityLike>> entityMap = new HashMap<>();
+    private final Map<String, Set<EntityAccess>> entityMap = new HashMap<>();
 
     @Override
-    public void addEntityToTagMap(String tag, EntityLike entity) {
-        Set<EntityLike> set = entityMap.computeIfAbsent(tag, k -> new HashSet<>());
+    public void addEntityToTagMap(String tag, EntityAccess entity) {
+        Set<EntityAccess> set = entityMap.computeIfAbsent(tag, k -> new HashSet<>());
         set.add(entity);
     }
 
     @Override
-    public void removeEntityFromTagMap(String tag, EntityLike entity) {
-        Set<EntityLike> set = entityMap.get(tag);
+    public void removeEntityFromTagMap(String tag, EntityAccess entity) {
+        Set<EntityAccess> set = entityMap.get(tag);
         if(set != null)
             set.removeAll(Collections.singleton(entity));
     }
@@ -43,11 +44,11 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
     @Inject(method = "add", at = @At("HEAD"))
     private void radon_add(T entityLike, CallbackInfo ci) {
         if(entityLike instanceof Entity entity) {
-            String name = NBTUtils.translationToTypeName(entity.getType().getTranslationKey());
+            String name = NBTUtils.translationToTypeName(entity.getType().getDescriptionId());
             if(name.length() > 0)
                 this.addEntityToTagMap(name, entityLike);
-            if(!entity.getCommandTags().isEmpty())
-                entity.getCommandTags().forEach(tag -> addEntityToTagMap(tag, entityLike));
+            if(!entity.getTags().isEmpty())
+                entity.getTags().forEach(tag -> addEntityToTagMap(tag, entityLike));
         }
     }
 
@@ -58,11 +59,11 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
     @Inject(method = "remove", at = @At("HEAD"))
     private void radon_remove(T entityLike, CallbackInfo ci) {
         if(entityLike instanceof Entity entity) {
-            String name = NBTUtils.translationToTypeName(entity.getType().getTranslationKey());
+            String name = NBTUtils.translationToTypeName(entity.getType().getDescriptionId());
             if(name.length() > 0)
                 this.removeEntityFromTagMap(name, entity);
-            if(!entity.getCommandTags().isEmpty())
-                entity.getCommandTags().forEach(tag -> removeEntityFromTagMap(tag, entityLike));
+            if(!entity.getTags().isEmpty())
+                entity.getTags().forEach(tag -> removeEntityFromTagMap(tag, entityLike));
         }
     }
 
@@ -72,13 +73,13 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
      * retrieved for the @e search instead of all entities.
      */
     @Override
-    public <U extends T> void forEachTaggedEntity(TypeFilter<T, U> filter, SelectorContainer container, LazyIterationConsumer<U> action) {
-        Set<EntityLike> set = null;
-        List<Set<EntityLike>> list = null;
+    public <U extends T> void forEachTaggedEntity(EntityTypeTest<T, U> filter, SelectorContainer container, AbortableIterationConsumer<U> action) {
+        Set<EntityAccess> set = null;
+        List<Set<EntityAccess>> list = null;
         int size = Integer.MAX_VALUE;
 
         for (String tag : container.selectorTags) {
-            Set<EntityLike> result = this.entityMap.get(tag);
+            Set<EntityAccess> result = this.entityMap.get(tag);
             if (result != null && result.size() < size) {
                 set = result;
                 size = result.size();
@@ -97,7 +98,7 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
                     list = new LinkedList<>();
                     int mergeSize = 0;
                     for (String type : container.entityTypes) {
-                        Set<EntityLike> result = this.entityMap.get(type);
+                        Set<EntityAccess> result = this.entityMap.get(type);
                         if (result != null) {
                             mergeSize += result.size();
                             list.add(result);
@@ -108,7 +109,7 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
                         set = null;
                     }
                 } else {
-                    Set<EntityLike> result = this.entityMap.get(container.type);
+                    Set<EntityAccess> result = this.entityMap.get(container.type);
                     if (result != null && result.size() < size) {
                         set = result;
                         size = result.size();
@@ -127,12 +128,12 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
         } else if (list != null) {
             list.forEach(iset -> forEachInCollection(iset, filter, action));
         } else {
-            this.forEach(filter, action);
+            this.getEntities(filter, action);
         }
     }
 
-    public <U extends T> void forEachInCollection(Collection<EntityLike> collection, TypeFilter<T, U> filter, LazyIterationConsumer<U> consumer) {
-        Iterator<EntityLike> iterator = collection.iterator();
+    public <U extends T> void forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<T, U> filter, AbortableIterationConsumer<U> consumer) {
+        Iterator<EntityAccess> iterator = collection.iterator();
 
         U entityLike2;
         do {
@@ -140,7 +141,7 @@ public abstract class EntityIndexMixin<T extends EntityLike> implements IEntityI
                 return;
             }
             T entityLike = (T)iterator.next();
-            entityLike2 = filter.downcast(entityLike);
+            entityLike2 = filter.tryCast(entityLike);
         } while(entityLike2 == null || !consumer.accept(entityLike2).shouldAbort());
 
     }

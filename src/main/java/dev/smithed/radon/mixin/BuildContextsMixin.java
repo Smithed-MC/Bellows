@@ -1,7 +1,7 @@
 package dev.smithed.radon.mixin;
 
 import dev.smithed.radon.Radon;
-import net.minecraft.command.SingleCommandAction;
+import net.minecraft.commands.execution.tasks.BuildContexts;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * This is excluded from the mixins list in fabric.mod.json. If you wish to enable this functionality for testing,
  * you will need to manually add it. Make sure you remove it when finished.
  */
-@Mixin(SingleCommandAction.class)
-public abstract class SingleCommandActionMixin<T> {
+@Mixin(BuildContexts.class)
+public abstract class BuildContextsMixin<T> {
 
-    @Shadow @Final String command;
+    @Shadow @Final String commandInput;
 
     @Inject(method = "execute", at = @At(value = "HEAD"))
     private void radon_execute(CallbackInfo ci) {
-        Radon.logDebugFormat("run: %s", command);
+        Radon.logDebugFormat("run: %s", commandInput);
     }
 
 
