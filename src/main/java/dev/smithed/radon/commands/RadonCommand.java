@@ -3,6 +3,7 @@ package dev.smithed.radon.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.smithed.radon.Radon;
@@ -10,15 +11,11 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 
-import static net.minecraft.commands.Commands.literal;
-
 public class RadonCommand {
 
 
-    public static LiteralCommandNode register(CommandDispatcher<CommandSourceStack> dispatcher) { // You can also return a LiteralCommandNode for use with possible redirects
-        return dispatcher.register(
-                literal("radon")
-                .requires(source -> source.hasPermission(2))
+    public static LiteralCommandNode<?> register(CommandDispatcher<CommandSourceStack> dispatcher) { // You can also return a LiteralCommandNode for use with possible redirects
+        return dispatcher.register( (LiteralArgumentBuilder) ((LiteralArgumentBuilder)Commands.literal("radon").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)))
                 .then(Commands.literal("nbt-optimizations").executes(RadonCommand::toggle_radon_nbt)
                         .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_radon_nbt)))
                 .then(Commands.literal("selector-optimizations").executes(RadonCommand::toggle_radon_selector)

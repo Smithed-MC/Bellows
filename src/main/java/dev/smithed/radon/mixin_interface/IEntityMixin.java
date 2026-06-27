@@ -1,9 +1,11 @@
 package dev.smithed.radon.mixin_interface;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public interface IEntityMixin {
-    CompoundTag saveWithoutIdFiltered(CompoundTag nbt, String path);
-    boolean loadFiltered(CompoundTag nbt, String path);
+
+    boolean radon_saveWithoutIdFiltered(ValueOutput output, String path);
+    boolean radon_loadFiltered(ValueInput output, String path);
 
 }

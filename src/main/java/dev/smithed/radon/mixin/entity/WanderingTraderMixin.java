@@ -1,30 +1,27 @@
 package dev.smithed.radon.mixin.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.world.entity.npc.WanderingTrader;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(WanderingTrader.class)
-public abstract class WanderingTraderMixin extends MerchantMixin {
+public abstract class WanderingTraderMixin extends AbstractVillagerMixin {
 
-    @Shadow BlockPos wanderTarget;
-    @Shadow int despawnDelay;
+    @Shadow private BlockPos wanderTarget;
+    @Shadow private int despawnDelay;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
-        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
+
         switch (topLevelNbt) {
-            case "DespawnDelay" -> nbt.putInt("DespawnDelay", this.despawnDelay);
-            case "wander_target" -> {
-                if (this.wanderTarget != null) {
-                    nbt.put("wander_target", NbtUtils.writeBlockPos(this.wanderTarget));
-                }
-            }
+            case "DespawnDelay" -> output.putInt("DespawnDelay", this.despawnDelay);
+            case "wander_target" -> output.storeNullable("wander_target", BlockPos.CODEC, this.wanderTarget);
             default -> {
                 return false;
             }
@@ -33,17 +30,15 @@ public abstract class WanderingTraderMixin extends MerchantMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
-        WanderingTrader entity = ((WanderingTrader)(Object)this);
-        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+        if (super.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
             return true;
         }
+        WanderingTrader entity = ((WanderingTrader)(Object)this);
+
         switch (topLevelNbt) {
-            case "DespawnDelay" -> {
-                if (nbt.contains("DespawnDelay", 99))
-                    this.despawnDelay = nbt.getInt("DespawnDelay");
-            }
-            case "wander_target" -> NbtUtils.readBlockPos(nbt, "wander_target").ifPresent((wanderTarget) -> this.wanderTarget = wanderTarget);
+            case "DespawnDelay" -> this.despawnDelay = input.getIntOr("DespawnDelay", 0);
+            case "wander_target" -> this.wanderTarget = input.read("wander_target", BlockPos.CODEC).orElse(null);
             default -> {
                 return false;
             }

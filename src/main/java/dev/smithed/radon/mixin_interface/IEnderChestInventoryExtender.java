@@ -2,9 +2,12 @@ package dev.smithed.radon.mixin_interface;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.ItemStackWithSlot;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.NotNull;
 
 public interface IEnderChestInventoryExtender {
 
-    ListTag toNbtListFiltered(String nbt, HolderLookup.Provider registries);
+    void toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt);
 
 }

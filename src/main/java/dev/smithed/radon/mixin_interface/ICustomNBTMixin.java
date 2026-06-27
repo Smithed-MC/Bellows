@@ -1,11 +1,13 @@
 package dev.smithed.radon.mixin_interface;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public interface ICustomNBTMixin {
 
-    boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt);
-
-    boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt);
+    //write
+    boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt);
+    //read
+    boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt);
 
 }

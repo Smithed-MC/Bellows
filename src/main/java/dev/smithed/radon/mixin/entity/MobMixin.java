@@ -1,108 +1,58 @@
 package dev.smithed.radon.mixin.entity;
 
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.DropChances;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Optional;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 @Mixin(Mob.class)
 public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMixin {
 
-    @Shadow boolean persistenceRequired;
-    @Shadow NonNullList<ItemStack> armorItems;
-    @Shadow float[] handDropChances;
-    @Shadow float[] armorDropChances;
-    @Shadow long lootTableSeed;
-    @Shadow @Final NonNullList<ItemStack> handItems;
-    @Shadow ItemStack bodyArmorItem;
-    @Shadow float bodyArmorDropChance;
-    @Shadow Optional<ResourceKey<LootTable>> lootTable;
+    @Shadow private boolean persistenceRequired;
+    @Shadow private long lootTableSeed;
+    @Shadow private DropChances dropChances;
+    @Shadow private Optional<ResourceKey<LootTable>> lootTable;
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
-        Mob entity = ((Mob) (Object) this);
-        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
+        Mob entity = ((Mob) (Object) this);
+
         switch (topLevelNbt) {
-            case "CanPickUpLoot" -> nbt.putBoolean("CanPickUpLoot", entity.canPickUpLoot());
-            case "PersistenceRequired" -> nbt.putBoolean("PersistenceRequired", this.persistenceRequired);
-            case "ArmorItems" -> {
-                ListTag nbtList = new ListTag();
-                for (ItemStack itemStack : this.armorItems) {
-                    if (!itemStack.isEmpty()) {
-                        nbtList.add(itemStack.save(this.registryAccess()));
-                    } else {
-                        nbtList.add(new CompoundTag());
-                    }
-                }
-                nbt.put("ArmorItems", nbtList);
-            }
-            case "ArmorDropChances" -> {
-                ListTag nbtList2 = new ListTag();
-                float[] var11 = this.armorDropChances;
-                for (float f : var11) {
-                    nbtList2.add(FloatTag.valueOf(f));
-                }
-                nbt.put("ArmorDropChances", nbtList2);
-            }
-            case "HandItems" -> {
-                ListTag nbtList3 = new ListTag();
-                for (ItemStack itemStack3 : this.handItems) {
-                    if (!itemStack3.isEmpty()) {
-                        nbtList3.add(itemStack3.save(this.registryAccess()));
-                    } else {
-                        nbtList3.add(new CompoundTag());
-                    }
-                }
-                nbt.put("HandItems", nbtList3);
-            }
-            case "HandDropChances" -> {
-                ListTag nbtList4 = new ListTag();
-                float[] var16 = this.handDropChances;
-                for (float g : var16) {
-                    nbtList4.add(FloatTag.valueOf(g));
-                }
-                nbt.put("HandDropChances", nbtList4);
-            }
-            case "body_armor_item" -> {
-                if (!this.bodyArmorItem.isEmpty()) {
-                    nbt.put("body_armor_item", this.bodyArmorItem.save(this.registryAccess()));
+            case "CanPickUpLoot" -> output.putBoolean("CanPickUpLoot", entity.canPickUpLoot());
+            case "PersistenceRequired" -> output.putBoolean("PersistenceRequired", this.persistenceRequired);
+            case "drop_chances" -> {
+                if (!this.dropChances.equals(DropChances.DEFAULT)) {
+                    output.store("drop_chances", DropChances.CODEC, this.dropChances);
                 }
             }
-            case "body_armor_drop_chance" -> {
-                if (!this.bodyArmorItem.isEmpty()) {
-                    nbt.putFloat("body_armor_drop_chance", this.bodyArmorDropChance);
+            case "leash" -> entity.writeLeashData(output, entity.getLeashData());
+            case "home_radius", "home_pos" -> {
+                if (entity.hasHome()) {
+                    output.putInt("home_radius", entity.getHomeRadius());
+                    output.store("home_pos", BlockPos.CODEC, entity.getHomePosition());
                 }
             }
-            case "LeftHanded" -> nbt.putBoolean("LeftHanded", entity.isLeftHanded());
-            case "DeathLootTable" -> {
-                if (this.lootTable.isPresent()) {
-                    nbt.putString("DeathLootTable", this.lootTable.get().location().toString());
-                }
-            }
+            case "LeftHanded" -> output.putBoolean("LeftHanded", entity.isLeftHanded());
+            case "DeathLootTable" -> this.lootTable.ifPresent((lootTable) -> output.store("DeathLootTable", LootTable.KEY_CODEC, lootTable));
             case "DeathLootTableSeed" -> {
                 if (this.lootTableSeed != 0L) {
-                    nbt.putLong("DeathLootTableSeed", this.lootTableSeed);
+                    output.putLong("DeathLootTableSeed", this.lootTableSeed);
                 }
             }
             case "NoAI" -> {
                 if (entity.isNoAi()) {
-                    nbt.putBoolean("NoAI", entity.isNoAi());
+                    output.putBoolean("NoAI", entity.isNoAi());
                 }
             }
             default -> {
@@ -113,72 +63,21 @@ public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMi
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
-        Mob entity = ((Mob) (Object) this);
-        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+        if (super.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
             return true;
         }
-        ListTag nbtList;
+        Mob entity = ((Mob) (Object) this);
+
         switch (topLevelNbt) {
-            case "CanPickUpLoot" -> entity.setCanPickUpLoot(nbt.getBoolean("CanPickUpLoot"));
-            case "PersistenceRequired" -> this.persistenceRequired = nbt.getBoolean("PersistenceRequired");
-            case "ArmorItems" -> {
-                CompoundTag nbtCompound;
-                if (nbt.contains("ArmorItems", 9)) {
-                    nbtList = nbt.getList("ArmorItems", 10);
-
-                    for(int i = 0; i < this.armorItems.size(); ++i) {
-                        nbtCompound = nbtList.getCompound(i);
-                        this.armorItems.set(i, ItemStack.parseOptional(this.registryAccess(), nbtCompound));
-                    }
-                } else {
-                    Collections.fill(this.armorItems, ItemStack.EMPTY);
-                }
-            }
-            case "ArmorDropChances" -> {
-                if (nbt.contains("ArmorDropChances", 9)) {
-                    nbtList = nbt.getList("ArmorDropChances", 5);
-
-                    for(int i = 0; i < nbtList.size(); ++i) {
-                        this.armorDropChances[i] = nbtList.getFloat(i);
-                    }
-                } else {
-                    Arrays.fill(this.armorDropChances, 0.0F);
-                }
-            }
-            case "HandItems" -> {
-                if (nbt.contains("HandItems", 9)) {
-                    nbtList = nbt.getList("HandItems", 10);
-
-                    for(int i = 0; i < this.handItems.size(); ++i) {
-                        CompoundTag nbtCompound = nbtList.getCompound(i);
-                        this.handItems.set(i, ItemStack.parseOptional(this.registryAccess(), nbtCompound));
-                    }
-                } else {
-                    Collections.fill(this.handItems, ItemStack.EMPTY);
-                }
-            }
-            case "HandDropChances" -> {
-                if (nbt.contains("HandDropChances", 9)) {
-                    nbtList = nbt.getList("HandDropChances", 5);
-
-                    for(int i = 0; i < nbtList.size(); ++i) {
-                        this.handDropChances[i] = nbtList.getFloat(i);
-                    }
-                } else {
-                    Arrays.fill(this.handDropChances, 0.0F);
-                }
-            }
-            case "LeftHanded" -> entity.setLeftHanded(nbt.getBoolean("LeftHanded"));
-            case "DeathLootTable" -> {
-                if (nbt.contains("DeathLootTable", 8)) {
-                    this.lootTable = Optional.of(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(nbt.getString("DeathLootTable"))));
-                } else {
-                    this.lootTable = Optional.empty();
-                }
-            }
-            case "DeathLootTableSeed" -> this.lootTableSeed = nbt.getLong("DeathLootTableSeed");
-            case "NoAI" -> entity.setNoAi(nbt.getBoolean("NoAI"));
+            case "CanPickUpLoot" -> entity.setCanPickUpLoot(input.getBooleanOr("CanPickUpLoot", false));
+            case "PersistenceRequired" -> this.persistenceRequired = input.getBooleanOr("PersistenceRequired", false);
+            case "drop_chances" -> this.dropChances = input.read("drop_chances", DropChances.CODEC).orElse(DropChances.DEFAULT);
+            case "leash" -> entity.readLeashData(input);
+            case "LeftHanded" -> entity.setLeftHanded(input.getBooleanOr("LeftHanded", false));
+            case "DeathLootTable" -> this.lootTable = input.read("DeathLootTable", LootTable.KEY_CODEC);
+            case "DeathLootTableSeed" -> this.lootTableSeed = input.getLongOr("DeathLootTableSeed", 0L);
+            case "NoAI" -> entity.setNoAi(input.getBooleanOr("NoAI", false));
             default -> {
                 return false;
             }

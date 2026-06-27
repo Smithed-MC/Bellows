@@ -1,42 +1,30 @@
 package dev.smithed.radon.mixin.entity;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import net.minecraft.Util;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.slf4j.Logger;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-
-import java.util.Objects;
-
 
 @Mixin(Display.ItemDisplay.class)
 public abstract class ItemDisplayMixin extends DisplayEntityMixin {
 
-    @Shadow abstract ItemStack getItemStack();
-    @Shadow abstract ItemDisplayContext getItemTransform();
-    @Shadow abstract void setItemStack(ItemStack stack);
-    @Shadow abstract void setItemTransform(ItemDisplayContext transformationMode);
-
     @Override
-    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
-        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
+        Display.ItemDisplay entity = ((Display.ItemDisplay) (Object) this);
+
         switch (topLevelNbt) {
             case "item" -> {
-                if (!this.getItemStack().isEmpty()) {
-                    nbt.put("item", this.getItemStack().save(this.registryAccess()));
+                ItemStack itemStack = entity.getItemStack();
+                if (!itemStack.isEmpty()) {
+                    output.store("item", ItemStack.CODEC, itemStack);
                 }
             }
-            case "item_display" ->
-                ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).ifSuccess((nbtx) -> nbt.put("item_display", nbtx));
+            case "item_display" -> output.store("item_display", ItemDisplayContext.CODEC, entity.getItemTransform());
             default -> {
                 return false;
             }
@@ -45,28 +33,15 @@ public abstract class ItemDisplayMixin extends DisplayEntityMixin {
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
-        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+        if (super.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
             return true;
         }
+        Display.ItemDisplay entity = ((Display.ItemDisplay) (Object) this);
+
         switch (topLevelNbt) {
-            case "item" -> {
-                if (nbt.contains("item")) {
-                    this.setItemStack(ItemStack.parse(this.registryAccess(), nbt.getCompound("item")).orElse(ItemStack.EMPTY));
-                } else {
-                    this.setItemStack(ItemStack.EMPTY);
-                }
-            }
-            case "item_display" -> {
-                if (nbt.contains("item_display", 8)) {
-                    DataResult<Pair<ItemDisplayContext, Tag>> var10000 = ItemDisplayContext.CODEC.decode(NbtOps.INSTANCE, nbt.get("item_display"));
-                    Logger var10002 = LOGGER;
-                    Objects.requireNonNull(var10002);
-                    var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((mode) -> {
-                        this.setItemTransform(mode.getFirst());
-                    });
-                }
-            }
+            case "item" -> entity.setItemStack(input.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
+            case "item_display" -> entity.setItemTransform(input.read("item_display", ItemDisplayContext.CODEC).orElse(ItemDisplayContext.NONE));
             default -> {
                 return false;
             }

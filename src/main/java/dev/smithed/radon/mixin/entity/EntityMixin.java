@@ -1,10 +1,17 @@
 package dev.smithed.radon.mixin.entity;
 
+import com.mojang.serialization.Codec;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.mixin_interface.IServerWorldExtender;
-import org.slf4j.Logger;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec2;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -13,18 +20,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
@@ -36,31 +36,20 @@ import net.minecraft.world.phys.Vec3;
 @Mixin(Entity.class)
 public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final static EntityDataAccessor<Pose> DATA_POSE;
-    @Shadow Level level;
-    @Shadow SynchedEntityData entityData;
-    @Shadow Entity vehicle;
-    @Shadow int remainingFireTicks;
-    @Shadow boolean onGround;
-    @Shadow boolean invulnerable;
-    @Shadow int portalCooldown;
-    @Shadow boolean hasGlowingTag;
-    @Shadow boolean hasVisualFire;
-    @Shadow Set<String> tags;
-    @Shadow UUID uuid;
-    @Shadow float fallDistance;
-    @Shadow String stringUUID;
-    @Shadow boolean firstTick;
-    @Shadow @Final static EntityDataAccessor<Optional<Component>> DATA_CUSTOM_NAME;
+    @Shadow @Final protected static EntityDataAccessor<@NotNull Pose> DATA_POSE;
+    @Shadow @Final private static Codec<List<String>> TAG_LIST_CODEC;
+    @Shadow @Final protected SynchedEntityData entityData;
+    @Shadow @Final private Set<String> tags;
+    @Shadow private Level level;
+    @Shadow private boolean hasVisualFire;
+    @Shadow protected UUID uuid;
+    @Shadow protected boolean firstTick;
+    @Shadow private CustomData customData;
 
-    @Shadow abstract void reapplyPosition();
-    @Shadow abstract void setRot(float yaw, float pitch);
-    @Shadow abstract boolean repositionEntityAfterLoad();
-    @Shadow abstract ListTag newDoubleList(double... values);
-    @Shadow abstract ListTag newFloatList(float... values);
-    @Shadow abstract void setSharedFlag(int index, boolean value);
-    @Shadow protected abstract RegistryAccess registryAccess();
+    @Shadow protected abstract void reapplyPosition();
+    @Shadow protected abstract void setRot(float yaw, float pitch);
+    @Shadow protected abstract boolean repositionEntityAfterLoad();
+    @Shadow protected abstract void setSharedFlag(int index, boolean value);
 
     /**
      * @author ImCoolYeah105
@@ -70,8 +59,9 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Overwrite
     public boolean addTag(String tag) {
         if (this.tags.size() < 1024 && this.tags.add(tag)) {
-            if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
+            if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
                 index.addEntityToTagMap(tag, (Entity) (Object) this);
+            }
             return true;
         }
         return false;
@@ -85,8 +75,9 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Overwrite
     public boolean removeTag(String tag) {
         if (this.tags.remove(tag)) {
-            if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
+            if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
                 index.removeEntityFromTagMap(tag, (Entity) (Object) this);
+            }
             return true;
         }
         return false;
@@ -95,156 +86,123 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     /**
      * remove entity from tag cache completely when tags are cleared
      */
-    @Inject(method = "load(Lnet/minecraft/nbt/CompoundTag;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
+    @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
     private void radon_load(CallbackInfo ci) {
-        if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
+        if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
             this.tags.forEach(tag -> index.removeEntityFromTagMap(tag, (Entity) (Object) this));
+        }
     }
 
     /**
      * add entity to tag cache when tags are added via NBT data
      */
-    @Inject(method = "load(Lnet/minecraft/nbt/CompoundTag;)V", at = @At("TAIL"))
-    private void radon_load(CompoundTag nbt, CallbackInfo ci) {
-        if (nbt.contains("Tags", 9) && this.level instanceof IServerWorldExtender world && world.getEntityIndex().getEntity(uuid) != null && world.getEntityIndex() instanceof IEntityIndexExtender index) {
-            ListTag nbtList4 = nbt.getList("Tags", 8);
-            int i = Math.min(nbtList4.size(), 1024);
-
-            for (int j = 0; j < i; ++j) {
-                index.addEntityToTagMap(nbtList4.getString(j), (Entity) (Object) this);
+    @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
+    private void radon_load(ValueInput nbt, CallbackInfo ci) {
+        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.getEntityIndex().getEntity(uuid) != null && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+            Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
+            if(tagList.isPresent()) {
+                int max_size = Math.min(tagList.get().size(), 1024);
+                for (int i = 0; i < max_size; ++i) {
+                    index.addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
+                }
             }
         }
     }
 
     @Override
-    public boolean writeCustomDataToNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
+    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         return false;
     }
 
     @Override
-    public boolean readCustomDataFromNbtFiltered(CompoundTag nbt, String path, String topLevelNbt) {
+    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         return false;
     }
 
     @Override
-    public CompoundTag saveWithoutIdFiltered(CompoundTag nbt, String path) {
-        String topLevelNbt = path.split("[\\.\\{\\[]")[0];
+    public boolean radon_saveWithoutIdFiltered(ValueOutput output, String path) {
+        String topLevelNbt = path.split("[.{\\[]")[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
             switch (topLevelNbt) {
-                case "Pos":
-                    if (this.vehicle != null) {
-                        nbt.put("Pos", newDoubleList(this.vehicle.getX(), entity.getY(), this.vehicle.getZ()));
+                case "Pos" -> {
+                    if (entity.getVehicle() != null) {
+                        output.store("Pos", Vec3.CODEC, new Vec3(entity.getVehicle().getX(), entity.getY(), entity.getVehicle().getZ()));
                     } else {
-                        nbt.put("Pos", this.newDoubleList(entity.getX(), entity.getY(), entity.getZ()));
+                        output.store("Pos", Vec3.CODEC, entity.position());
                     }
-                    break;
-                case "Motion":
-                    Vec3 vec3d = entity.getDeltaMovement();
-                    nbt.put("Motion", this.newDoubleList(vec3d.x, vec3d.y, vec3d.z));
-                    break;
-                case "Rotation":
-                    nbt.put("Rotation", this.newFloatList(entity.getYRot(), entity.getXRot()));
-                    break;
-                case "FallDistance":
-                    nbt.putFloat("FallDistance", entity.fallDistance);
-                    break;
-                case "Fire":
-                    nbt.putShort("Fire", (short) this.remainingFireTicks);
-                    break;
-                case "Air":
-                    nbt.putShort("Air", (short) entity.getAirSupply());
-                    break;
-                case "OnGround":
-                    nbt.putBoolean("OnGround", this.onGround);
-                    break;
-                case "Invulnerable":
-                    nbt.putBoolean("Invulnerable", this.invulnerable);
-                    break;
-                case "PortalCooldown":
-                    nbt.putInt("PortalCooldown", this.portalCooldown);
-                    break;
-                case "UUID":
-                    nbt.putUUID("UUID", entity.getUUID());
-                    break;
-                case "CustomName":
-                    Component text = entity.getCustomName();
-                    if (text != null) {
-                        nbt.putString("CustomName", Component.Serializer.toJson(text, this.registryAccess()));
-                    }
-                    break;
-                case "CustomNameVisible":
+                }
+                case "Motion" -> output.store("Motion", Vec3.CODEC, entity.getDeltaMovement());
+                case "Rotation" -> output.store("Rotation", Vec2.CODEC, new Vec2(entity.getYRot(), entity.getXRot()));
+                case "FallDistance" -> output.putDouble("fall_distance", entity.fallDistance);
+                case "Fire" -> output.putShort("Fire", (short)entity.getRemainingFireTicks());
+                case "Air" -> output.putShort("Air", (short)entity.getAirSupply());
+                case "OnGround" -> output.putBoolean("OnGround", entity.onGround());
+                case "Invulnerable" -> output.putBoolean("Invulnerable", entity.isInvulnerable());
+                case "PortalCooldown" -> output.putInt("PortalCooldown", entity.getPortalCooldown());
+                case "UUID" -> output.store("UUID", UUIDUtil.CODEC, entity.getUUID());
+                case "CustomName" -> output.storeNullable("CustomName", ComponentSerialization.CODEC, entity.getCustomName());
+                case "CustomNameVisible" -> {
                     if (entity.isCustomNameVisible()) {
-                        nbt.putBoolean("CustomNameVisible", entity.isCustomNameVisible());
+                        output.putBoolean("CustomNameVisible", entity.isCustomNameVisible());
                     }
-                    break;
-                case "Silent":
+                }
+                case "Silent" -> {
                     if (entity.isSilent()) {
-                        nbt.putBoolean("Silent", entity.isSilent());
+                        output.putBoolean("Silent", entity.isSilent());
                     }
-                    break;
-                case "NoGravity":
+                }
+                case "NoGravity" -> {
                     if (entity.isNoGravity()) {
-                        nbt.putBoolean("NoGravity", entity.isNoGravity());
+                        output.putBoolean("NoGravity", entity.isNoGravity());
                     }
-                    break;
-                case "Glowing":
-                    if (this.hasGlowingTag) {
-                        nbt.putBoolean("Glowing", true);
+                }
+                case "Glowing" -> {
+                    if (entity.hasGlowingTag()) {
+                        output.putBoolean("Glowing", true);
                     }
-                    break;
-                case "TicksFrozen":
-                    int i = entity.getTicksFrozen();
-                    if (i > 0) {
-                        nbt.putInt("TicksFrozen", entity.getTicksFrozen());
+                }
+                case "TicksFrozen" -> {
+                    int ticksFrozen = entity.getTicksFrozen();
+                    if (ticksFrozen > 0) {
+                        output.putInt("TicksFrozen", entity.getTicksFrozen());
                     }
-                    break;
-                case "HasVisualFire":
+                }
+                case "HasVisualFire" -> {
                     if (this.hasVisualFire) {
-                        nbt.putBoolean("HasVisualFire", this.hasVisualFire);
+                        output.putBoolean("HasVisualFire", this.hasVisualFire);
                     }
-                    break;
-                case "Tags":
-                    ListTag nbtList;
-                    Iterator<?> var6;
+                }
+                case "Tags" -> {
                     if (!this.tags.isEmpty()) {
-                        nbtList = new ListTag();
-                        var6 = this.tags.iterator();
-
-                        while (var6.hasNext()) {
-                            String string = (String) var6.next();
-                            nbtList.add(StringTag.valueOf(string));
-                        }
-
-                        nbt.put("Tags", nbtList);
+                        output.store("Tags", TAG_LIST_CODEC, List.copyOf(this.tags));
                     }
-                    break;
-                case "Passengers":
+                }
+                case "data" -> {
+                    if (!this.customData.isEmpty()) {
+                        output.store("data", CustomData.CODEC, this.customData);
+                    }
+                }
+                case "Passengers" -> {
                     if (entity.isVehicle()) {
-                        nbtList = new ListTag();
-                        var6 = entity.getPassengers().iterator();
+                        ValueOutput.ValueOutputList passengersList = output.childrenList("Passengers");
 
-                        while (var6.hasNext()) {
-                            Entity riding_entity = (Entity) var6.next();
-                            CompoundTag CompoundTag = new CompoundTag();
-                            if (riding_entity.saveAsPassenger(CompoundTag)) {
-                                nbtList.add(CompoundTag);
+                        for(Entity passenger : entity.getPassengers()) {
+                            ValueOutput passengerOutput = passengersList.addChild();
+                            if (!passenger.saveAsPassenger(passengerOutput)) {
+                                passengersList.discardLast();
                             }
                         }
 
-                        if (!nbtList.isEmpty()) {
-                            nbt.put("Passengers", nbtList);
+                        if (passengersList.isEmpty()) {
+                            output.discard("Passengers");
                         }
                     }
-                    break;
-                default:
-                    if (this.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt))
-                        return nbt;
-                    else
-                        return null;
+                }
+                default -> this.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
             }
-            return nbt;
+            return !output.isEmpty();
         } catch (Throwable var9) {
             CrashReport crashReport = CrashReport.forThrowable(var9, "Saving entity NBT");
             CrashReportCategory crashReportSection = crashReport.addCategory("Entity being saved");
@@ -254,90 +212,68 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     }
 
     @Override
-    public boolean loadFiltered(CompoundTag nbt, String path) {
+    public boolean radon_loadFiltered(ValueInput input, String path) {
         String topLevelNbt = path.split("[\\[.{]")[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
             switch (topLevelNbt) {
                 case "Pos" -> {
-                    ListTag nbtList = nbt.getList("Pos", 6);
-                    entity.setPosRaw(Mth.clamp(nbtList.getDouble(0), -3.0000512E7, 3.0000512E7), Mth.clamp(nbtList.getDouble(1), -2.0E7, 2.0E7), Mth.clamp(nbtList.getDouble(2), -3.0000512E7, 3.0000512E7));
+                    Vec3 pos = input.read("Pos", Vec3.CODEC).orElse(Vec3.ZERO);
+                    entity.setPosRaw(Mth.clamp(pos.x, -3.0000512E7F, 3.0000512E7F), Mth.clamp(pos.y, -2.0E7F, 2.0E7F), Mth.clamp(pos.z, -3.0000512E7F, 3.0000512E7F));
                     entity.setOldPosAndRot();
-                    if (Double.isFinite(entity.getX()) && Double.isFinite(entity.getY()) && Double.isFinite(entity.getZ())) {
-                        this.reapplyPosition();
-                    } else {
-                        throw new IllegalStateException("Entity has invalid position");
-                    }
+                    this.reapplyPosition();
                 }
                 case "Motion" -> {
-                    ListTag nbtList2 = nbt.getList("Motion", 6);
-                    double d = nbtList2.getDouble(0);
-                    double e = nbtList2.getDouble(1);
-                    double f = nbtList2.getDouble(2);
-                    entity.setDeltaMovement(Math.abs(d) > 10.0 ? 0.0 : d, Math.abs(e) > 10.0 ? 0.0 : e, Math.abs(f) > 10.0 ? 0.0 : f);
+                    Vec3 motion = input.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
+                    entity.setDeltaMovement(Math.abs(motion.x) > (double)10.0F ? (double)0.0F : motion.x, Math.abs(motion.y) > (double)10.0F ? (double)0.0F : motion.y, Math.abs(motion.z) > (double)10.0F ? (double)0.0F : motion.z);
                 }
                 case "Rotation" -> {
-                    ListTag nbtList3 = nbt.getList("Rotation", 5);
-                    entity.setYRot(nbtList3.getFloat(0));
-                    entity.setXRot(nbtList3.getFloat(1));
+                    Vec2 rotation = input.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
+                    entity.setYRot(rotation.x);
+                    entity.setXRot(rotation.y);
                     entity.setOldPosAndRot();
                     entity.setYHeadRot(entity.getYRot());
                     entity.setYBodyRot(entity.getYRot());
-                    if (Double.isFinite(entity.getYRot()) && Double.isFinite(entity.getXRot())) {
-                        this.reapplyPosition();
-                        this.setRot(entity.getYRot(), entity.getXRot());
-                    } else {
-                        throw new IllegalStateException("Entity has invalid rotation");
-                    }
+                    this.setRot(entity.getYRot(), entity.getXRot());
                 }
-                case "FallDistance" -> this.fallDistance = nbt.getFloat("FallDistance");
-                case "Fire" -> this.remainingFireTicks = nbt.getShort("Fire");
-                case "Air" -> entity.setAirSupply(nbt.getShort("Air"));
-                case "OnGround" -> this.onGround = nbt.getBoolean("OnGround");
-                case "Invulnerable" -> this.invulnerable = nbt.getBoolean("Invulnerable");
-                case "PortalCooldown" -> this.portalCooldown = nbt.getInt("PortalCooldown");
-                case "UUID" -> {
-                    this.uuid = nbt.getUUID("UUID");
-                    this.stringUUID = this.uuid.toString();
-                }
-                case "CustomName" -> {
-                    if (nbt.contains("CustomName", 8)) {
-                        String string = nbt.getString("CustomName");
-                        try {
-                            entity.setCustomName(Component.Serializer.fromJson(string, this.registryAccess()));
-                        } catch (Exception var16) {
-                            LOGGER.warn("Failed to parse entity custom name {}", string, var16);
-                        }
-                    } else {
-                        this.entityData.set(DATA_CUSTOM_NAME, Optional.empty());
-                    }
-                }
-                case "CustomNameVisible" -> entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible"));
-                case "Silent" -> entity.setSilent(nbt.getBoolean("Silent"));
-                case "NoGravity" -> entity.setNoGravity(nbt.getBoolean("NoGravity"));
-                case "Glowing" -> entity.setGlowingTag(nbt.getBoolean("Glowing"));
-                case "TicksFrozen" -> entity.setTicksFrozen(nbt.getInt("TicksFrozen"));
-                case "HasVisualFire" -> this.hasVisualFire = nbt.getBoolean("HasVisualFire");
+                case "FallDistance" -> entity.fallDistance = input.getDoubleOr("fall_distance", 0.0F);
+                case "Fire" -> entity.setRemainingFireTicks(input.getShortOr("Fire", (short)0));
+                case "Air" -> entity.setAirSupply(input.getIntOr("Air", entity.getMaxAirSupply()));
+                case "OnGround" -> entity.setOnGround(input.getBooleanOr("OnGround", false));
+                case "Invulnerable" -> entity.setInvulnerable(input.getBooleanOr("Invulnerable", false));
+                case "PortalCooldown" -> entity.setPortalCooldown(input.getIntOr("PortalCooldown", 0));
+                case "UUID" -> input.read("UUID", UUIDUtil.CODEC).ifPresent(entity::setUUID);
+                case "CustomName" -> entity.setCustomName(input.read("CustomName", ComponentSerialization.CODEC).orElse(null));
+                case "CustomNameVisible" -> entity.setCustomNameVisible(input.getBooleanOr("CustomNameVisible", false));
+                case "Silent" -> entity.setSilent(input.getBooleanOr("Silent", false));
+                case "NoGravity" -> entity.setNoGravity(input.getBooleanOr("NoGravity", false));
+                case "Glowing" -> entity.setGlowingTag(input.getBooleanOr("Glowing", false));
+                case "TicksFrozen" -> entity.setTicksFrozen(input.getIntOr("TicksFrozen", 0));
+                case "HasVisualFire" -> this.hasVisualFire = input.getBooleanOr("HasVisualFire", false);
+                case "data" -> this.customData = input.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                 case "Tags" -> {
-                    this.tags.clear();
-                    ListTag nbtList4 = nbt.getList("Tags", 8);
-                    int i = Math.min(nbtList4.size(), 1024);
-                    for (int j = 0; j < i; ++j) {
-                        this.tags.add(nbtList4.getString(j));
-                    }
-                    if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index) {
-                        for (int j = 0; j < i; ++j) {
-                            index.addEntityToTagMap(nbtList4.getString(j), (Entity) (Object) this);
+                    if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+                        this.tags.forEach(tag -> index.removeEntityFromTagMap(tag, entity));
+                        this.tags.clear();
+
+                        Optional<List<String>> tagList = input.read("Tags", TAG_LIST_CODEC);
+                        if(tagList.isPresent()) {
+                            int max_size = Math.min(tagList.get().size(), 1024);
+                            for (int i = 0; i < max_size; ++i) {
+                                index.addEntityToTagMap(tagList.get().get(i), entity);
+                            }
                         }
                     }
                 }
                 default -> {
-                    if (this.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
-                        if (this.repositionEntityAfterLoad())
+                    if (this.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
+                        if (this.repositionEntityAfterLoad()) {
                             this.reapplyPosition();
-//                        if (topLevelNbt.equals("ArmorItems") || topLevelNbt.equals("HandItems"))
-//                            IntegrationRouter.triggerEquipmentUpdate(this);
+                        }
+//                      if (topLevelNbt.equals("ArmorItems") || topLevelNbt.equals("HandItems")) {
+//                          IntegrationRouter.triggerEquipmentUpdate(this);
+//                      }
                     } else {
                         return false;
                     }
@@ -351,5 +287,4 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
             throw new ReportedException(crashReport);
         }
     }
-
 }
