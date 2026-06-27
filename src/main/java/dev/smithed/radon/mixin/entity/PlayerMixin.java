@@ -53,7 +53,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements ICustomNB
             case "abilities" -> output.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
             case "EnderItems" -> {
                 if (this.enderChestInventory instanceof IEnderChestInventoryExtender mixin)
-                    mixin.toNbtListFiltered(output.list("EnderItems", ItemStackWithSlot.CODEC), path);
+                    mixin.radon_toNbtListFiltered(output.list("EnderItems", ItemStackWithSlot.CODEC), path);
                 else
                     this.enderChestInventory.storeAsSlots(output.list("EnderItems", ItemStackWithSlot.CODEC));
             }

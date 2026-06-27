@@ -8,6 +8,6 @@ import org.jetbrains.annotations.NotNull;
 
 public interface IEnderChestInventoryExtender {
 
-    void toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt);
+    void radon_toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt);
 
 }

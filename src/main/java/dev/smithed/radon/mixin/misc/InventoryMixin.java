@@ -3,11 +3,11 @@ package dev.smithed.radon.mixin.misc;
 import dev.smithed.radon.mixin_interface.IPlayerInventoryExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,42 +15,19 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Inventory.class)
 public abstract class InventoryMixin implements IPlayerInventoryExtender {
 
-    @Shadow NonNullList<ItemStack> items;
-    @Shadow NonNullList<ItemStack> armor;
-    @Shadow NonNullList<ItemStack> offhand;
-    @Shadow @Final Player player;
-
-    @Shadow
-    public abstract ListTag save(ListTag nbtList);
+    @Final @Shadow private NonNullList<@NotNull ItemStack> items;
+    @Shadow public abstract void save(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
 
     @Override
-    public ListTag saveWithoutIdFiltered(ListTag nbtList, String nbt) {
+    public void radon_saveWithoutIdFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
         int slot = NBTUtils.getSlot(nbt);
-        if(slot >= 0 && slot <= 35) {
-            if (!(this.items.get(slot)).isEmpty()) {
-                CompoundTag nbtCompound = new CompoundTag();
-                nbtCompound.putByte("Slot", (byte) slot);
-                nbtList.add(this.items.get(slot).save(this.player.registryAccess(), nbtCompound));
-                nbtList.add(nbtCompound);
-            }
-        } else if(slot >= 100 && slot <= 103) {
-            if (!(this.armor.get(slot-100)).isEmpty()) {
-                CompoundTag nbtCompound = new CompoundTag();
-                nbtCompound.putByte("Slot", (byte) slot);
-                nbtList.add(this.armor.get(slot-100).save(this.player.registryAccess(), nbtCompound));
-                nbtList.add(nbtCompound);
-            }
-        } else if(slot == -106) {
-            if (!(this.offhand.get(0)).isEmpty()) {
-                CompoundTag nbtCompound = new CompoundTag();
-                nbtCompound.putByte("Slot", (byte) -106);
-                nbtList.add(this.offhand.get(0).save(this.player.registryAccess(), nbtCompound));
-                nbtList.add(nbtCompound);
+        if( (slot >= 0 && slot <= 35) || (slot >= 100 && slot <= 103) || (slot == -106)) {
+            ItemStack item = this.items.get(slot);
+            if (!item.isEmpty()) {
+                output.add(new ItemStackWithSlot(slot, item));
             }
         } else {
-            this.save(nbtList);
+            this.save(output);
         }
-        return nbtList;
     }
-
 }
