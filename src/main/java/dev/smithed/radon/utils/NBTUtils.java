@@ -41,9 +41,9 @@ public class NBTUtils {
     }
 
     public static String[] getTopLevelPaths(CompoundTag nbt) {
-        Set<String> set = nbt.getAllKeys();
+        Set<String> set = nbt.keySet();
         String[] strings = new String[set.size()];
-        return nbt.getAllKeys().toArray(strings);
+        return nbt.keySet().toArray(strings);
     }
 
     public static String translationToTypeName(String name) {

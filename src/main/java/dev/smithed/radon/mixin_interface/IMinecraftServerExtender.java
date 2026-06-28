@@ -5,6 +5,6 @@ import java.util.Set;
 
 public interface IMinecraftServerExtender {
 
-    Set<String> getEntityTagEntries(String tag);
+    Set<String> radon_getEntityTagEntries(String tag);
 
 }

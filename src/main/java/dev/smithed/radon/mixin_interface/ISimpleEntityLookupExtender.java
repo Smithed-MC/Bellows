@@ -5,10 +5,12 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import org.jetbrains.annotations.NotNull;
 
 public interface ISimpleEntityLookupExtender<T extends EntityAccess> {
 
-    EntityLookup getVisibleEntities();
-    <U extends T> void forEachTaggedEntity(EntityTypeTest<T, U> filter, AbortableIterationConsumer<U> action, SelectorContainer container);
+    EntityLookup<?> radon_getVisibleEntities();
+
+    <U extends T> void radon_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> action, SelectorContainer container);
 
 }

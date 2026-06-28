@@ -59,8 +59,8 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Overwrite
     public boolean addTag(String tag) {
         if (this.tags.size() < 1024 && this.tags.add(tag)) {
-            if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
-                index.addEntityToTagMap(tag, (Entity) (Object) this);
+            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+                index.radon_addEntityToTagMap(tag, (Entity) (Object) this);
             }
             return true;
         }
@@ -75,8 +75,8 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Overwrite
     public boolean removeTag(String tag) {
         if (this.tags.remove(tag)) {
-            if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
-                index.removeEntityFromTagMap(tag, (Entity) (Object) this);
+            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+                index.radon_removeEntityFromTagMap(tag, (Entity) (Object) this);
             }
             return true;
         }
@@ -88,8 +88,8 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
     private void radon_load(CallbackInfo ci) {
-        if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
-            this.tags.forEach(tag -> index.removeEntityFromTagMap(tag, (Entity) (Object) this));
+        if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+            this.tags.forEach(tag -> index.radon_removeEntityFromTagMap(tag, (Entity) (Object) this));
         }
     }
 
@@ -98,12 +98,12 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
     private void radon_load(ValueInput nbt, CallbackInfo ci) {
-        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.getEntityIndex().getEntity(uuid) != null && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex().getEntity(uuid) != null && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
             Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
             if(tagList.isPresent()) {
                 int max_size = Math.min(tagList.get().size(), 1024);
                 for (int i = 0; i < max_size; ++i) {
-                    index.addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
+                    index.radon_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
                 }
             }
         }
@@ -253,15 +253,15 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                 case "HasVisualFire" -> this.hasVisualFire = input.getBooleanOr("HasVisualFire", false);
                 case "data" -> this.customData = input.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                 case "Tags" -> {
-                    if (this.level instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender<?> index) {
-                        this.tags.forEach(tag -> index.removeEntityFromTagMap(tag, entity));
+                    if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+                        this.tags.forEach(tag -> index.radon_removeEntityFromTagMap(tag, entity));
                         this.tags.clear();
 
                         Optional<List<String>> tagList = input.read("Tags", TAG_LIST_CODEC);
                         if(tagList.isPresent()) {
                             int max_size = Math.min(tagList.get().size(), 1024);
                             for (int i = 0; i < max_size; ++i) {
-                                index.addEntityToTagMap(tagList.get().get(i), entity);
+                                index.radon_addEntityToTagMap(tagList.get().get(i), entity);
                             }
                         }
                     }

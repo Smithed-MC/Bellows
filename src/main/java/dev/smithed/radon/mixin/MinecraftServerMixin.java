@@ -6,14 +6,17 @@ import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.*;
-import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.level.progress.LevelLoadListener;
+import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,18 +27,13 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<TickTask> implements CommandSource, AutoCloseable, IMinecraftServerExtender {
+public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@NotNull TickTask> implements CommandSource, AutoCloseable, IMinecraftServerExtender {
 
-    public MinecraftServerMixin(String string) {
-        super(string);
+    public MinecraftServerMixin(String name, boolean propagatesCrashes) {
+        super(name, propagatesCrashes);
     }
 
-    @Shadow
-    private MinecraftServer.ReloadableResources resources;
-    @Shadow
-    @Final
-    protected WorldData worldData;
-
+    @Unique
     private final Map<String, Set<String>> entityTypes = new HashMap<>();
 
     /**
@@ -43,11 +41,11 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
      * Injects into constructor to build entityTypes map on load
      */
     @Inject(
-            method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;Lnet/minecraft/server/level/progress/ChunkProgressListenerFactory;)V",
+            method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/util/Optional;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;Lnet/minecraft/server/level/progress/LevelLoadListener;ZLnet/minecraft/server/notifications/NotificationManager;)V",
             at = @At("TAIL")
     )
-    private void radon_init(Thread serverThread, LevelStorageSource.LevelStorageAccess session, PackRepository dataPackManager, WorldStem saveLoader, Proxy proxy, DataFixer dataFixer, Services apiServices, ChunkProgressListenerFactory worldGenerationProgressListenerFactory, CallbackInfo cr) {
-        this.constructEntityTypes();
+    private void radon_init(Thread serverThread, LevelStorageSource.LevelStorageAccess storageSource, PackRepository packRepository, WorldStem worldStem, Optional gameRules, Proxy proxy, DataFixer fixerUpper, Services services, LevelLoadListener levelLoadListener, boolean propagatesCrashes, NotificationManager notificationManager, CallbackInfo ci) {
+        this.radon_constructEntityTypes();
     }
 
     /**
@@ -56,13 +54,15 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
      */
     @Inject(method = "reloadResources(Ljava/util/Collection;)Ljava/util/concurrent/CompletableFuture;", at = @At("TAIL"))
     public void radon_reloadResources(CallbackInfoReturnable<CompletableFuture<Void>> ci) {
-        if (ci.getReturnValue().isDone())
-            this.constructEntityTypes();
-        else
-            ci.getReturnValue().thenAcceptAsync(resourceManagerHolder -> this.constructEntityTypes());
+        if (ci.getReturnValue().isDone()) {
+            this.radon_constructEntityTypes();
+        } else {
+            ci.getReturnValue().thenAcceptAsync(resourceManagerHolder -> this.radon_constructEntityTypes());
+        }
     }
 
-    private void constructEntityTypes() {
+    @Unique
+    private void radon_constructEntityTypes() {
         this.entityTypes.clear();
         BuiltInRegistries.ENTITY_TYPE.listTags().forEach(tag -> {
             final Set<String> entries = new HashSet<>();
@@ -71,9 +71,8 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         });
     }
 
-
-    public Set<String> getEntityTagEntries(String tag) {
+    @Override
+    public Set<String> radon_getEntityTagEntries(String tag) {
         return this.entityTypes.get(tag);
     }
-
 }

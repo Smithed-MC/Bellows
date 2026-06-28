@@ -4,13 +4,14 @@ import dev.smithed.radon.utils.SelectorContainer;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import org.jetbrains.annotations.NotNull;
 
 public interface IEntityIndexExtender<T extends EntityAccess> {
 
-    void addEntityToTagMap(String tag, EntityAccess entity);
+    void radon_addEntityToTagMap(String tag, EntityAccess entity);
 
-    void removeEntityFromTagMap(String tag, EntityAccess entity);
+    void radon_removeEntityFromTagMap(String tag, EntityAccess entity);
 
-    <U extends T> void forEachTaggedEntity(EntityTypeTest<T, U> filter, SelectorContainer container, AbortableIterationConsumer<U> action);
+    <U extends T> void radon_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action);
 
 }

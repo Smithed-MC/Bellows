@@ -17,12 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BuildContexts.class)
 public abstract class BuildContextsMixin<T> {
 
-    @Shadow @Final String commandInput;
+    @Shadow @Final private String commandInput;
 
     @Inject(method = "execute", at = @At(value = "HEAD"))
     private void radon_execute(CallbackInfo ci) {
         Radon.logDebugFormat("run: %s", commandInput);
     }
-
-
 }

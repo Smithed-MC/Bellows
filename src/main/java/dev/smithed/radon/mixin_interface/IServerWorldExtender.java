@@ -6,11 +6,12 @@ import java.util.function.Predicate;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import org.jetbrains.annotations.NotNull;
 
 public interface IServerWorldExtender {
 
-    EntityLookup<?> getEntityIndex();
+    EntityLookup<?> radon_getEntityIndex();
 
-    <T extends Entity> void collectEntitiesByType(EntityTypeTest<Entity, T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container);
+    <T extends Entity> void radon_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container);
 
 }

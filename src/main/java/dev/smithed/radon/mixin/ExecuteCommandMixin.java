@@ -30,7 +30,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 @Mixin(ExecuteCommand.class)
 public class ExecuteCommandMixin {
 
-    @Shadow @Final static Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE;
+    @Shadow @Final private static Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE;
 
     /**
      * @author ImCoolYeah105
@@ -40,7 +40,7 @@ public class ExecuteCommandMixin {
             method = "checkMatchingData(Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
-    private static CompoundTag radon_countPathMatches(DataAccessor object, DataAccessor object2, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
+    private static CompoundTag radon_countPathMatches(DataAccessor object, DataAccessor accessor, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
         return RadonContextMutation.getDataCommandObjectNbt(path, object);
     }
 
@@ -57,7 +57,7 @@ public class ExecuteCommandMixin {
                 int i = requestResult ? returnValue : (successful ? 1 : 0);
                 path.set(nbtCompound, nbtSetter.apply(i));
                 RadonContextMutation.setDataCommandObjectNbt(path, object, nbtCompound);
-            } catch (CommandSyntaxException var8) {}
+            } catch (CommandSyntaxException _) {}
         }, CommandResultCallback::chain);
     }
 

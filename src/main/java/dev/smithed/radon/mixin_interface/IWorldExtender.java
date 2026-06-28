@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public interface IWorldExtender {
 
-    BlockState getBlockStateNoLoad(BlockPos pos);
-    BlockEntity getBlockEntityNoLoad(BlockPos pos);
+    BlockState radon_getBlockStateNoLoad(BlockPos pos);
+    BlockEntity radon_getBlockEntityNoLoad(BlockPos pos);
 
 }

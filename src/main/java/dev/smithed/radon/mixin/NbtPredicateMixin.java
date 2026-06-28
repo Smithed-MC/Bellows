@@ -3,17 +3,26 @@ package dev.smithed.radon.mixin;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.utils.NBTUtils;
-import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.Tag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.TagValueOutput;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
 
 @Mixin(NbtPredicate.class)
-public class NbtPredicateMixin {
+public abstract class NbtPredicateMixin {
 
+    @Shadow @Final private static Logger LOGGER;
     @Shadow @Final private CompoundTag tag;
+
+    @Shadow
+    public abstract boolean matches(@Nullable Tag tag);
 
     /**
      * @author ImCoolYeah105
@@ -21,30 +30,42 @@ public class NbtPredicateMixin {
      */
     @Overwrite
     public boolean matches(Entity entity) {
-        NbtPredicate predicate = ((NbtPredicate)(Object)this);
-
         CompoundTag nbt = null;
         if(Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
-            nbt = new CompoundTag();
-            String[] topLevelNbt = NBTUtils.getTopLevelPaths(this.tag);
-            for(String topNbt: topLevelNbt) {
-                if (entity instanceof ServerPlayer player && topNbt.equals("SelectedItem")) {
-                    ItemStack itemStack = player.getInventory().getSelected();
-                    if (!itemStack.isEmpty()) {
-                        nbt.put("SelectedItem", itemStack.save(entity.registryAccess()));
-                    }
-                } else {
-                    nbt = mixin.saveWithoutIdFiltered(nbt, topNbt);
-                    if (nbt == null)
+            try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+                TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+                for (String str : NBTUtils.getTopLevelPaths(this.tag)) {
+                    // if any attempt to get a data element fails, mark output as a failure and break out of the loop
+                    if(!radon_getFilteredNbt(mixin, output, str)) {
+                        output = null;
                         break;
+                    }
+                }
+                if(output != null) {
+                    nbt = output.buildResult();
                 }
             }
         }
 
-        if(nbt == null)
+        if(nbt == null) {
             nbt = NbtPredicate.getEntityTagToCompare(entity);
-        boolean result = predicate.matches(nbt);
+        }
+
+        boolean result = this.matches(nbt);
         Radon.logDebugFormat("Predicate = %s, nbt = %s", result, nbt);
         return result;
+    }
+
+    @Unique
+    private boolean radon_getFilteredNbt(IEntityMixin mixin, TagValueOutput output, String path) {
+        if (mixin instanceof Player player && path.startsWith("SelectedItem")) {
+            ItemStack selected = player.getInventory().getSelectedItem();
+            if (!selected.isEmpty()) {
+                output.store("SelectedItem", ItemStack.CODEC, selected);
+            }
+            return true;
+        } else {
+            return mixin.radon_saveWithoutIdFiltered(output, path);
+        }
     }
 }

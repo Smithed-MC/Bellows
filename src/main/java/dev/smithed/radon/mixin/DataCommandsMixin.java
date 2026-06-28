@@ -28,7 +28,6 @@ public abstract class DataCommandsMixin {
     @Redirect(
             method = "getSingleTag(Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;Lnet/minecraft/server/commands/data/DataAccessor;)Lnet/minecraft/nbt/Tag;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
-
     )
     private static CompoundTag radon_getSingleTag(DataAccessor dataCommandObject, NbtPathArgument.NbtPath nbtPath, DataAccessor dataCommandObject2) throws CommandSyntaxException {
         return RadonContextMutation.getDataCommandObjectNbt(nbtPath, dataCommandObject);
@@ -75,7 +74,7 @@ public abstract class DataCommandsMixin {
             String[] topLevelNbt = NBTUtils.getTopLevelPaths(nbt);
             CompoundTag nbtCompound = new CompoundTag();
             for(String topNbt: topLevelNbt) {
-                CompoundTag compound2 = mixin.getNbtFiltered(topNbt);
+                CompoundTag compound2 = mixin.radon_getDataFiltered(topNbt);
                 if(compound2.size() > 1) {
                     nbtCompound = compound2;
                     break;
@@ -100,13 +99,14 @@ public abstract class DataCommandsMixin {
             String[] topLevelNbt = NBTUtils.getTopLevelPaths(nbtCompound);
             boolean success = true;
             for(String topNbt: topLevelNbt) {
-                if(!mixin.setNbtFiltered(nbtCompound, topNbt)) {
+                if(!mixin.radon_setDataFiltered(nbtCompound, topNbt)) {
                     success = false;
                     break;
                 }
             }
-            if(success)
+            if(success) {
                 return;
+            }
         }
         dataCommandObject.setData(nbtCompound);
     }
@@ -142,7 +142,7 @@ public abstract class DataCommandsMixin {
      * Redirects executeRemove call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      */
     @Redirect(
-            method = "Lnet/minecraft/server/commands/data/DataCommands;resolveSourcePath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;)Ljava/util/List;",
+            method = "resolveSourcePath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;)Ljava/util/List;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
     private static CompoundTag radon_resolveSourcePath(DataAccessor dataCommandObject, CommandContext<CommandSourceStack> context, DataCommands.DataProvider objectType) throws CommandSyntaxException {

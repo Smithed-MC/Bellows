@@ -37,7 +37,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements ICustomNB
             case "DataVersion" -> NbtUtils.addCurrentDataVersion(output);
             case "Inventory" -> {
                 if (this.inventory instanceof IPlayerInventoryExtender mixin) {
-                    mixin.saveWithoutIdFiltered(output.list("Inventory", ItemStackWithSlot.CODEC), path);
+                    mixin.radon_saveWithoutIdFiltered(output.list("Inventory", ItemStackWithSlot.CODEC), path);
                 } else {
                     this.inventory.save(output.list("Inventory", ItemStackWithSlot.CODEC));
                 }
@@ -64,5 +64,4 @@ public abstract class PlayerMixin extends LivingEntityMixin implements ICustomNB
         }
         return true;
     }
-
 }

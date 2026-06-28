@@ -7,7 +7,7 @@
     "BlockDataAccessorMixin",
     "BlockInWorldMixin",
     "DataCommandsMixin",
-    "EntityDataAccessor",
+    "EntityDataAccessorMixin",
     "EntityIndexMixin",
     "EntitySelectorMixin",
     "EntitySelectorOptionsMixin",
