@@ -92,9 +92,6 @@ public class EntitySelectorOptionsMixin {
                 }
 
                 TagKey<@NotNull EntityType<?>> key = TagKey.create(Registries.ENTITY_TYPE, id);
-                parser.addPredicate((e) -> e.is(key) != inverted);
-                state.markParsedTag(id);
-
                 // BEGIN INJECT
                 if(Radon.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
                     entityExtender.radon_getSelectorContainer().type = key.location().toString();
@@ -102,12 +99,23 @@ public class EntitySelectorOptionsMixin {
                     entityExtender.radon_getSelectorContainer().isNotType = inverted;
                 }
                 // END INJECT
+
+                parser.addPredicate((e) -> e.is(key) != inverted);
+                state.markParsedTag(id);
             } else {
                 if (!state.canParseElement(inverted)) {
                     throw rollbackAndThrow(parser, start, ERROR_INAPPLICABLE_OPTION, "type");
                 }
 
                 Identifier id = Identifier.read(parser.getReader());
+                // BEGIN INJECT
+                if(Radon.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+                    entityExtender.radon_getSelectorContainer().type = id.toString();
+                    entityExtender.radon_getSelectorContainer().isTypeTag = false;
+                    entityExtender.radon_getSelectorContainer().isNotType = inverted;
+                }
+                // END INJECT
+
                 EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElseThrow(() -> rollbackAndThrow(parser, start, ERROR_ENTITY_TYPE_INVALID, id.toString()));
                 if (Objects.equals(EntityTypes.PLAYER, type) && !inverted) {
                     parser.setIncludesEntities(false);
@@ -117,16 +125,7 @@ public class EntitySelectorOptionsMixin {
                 if (!inverted) {
                     parser.limitToType(type);
                 }
-
                 state.markParsedElement(inverted);
-
-                // BEGIN INJECT
-                if(Radon.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
-                    entityExtender.radon_getSelectorContainer().type = id.getPath();
-                    entityExtender.radon_getSelectorContainer().isTypeTag = false;
-                    entityExtender.radon_getSelectorContainer().isNotType = inverted;
-                }
-                // END INJECT
             }
 
         }, (s) -> s.typeOption().canParseAny(), Component.translatable("argument.entity.options.type.description"));

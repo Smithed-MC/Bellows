@@ -1,6 +1,7 @@
 package dev.smithed.radon.mixin;
 
 import dev.smithed.radon.mixin_interface.IWorldExtender;
+import dev.smithed.radon.mixin_interface.ServerChunkCacheExtender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.*;
@@ -33,11 +34,9 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorld
             ChunkPos chunkPos = new ChunkPos(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
             LevelChunk worldChunk = this.getChunk(chunkPos.x(), chunkPos.z());
             BlockState blockState = worldChunk.getBlockState(pos);
-            if(this.getChunkSource() instanceof ServerChunkCache manager) {
-                // TODO: when access widener works, get tickets from ServerChunkCache and remove ticket
+            if(this.getChunkSource() instanceof ServerChunkCacheExtender manager) {
                 int targetTicketLevel = ChunkLevel.byStatus(ChunkStatus.FULL);
-                //manager.ticketStorage.removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
-                //tickets.removeTicket(TicketType.UNKNOWN, worldChunk.getPos(), i, worldChunk.getPos());
+                manager.radon_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
             }
             return blockState;
         }
@@ -50,10 +49,12 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorld
         } else if(!this.isClientSide && Thread.currentThread() != this.thread) {
             return null;
         } else {
+            ChunkPos chunkPos = new ChunkPos(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
             LevelChunk worldChunk = this.getChunkAt(pos);
             BlockEntity blockEntity = worldChunk.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
-            if(this.getChunkSource() instanceof ServerChunkCache manager) {
-                //tickets.removeTicket(TicketType.UNKNOWN, worldChunk.getPos(), i, worldChunk.getPos());
+            if(this.getChunkSource() instanceof ServerChunkCacheExtender manager) {
+                int targetTicketLevel = ChunkLevel.byStatus(ChunkStatus.FULL);
+                manager.radon_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
             }
             return blockEntity;
         }

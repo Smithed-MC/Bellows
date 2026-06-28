@@ -38,8 +38,9 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
     @Override
     public void radon_removeEntityFromTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.get(tag);
-        if(set != null)
+        if(set != null) {
             set.removeAll(Collections.singleton(entity));
+        }
     }
 
     /**

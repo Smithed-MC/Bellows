@@ -17,6 +17,7 @@
     "NbtPredicateMixin",
     "ServerLevelMixin",
     "LevelEntityGetterAdapter",
+    "ServerChunkCacheMixin",
     "LevelMixin",
     "entity.DisplayEntityMixin",
     "entity.EntityMixin",
