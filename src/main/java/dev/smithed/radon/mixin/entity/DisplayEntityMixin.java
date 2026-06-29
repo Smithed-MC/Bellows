@@ -37,6 +37,7 @@ public abstract class DisplayEntityMixin extends EntityMixin {
             case "height" -> output.putFloat("height", entity.getHeight());
             case "glow_color_override" -> output.putInt("glow_color_override", entity.getGlowColorOverride());
             case "brightness" -> output.storeNullable("brightness", Brightness.CODEC, entity.getBrightnessOverride());
+            case "start_interpolation" -> {} // special write-only case. This will make it return true, even without NBT added.
             default -> {
                 return false;
             }
