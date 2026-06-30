@@ -31,7 +31,7 @@ public class EntityDataAccessorMixin implements IDataAccessorMixin {
     @Shadow @Final private Entity entity;
 
     @Unique
-    private static final int MIN_ENTITY_NBT_SIZE = 19; //this is how many NBT tags the base entity class contains
+    private static final int MIN_ENTITY_NBT_SIZE = 10; //this is how many NBT tags the base entity class contains
 
     @Override
     public CompoundTag radon_getDataFiltered(String path) {
@@ -64,9 +64,8 @@ public class EntityDataAccessorMixin implements IDataAccessorMixin {
 
         // if getting the filtered data failed, try using the normal method
         if (nbtCompound == null) {
-            Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s'", path, this.entity.getClass());
             nbtCompound = NbtPredicate.getEntityTagToCompare(this.entity);
-            Radon.logDebugFormat("Retrieved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
+            Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s': falling back to default, data=", path, this.entity.getClass(), nbtCompound);
         } else {
             Radon.logDebugFormat("Retrieved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
         }
