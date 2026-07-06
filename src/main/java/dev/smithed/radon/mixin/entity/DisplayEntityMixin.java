@@ -53,7 +53,10 @@ public abstract class DisplayEntityMixin extends EntityMixin {
         Display entity = ((Display) (Object) this);
 
         switch (topLevelNbt) {
-            case "transformation" -> entity.setTransformation(input.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.IDENTITY));
+            case "transformation" -> {
+                entity.setTransformation(input.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.IDENTITY));
+                entity.setTransformationInterpolationDelay(0);
+            }
             case "interpolation_duration" -> entity.setTransformationInterpolationDuration(input.getIntOr("interpolation_duration", 0));
             case "start_interpolation" -> entity.setTransformationInterpolationDelay(input.getIntOr("start_interpolation", 0));
             case "teleport_duration" -> {
