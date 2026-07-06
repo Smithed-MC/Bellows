@@ -35,6 +35,9 @@ public abstract class NbtPredicateMixin {
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                 TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
                 for (String str : NBTUtils.getTopLevelPaths(this.tag)) {
+                    if(output.buildResult().contains(str)) {
+                        continue;
+                    }
                     // if any attempt to get a data element fails, mark output as a failure and break out of the loop
                     if(!radon_getFilteredNbt(mixin, output, str)) {
                         output = null;

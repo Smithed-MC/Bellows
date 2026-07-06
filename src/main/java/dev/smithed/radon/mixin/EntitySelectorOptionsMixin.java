@@ -161,7 +161,10 @@ public class EntitySelectorOptionsMixin {
                 if (Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
                     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                         TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
-                        for (String str : NBTUtils.getTopLevelPaths(tag)) {
+                        for (String str: NBTUtils.getTopLevelPaths(tag)) {
+                            if(output.buildResult().contains(str)) {
+                                continue;
+                            }
                             if (entity instanceof ServerPlayer player && str.startsWith("SelectedItem")) {
                                 ItemStack selected = player.getInventory().getSelectedItem();
                                 if (!selected.isEmpty()) {

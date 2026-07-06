@@ -20,6 +20,8 @@ public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMi
     @Shadow private long lootTableSeed;
     @Shadow private DropChances dropChances;
     @Shadow private Optional<ResourceKey<LootTable>> lootTable;
+    @Shadow private BlockPos homePosition;
+    @Shadow private int homeRadius;
 
     @Override
     public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
@@ -75,6 +77,13 @@ public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMi
             case "drop_chances" -> this.dropChances = input.read("drop_chances", DropChances.CODEC).orElse(DropChances.DEFAULT);
             case "leash" -> entity.readLeashData(input);
             case "LeftHanded" -> entity.setLeftHanded(input.getBooleanOr("LeftHanded", false));
+            case "home_radius" -> {
+                this.homeRadius = input.getIntOr("home_radius", -1);
+                if (this.homeRadius >= 0) {
+                    this.homePosition = input.read("home_pos", BlockPos.CODEC).orElse(BlockPos.ZERO);
+                }
+            }
+            case "home_pos" -> {} // handled by 'home_radius'
             case "DeathLootTable" -> this.lootTable = input.read("DeathLootTable", LootTable.KEY_CODEC);
             case "DeathLootTableSeed" -> this.lootTableSeed = input.getLongOr("DeathLootTableSeed", 0L);
             case "NoAI" -> entity.setNoAi(input.getBooleanOr("NoAI", false));

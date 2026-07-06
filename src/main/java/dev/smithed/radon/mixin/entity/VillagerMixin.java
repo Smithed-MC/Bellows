@@ -65,14 +65,16 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
         Villager entity = ((Villager)(Object)this);
 
         switch (topLevelNbt) {
-            case "VillagerData", "VillagerDataFinalized" -> {
+            case "VillagerData" -> {
                 Optional<VillagerData> villagerDataOptional = input.read("VillagerData", VillagerData.CODEC);
                 if (input.getBooleanOr("VillagerDataFinalized", false) || villagerDataOptional.isPresent()) {
                     entity.setVillagerDataFinalized(true);
                     VillagerData villagerData = villagerDataOptional.orElseGet(Villager::createDefaultVillagerData);
                     this.entityData.set(DATA_VILLAGER_DATA, villagerData);
                 }
+
             }
+            case "VillagerDataFinalized" -> {}
             case "FoodLevel" -> this.foodLevel = input.getByteOr("FoodLevel", (byte)0);
             case "Gossips" -> {
                 this.gossips.clear();

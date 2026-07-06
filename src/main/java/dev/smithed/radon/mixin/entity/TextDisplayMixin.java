@@ -20,6 +20,7 @@ import java.util.Optional;
 public abstract class TextDisplayMixin extends DisplayEntityMixin {
 
     @Shadow private static void storeFlag(final byte flags, final ValueOutput output, final String id, final byte mask) {}
+    @Shadow private static byte loadFlag(final byte flags, final ValueInput input, final String id, final byte mask) { return 0; }
 
     @Override
     public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
@@ -58,6 +59,27 @@ public abstract class TextDisplayMixin extends DisplayEntityMixin {
             case "line_width" -> entity.setLineWidth(input.getIntOr("line_width", 200));
             case "text_opacity" -> entity.setTextOpacity(input.getByteOr("text_opacity", (byte)-1));
             case "background" -> entity.setBackgroundColor(input.getIntOr("background", 1073741824));
+            case "shadow" -> {
+                byte flags = loadFlag((byte)0, input, "shadow", (byte)1);
+                flags = loadFlag(flags, input, "see_through", (byte)2);
+                flags = loadFlag(flags, input, "default_background", (byte)4);
+                Optional<Display.TextDisplay.Align> alignment = input.read("alignment", Display.TextDisplay.Align.CODEC);
+                if (alignment.isPresent()) {
+                    byte var10000;
+                    switch (alignment.get().ordinal()) {
+                        case 0 -> var10000 = flags;
+                        case 1 -> var10000 = (byte)(flags | 8);
+                        case 2 -> var10000 = (byte)(flags | 16);
+                        default -> throw new MatchException((String)null, (Throwable)null);
+                    }
+
+                    flags = var10000;
+                }
+                entity.setFlags(flags);
+            }
+            case "see_through" -> {} // these cases handled by 'shadow'
+            case "default_background" -> {}
+            case "alignment" -> {}
             case "text" -> {
                 Optional<Component> text = input.read("text", ComponentSerialization.CODEC);
                 if (text.isPresent()) {
