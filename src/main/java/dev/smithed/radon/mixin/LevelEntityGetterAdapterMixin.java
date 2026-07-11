@@ -3,6 +3,7 @@ package dev.smithed.radon.mixin;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.ISimpleEntityLookupExtender;
 import dev.smithed.radon.utils.SelectorContainer;
+import net.minecraft.world.level.entity.LevelEntityGetterAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,8 +14,8 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
 
-@Mixin(net.minecraft.world.level.entity.LevelEntityGetterAdapter.class)
-public abstract class LevelEntityGetterAdapter<T extends EntityAccess> implements ISimpleEntityLookupExtender<T> {
+@Mixin(LevelEntityGetterAdapter.class)
+public abstract class LevelEntityGetterAdapterMixin<T extends EntityAccess> implements ISimpleEntityLookupExtender<T> {
 
     @Shadow @Final private EntityLookup<@NotNull T> visibleEntities;
 
