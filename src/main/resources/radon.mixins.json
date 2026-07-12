@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "dev.smithed.radon.mixin",
   "compatibilityLevel": "JAVA_17",
+  "plugin": "dev.smithed.radon.MixinConfig",
   "mixins": [
     "BlockDataAccessorMixin",
     "BlockInWorldMixin",
