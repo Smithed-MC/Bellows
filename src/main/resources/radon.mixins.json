@@ -33,7 +33,8 @@
     "entity.VillagerMixin",
     "entity.WanderingTraderMixin",
     "misc.EnderChestInventoryMixin",
-    "misc.InventoryMixin"
+    "misc.InventoryMixin",
+    "moonrise.MoonriseEntityLookupMixin"
   ],
   "client": [],
   "injectors": {

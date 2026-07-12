@@ -98,12 +98,12 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
     private void radon_load(ValueInput nbt, CallbackInfo ci) {
-        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex().getEntity(uuid) != null && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() != null) {
             Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
             if(tagList.isPresent()) {
                 int max_size = Math.min(tagList.get().size(), 1024);
                 for (int i = 0; i < max_size; ++i) {
-                    index.radon_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
+                    world.radon_getEntityIndex().radon_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
                 }
             }
         }
