@@ -70,7 +70,7 @@ public abstract class DisplayEntityMixin extends EntityMixin {
             case "width" -> entity.setWidth(input.getFloatOr("width", 0.0F));
             case "height" -> entity.setHeight(input.getFloatOr("height", 0.0F));
             case "glow_color_override" -> entity.setGlowColorOverride(input.getIntOr("glow_color_override", -1));
-            case "brightness" -> entity.setBrightnessOverride((Brightness)input.read("brightness", Brightness.CODEC).orElse(null));
+            case "brightness" -> entity.setBrightnessOverride(input.read("brightness", Brightness.CODEC).orElse(null));
             default -> {
                 return false;
             }
