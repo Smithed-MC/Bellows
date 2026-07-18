@@ -7,21 +7,21 @@ import dev.smithed.radon.mixin_interface.IDataAccessorMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.advancements.predicates.NbtPredicate;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.commands.data.EntityDataAccessor;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.UUID;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(EntityDataAccessor.class)
 public class EntityDataAccessorMixin implements IDataAccessorMixin {
@@ -68,7 +68,7 @@ public class EntityDataAccessorMixin implements IDataAccessorMixin {
         // if getting the filtered data failed, try using the normal method
         if (nbtCompound == null) {
             nbtCompound = NbtPredicate.getEntityTagToCompare(this.entity);
-            Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s': falling back to default, data=", path, this.entity.getClass(), nbtCompound);
+            Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s': falling back to default, data=%s", path, this.entity.getClass(), nbtCompound);
         } else {
             Radon.logDebugFormat("Retrieved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
         }
