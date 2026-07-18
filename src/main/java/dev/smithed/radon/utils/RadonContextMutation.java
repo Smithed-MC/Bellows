@@ -2,8 +2,7 @@ package dev.smithed.radon.utils;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.smithed.radon.Radon;
-import dev.smithed.radon.mixin_interface.IDataAccessorMixin;
-import dev.smithed.radon.mixin_interface.IEntityMixin;
+import dev.smithed.radon.mixin_interface.EntityDataAccessorExtender;
 import dev.smithed.radon.mixin_interface.IWorldExtender;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.BlockPos;
@@ -33,7 +32,7 @@ public class RadonContextMutation {
 
     public static CompoundTag getDataCommandObjectNbt(NbtPathArgument.NbtPath nbtPath, DataAccessor dataCommandObject) throws CommandSyntaxException {
         CompoundTag nbtCompound = null;
-        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataAccessorMixin mixin) {
+        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof EntityDataAccessorExtender mixin) {
             nbtCompound = mixin.radon_getDataFiltered(nbtPath.toString());
         }
 
@@ -45,7 +44,7 @@ public class RadonContextMutation {
     }
 
     public static void setDataCommandObjectNbt(NbtPathArgument.NbtPath nbtPath, DataAccessor dataCommandObject, CompoundTag nbtCompound) throws CommandSyntaxException {
-        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof IDataAccessorMixin mixin) {
+        if (Radon.CONFIG.nbtOptimizations && dataCommandObject instanceof EntityDataAccessorExtender mixin) {
             mixin.radon_setDataFiltered(nbtCompound, nbtPath.toString());
         } else {
             dataCommandObject.setData(nbtCompound);

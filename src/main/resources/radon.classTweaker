@@ -2,3 +2,4 @@ classTweaker v1 official
 
 accessible class net/minecraft/server/commands/data/DataCommands$DataManipulator
 accessible class net/minecraft/server/MinecraftServer$ReloadableResources
+extendable class net/minecraft/nbt/CompoundTag

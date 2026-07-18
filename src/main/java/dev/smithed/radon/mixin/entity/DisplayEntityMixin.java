@@ -1,19 +1,28 @@
 package dev.smithed.radon.mixin.entity;
 
 import com.mojang.math.Transformation;
+import dev.smithed.radon.mixin_interface.DisplayEntityExtender;
+import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.joml.Quaternionfc;
+import org.joml.Vector3fc;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Display.class)
-public abstract class DisplayEntityMixin extends EntityMixin {
+public abstract class DisplayEntityMixin extends EntityMixin implements DisplayEntityExtender {
+
+    @Shadow @Final private static EntityDataAccessor<Vector3fc> DATA_TRANSLATION_ID;
+    @Shadow @Final private static EntityDataAccessor<Vector3fc> DATA_SCALE_ID;
+    @Shadow @Final private static EntityDataAccessor<Quaternionfc> DATA_LEFT_ROTATION_ID;
+    @Shadow @Final private static EntityDataAccessor<Quaternionfc> DATA_RIGHT_ROTATION_ID;
 
     @Shadow @Final protected static Logger LOGGER;
     @Shadow private static Transformation createTransformation(SynchedEntityData dataTracker) { return null; }
@@ -76,5 +85,13 @@ public abstract class DisplayEntityMixin extends EntityMixin {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean radon_hasTransformation(Transformation transformation) {
+        return this.entityData.get(DATA_TRANSLATION_ID).equals(transformation.translation())
+            && this.entityData.get(DATA_LEFT_ROTATION_ID).equals(transformation.leftRotation())
+            && this.entityData.get(DATA_SCALE_ID).equals(transformation.scale())
+            && this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(transformation.rightRotation());
     }
 }

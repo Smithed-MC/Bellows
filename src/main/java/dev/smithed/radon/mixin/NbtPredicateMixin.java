@@ -1,7 +1,7 @@
 package dev.smithed.radon.mixin;
 
 import dev.smithed.radon.Radon;
-import dev.smithed.radon.mixin_interface.IEntityMixin;
+import dev.smithed.radon.mixin_interface.EntityExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.nbt.CompoundTag;
@@ -31,7 +31,7 @@ public abstract class NbtPredicateMixin {
     @Overwrite
     public boolean matches(Entity entity) {
         CompoundTag nbt = null;
-        if(Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
+        if(Radon.CONFIG.nbtOptimizations && entity instanceof EntityExtender mixin) {
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                 TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
                 for (String str : NBTUtils.getTopLevelPaths(this.tag)) {
@@ -60,7 +60,7 @@ public abstract class NbtPredicateMixin {
     }
 
     @Unique
-    private boolean radon_getFilteredNbt(IEntityMixin mixin, TagValueOutput output, String path) {
+    private boolean radon_getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
         if (mixin instanceof Player player && path.startsWith("SelectedItem")) {
             ItemStack selected = player.getInventory().getSelectedItem();
             if (!selected.isEmpty()) {

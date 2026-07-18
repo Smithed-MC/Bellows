@@ -3,13 +3,26 @@ package dev.smithed.radon.mixin;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import dev.smithed.radon.Radon;
-import dev.smithed.radon.mixin_interface.IEntityMixin;
+import dev.smithed.radon.mixin_interface.EntityExtender;
 import dev.smithed.radon.mixin_interface.IEntitySelectorReaderExtender;
 import dev.smithed.radon.utils.NBTUtils;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.commands.arguments.selector.options.InvertableSetOptionState;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -24,20 +37,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.selector.EntitySelectorParser;
-import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.ItemStack;
 
 @Mixin(EntitySelectorOptions.class)
 public class EntitySelectorOptionsMixin {
@@ -158,7 +157,7 @@ public class EntitySelectorOptionsMixin {
             CompoundTag tag = TagParser.parseCompoundAsArgument(parser.getReader());
             parser.addPredicate((entity) -> {
                 CompoundTag nbtCompound = null;
-                if (Radon.CONFIG.nbtOptimizations && entity instanceof IEntityMixin mixin) {
+                if (Radon.CONFIG.nbtOptimizations && entity instanceof EntityExtender mixin) {
                     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                         TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
                         for (String str: NBTUtils.getTopLevelPaths(tag)) {

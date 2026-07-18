@@ -4,7 +4,9 @@ import dev.smithed.radon.mixin_interface.IWorldExtender;
 import dev.smithed.radon.mixin_interface.ServerChunkCacheExtender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.*;
+import net.minecraft.server.level.ChunkLevel;
+import net.minecraft.server.level.Ticket;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -59,5 +61,4 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorld
             return blockEntity;
         }
     }
-
 }
