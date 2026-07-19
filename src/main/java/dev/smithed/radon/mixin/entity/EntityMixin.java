@@ -215,9 +215,11 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
                         }
                     }
                 }
-                default -> this.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
+                default -> {
+                    return this.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
+                }
             }
-            return !output.isEmpty();
+            return true;
         } catch (Throwable var9) {
             CrashReport crashReport = CrashReport.forThrowable(var9, "Saving entity NBT");
             CrashReportCategory crashReportSection = crashReport.addCategory("Entity being saved");

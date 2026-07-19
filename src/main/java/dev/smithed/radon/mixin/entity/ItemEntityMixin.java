@@ -4,6 +4,8 @@ import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
@@ -11,8 +13,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.UUID;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.ItemStack;
 
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends EntityMixin implements ICustomNBTMixin {
@@ -57,10 +57,10 @@ public abstract class ItemEntityMixin extends EntityMixin implements ICustomNBTM
 
         switch (topLevelNbt) {
             case "Health" -> this.health = input.getShortOr("Health", (short)5);
-            case "Age" -> input.getShortOr("Age", (short)0);
-            case "PickupDelay" -> input.getShortOr("PickupDelay", (short)0);
+            case "Age" -> this.age = input.getShortOr("Age", (short)0);
+            case "PickupDelay" -> this.pickupDelay = input.getShortOr("PickupDelay", (short)0);
             case "Owner" -> this.target = input.read("Owner", UUIDUtil.CODEC).orElse(null);
-            case "Thrower" -> EntityReference.read(input, "Thrower");
+            case "Thrower" -> this.thrower = EntityReference.read(input, "Thrower");
             case "Item" -> entity.setItem(input.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
             default -> {
                 return false;
