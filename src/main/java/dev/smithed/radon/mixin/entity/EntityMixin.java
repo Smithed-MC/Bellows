@@ -281,6 +281,7 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
                             for (int i = 0; i < max_size; ++i) {
                                 index.radon_addEntityToTagMap(tagList.get().get(i), entity);
                             }
+                            this.tags.addAll(tagList.get());
                         }
                     }
                 }
