@@ -3,7 +3,6 @@ package dev.smithed.radon.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import dev.smithed.radon.Radon;
 import net.minecraft.commands.CommandSourceStack;
@@ -25,7 +24,13 @@ public class RadonCommand {
                 .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_debug_mode)))
             .then(Commands.literal("fix-block-access-forceload").executes(RadonCommand::toggle_block_forceload_mode)
                 .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_block_forceload_mode)))
+            .then(Commands.literal("debug").redirect(dispatcher.getRoot(), RadonCommand::debugStart))
         );
+    }
+
+    public static CommandSourceStack debugStart(CommandContext<CommandSourceStack> context) {
+        Radon.CONFIG.debugContext = context;
+        return context.getSource().withCallback((_, _) -> Radon.CONFIG.debugContext = null);
     }
 
     public static int toggle_radon_nbt(CommandContext<CommandSourceStack> context) {
