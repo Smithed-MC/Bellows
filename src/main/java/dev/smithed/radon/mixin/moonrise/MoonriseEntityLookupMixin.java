@@ -105,7 +105,7 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
             }
         }
 
-        if (size == 0)
+        if (size == 0 || (!container.selectorTags.isEmpty() && size == Integer.MAX_VALUE))
             return;
 
         if(size >= REASONABLE_SEARCH_SIZE) {
