@@ -37,7 +37,8 @@
     "entity.WanderingTraderMixin",
     "misc.EnderChestInventoryMixin",
     "misc.InventoryMixin",
-    "moonrise.MoonriseEntityLookupMixin"
+    "moonrise.MoonriseEntityLookupMixin",
+    "profiler.ServerChunkCacheMixin"
   ],
   "client": [],
   "injectors": {

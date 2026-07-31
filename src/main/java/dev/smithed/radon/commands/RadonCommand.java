@@ -11,7 +11,6 @@ import net.minecraft.network.chat.Component;
 
 public class RadonCommand {
 
-
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) { // You can also return a LiteralCommandNode for use with possible redirects
         dispatcher.register(
             Commands.literal("radon")
