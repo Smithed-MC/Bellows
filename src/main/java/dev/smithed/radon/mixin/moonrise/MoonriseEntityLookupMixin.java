@@ -126,7 +126,7 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
                     }
                 } else {
                     Set<EntityAccess> result = this.entityMap.getOrDefault(container.type, new HashSet<>());
-                    if (result != null && result.size() < size) {
+                    if (result.size() < size) {
                         set = result;
                         size = result.size();
                     }
