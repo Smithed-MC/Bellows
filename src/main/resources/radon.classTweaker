@@ -7,3 +7,4 @@ extendable class net/minecraft/nbt/CompoundTag
 
 accessible field net/minecraft/server/commands/FunctionCommand ERROR_NO_FUNCTIONS Lcom/mojang/brigadier/exceptions/DynamicCommandExceptionType;
 accessible field net/minecraft/server/commands/FunctionCommand FULL_CONTEXT_CALLBACKS Lnet/minecraft/server/commands/FunctionCommand$Callbacks;
+accessible field net/minecraft/world/entity/Avatar DATA_PLAYER_MODE_CUSTOMISATION Lnet/minecraft/network/syncher/EntityDataAccessor;
