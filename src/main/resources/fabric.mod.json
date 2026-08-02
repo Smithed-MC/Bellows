@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "radon",
-  "version": "0.10.8",
+  "version": "0.10.9",
 
   "name": "Radon",
   "description": "Targeted optimizations for Minecraft Commands.",

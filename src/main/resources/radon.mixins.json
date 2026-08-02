@@ -24,7 +24,6 @@
     "ServerLevelMixin",
     "entity.AbstractVillagerMixin",
     "entity.AgeableMobMixin",
-    "entity.AvatarMixin",
     "entity.CopperGolemMixin",
     "entity.DisplayEntityMixin",
     "entity.EntityMixin",
