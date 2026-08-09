@@ -15,6 +15,7 @@ public class RadonCommand {
         dispatcher.register(
             Commands.literal("radon")
             .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+            .then(Commands.literal("version").executes(RadonCommand::version))
             .then(Commands.literal("nbt-optimizations").executes(RadonCommand::toggle_radon_nbt)
                 .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_radon_nbt)))
             .then(Commands.literal("selector-optimizations").executes(RadonCommand::toggle_radon_selector)
@@ -25,6 +26,11 @@ public class RadonCommand {
                 .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_block_forceload_mode)))
             .then(Commands.literal("debug").redirect(dispatcher.getRoot(), RadonCommand::debugStart))
         );
+    }
+
+    public static int version(CommandContext<CommandSourceStack> context) {
+        context.getSource().sendSuccess(() -> Component.literal("version = 0.10.10"), true);
+        return 1010;
     }
 
     public static CommandSourceStack debugStart(CommandContext<CommandSourceStack> context) {
