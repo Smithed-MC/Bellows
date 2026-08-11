@@ -1,6 +1,5 @@
 package dev.smithed.radon.mixin;
 
-import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.IMinecraftServerExtender;
 import dev.smithed.radon.mixin_interface.IServerWorldExtender;
@@ -16,6 +15,9 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -60,6 +62,15 @@ public abstract class ServerLevelMixin implements IServerWorldExtender {
             });
         } else {
             ((ServerLevel) (Object) this).getEntities(filter, predicate, result, limit);
+        }
+    }
+
+    @Inject(method = "tryAddFreshEntityWithPassengers(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"))
+    public void radon_tryAddFreshEntityWithPassengers(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if(!cir.getReturnValue()) {
+            for(String tag: entity.entityTags()) {
+                radon_getEntityIndex().radon_removeEntityFromTagMap(tag, entity);
+            }
         }
     }
 }
