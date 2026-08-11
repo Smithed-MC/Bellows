@@ -20,7 +20,6 @@ public class CompoundTagMixin implements CompoundTagExtender {
         QuickActions tag = new QuickActions((CompoundTag) (Object)this);
         if(tag.hasQuickActions()) {
             quickActions = tag;
-        } else {
         }
     }
 

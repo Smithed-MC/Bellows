@@ -35,7 +35,6 @@ public class QuickActions {
                             left_rotation.ifPresent(extender::radon_setLeftRotation);
                             scale.ifPresent(extender::radon_setScale);
                             right_rotation.ifPresent(extender::radon_setRightRotation);
-                            display.setTransformationInterpolationDelay(0);
                         }
                     }).orElse(null);
                 }
@@ -50,7 +49,6 @@ public class QuickActions {
                             extender.radon_setLeftRotation(transform.get().leftRotation());
                             extender.radon_setScale(transform.get().scale());
                             extender.radon_setRightRotation(transform.get().rightRotation());
-                            display.setTransformationInterpolationDelay(0);
                         }
                     }).orElse(null);
                 }

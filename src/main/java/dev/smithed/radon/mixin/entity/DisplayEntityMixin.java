@@ -33,6 +33,9 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
 
     @Shadow @Final protected static Logger LOGGER;
 
+    @Shadow @Final
+    public abstract void setTransformationInterpolationDelay(final int ticks);
+
     @Shadow
     public abstract void setTransformation(Transformation transformation);
 
@@ -131,17 +134,10 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public boolean radon_hasTransformation(Transformation transformation) {
-        return this.entityData.get(DATA_TRANSLATION_ID).equals(transformation.translation())
-                && this.entityData.get(DATA_LEFT_ROTATION_ID).equals(transformation.leftRotation())
-                && this.entityData.get(DATA_SCALE_ID).equals(transformation.scale())
-                && this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(transformation.rightRotation());
-    }
-
-    @Override
     public void radon_setTranslation(Vector3fc translation) {
         if(!this.entityData.get(DATA_TRANSLATION_ID).equals(translation)) {
             this.entityData.set(DATA_TRANSLATION_ID, translation);
+            this.setTransformationInterpolationDelay(0);
         }
     }
 
@@ -149,6 +145,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     public void radon_setLeftRotation(Quaternionfc leftRotation) {
         if(!this.entityData.get(DATA_LEFT_ROTATION_ID).equals(leftRotation)) {
             this.entityData.set(DATA_LEFT_ROTATION_ID, leftRotation);
+            this.setTransformationInterpolationDelay(0);
         }
     }
 
@@ -156,6 +153,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     public void radon_setScale(Vector3fc scale) {
         if(!this.entityData.get(DATA_SCALE_ID).equals(scale)) {
             this.entityData.set(DATA_SCALE_ID, scale);
+            this.setTransformationInterpolationDelay(0);
         }
     }
 
@@ -163,6 +161,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     public void radon_setRightRotation(Quaternionfc rightRotation) {
         if(!this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(rightRotation)) {
             this.entityData.set(DATA_RIGHT_ROTATION_ID, rightRotation);
+            this.setTransformationInterpolationDelay(0);
         }
     }
 }
