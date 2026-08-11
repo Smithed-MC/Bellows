@@ -4,8 +4,12 @@ import com.mojang.math.Transformation;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.DisplayEntityExtender;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
+import org.joml.Quaternionfc;
+import org.joml.Vector3fc;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -18,14 +22,51 @@ public class QuickActions {
 
     private static final Map<String, Function<CompoundTag, Consumer<Entity>>> QUICK_ACTIONS = Map.of(
             "transformation", tag -> {
-                Optional<Transformation> transformation = tag.read("transformation", Transformation.EXTENDED_CODEC);
-                return transformation.<Consumer<Entity>>map(value -> (Entity entity) -> {
-                    if (entity instanceof Display display && entity instanceof DisplayEntityExtender extender && !extender.radon_hasTransformation(transformation.get())) {
-                        display.setTransformation(value);
+                Optional<CompoundTag> transformation = tag.getCompound("transformation");
+                if(transformation.isPresent()) {
+                    Optional<Vector3fc> translation = transformation.get().read("translation", ExtraCodecs.VECTOR3F);
+                    Optional<Quaternionfc> left_rotation = transformation.get().read("left_rotation", ExtraCodecs.QUATERNIONF);
+                    Optional<Vector3fc> scale = transformation.get().read("scale", ExtraCodecs.VECTOR3F);
+                    Optional<Quaternionfc> right_rotation = transformation.get().read("right_rotation", ExtraCodecs.QUATERNIONF);
+
+                    return transformation.<Consumer<Entity>>map(_ -> (Entity entity) -> {
+                        if (entity instanceof Display display && entity instanceof DisplayEntityExtender extender) {
+                            translation.ifPresent(extender::radon_setTranslation);
+                            left_rotation.ifPresent(extender::radon_setLeftRotation);
+                            scale.ifPresent(extender::radon_setScale);
+                            right_rotation.ifPresent(extender::radon_setRightRotation);
+                            display.setTransformationInterpolationDelay(0);
+                        }
+                    }).orElse(null);
+                }
+
+                Optional<ListTag> matrix = tag.getList("transformation");
+                if(matrix.isPresent()) {
+                    Optional<Transformation> transform = tag.read("transformation", Transformation.EXTENDED_CODEC);
+
+                    return transform.<Consumer<Entity>>map(_ -> (Entity entity) -> {
+                        if (entity instanceof Display display && entity instanceof DisplayEntityExtender extender) {
+                            extender.radon_setTranslation(transform.get().translation());
+                            extender.radon_setLeftRotation(transform.get().leftRotation());
+                            extender.radon_setScale(transform.get().scale());
+                            extender.radon_setRightRotation(transform.get().rightRotation());
+                            display.setTransformationInterpolationDelay(0);
+                        }
+                    }).orElse(null);
+                }
+
+                return null;
+            }
+            /*"translation", tag -> {
+                Optional<Vector3fc> translation = tag.read("translation", ExtraCodecs.VECTOR3F);
+
+                return translation.<Consumer<Entity>>map(_ -> (Entity entity) -> {
+                    if (entity instanceof Display display && entity instanceof DisplayEntityExtender extender) {
+                        translation.ifPresent(extender::radon_setTranslation);
                         display.setTransformationInterpolationDelay(0);
                     }
                 }).orElse(null);
-            }
+            }*/
     );
 
     private final Set<String> quickActionTags;

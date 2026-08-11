@@ -3,10 +3,12 @@ package dev.smithed.radon.mixin.entity;
 import com.mojang.math.Transformation;
 import dev.smithed.radon.mixin_interface.DisplayEntityExtender;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Brightness;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.joml.Quaternionfc;
@@ -15,6 +17,11 @@ import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Optional;
 
 @Mixin(Display.class)
 public abstract class DisplayEntityMixin extends EntityMixin implements DisplayEntityExtender {
@@ -25,7 +32,14 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     @Shadow @Final private static EntityDataAccessor<Quaternionfc> DATA_RIGHT_ROTATION_ID;
 
     @Shadow @Final protected static Logger LOGGER;
-    @Shadow private static Transformation createTransformation(SynchedEntityData dataTracker) { return null; }
+
+    @Shadow
+    public abstract void setTransformation(Transformation transformation);
+
+    @Inject(method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V", at = @At("TAIL"))
+    private void radon_init(EntityType<?> type, Level level, CallbackInfo ci) {
+        setTransformation(Transformation.IDENTITY);
+    }
 
     @Override
     public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
@@ -35,7 +49,15 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
         Display entity = ((Display) (Object) this);
 
         switch (topLevelNbt) {
-            case "transformation" -> output.store("transformation", Transformation.EXTENDED_CODEC, createTransformation(entity.getEntityData()));
+            case "transformation" -> {
+                // server side display entity does not use the matrix form of the transformation and only stores the component form.
+                // So we bypass creating a new transformation entirely and store each component individually.
+                ValueOutput transformation = output.child("transformation");
+                transformation.store("translation", ExtraCodecs.VECTOR3F, entityData.get(DATA_TRANSLATION_ID));
+                transformation.store("left_rotation", ExtraCodecs.QUATERNIONF, entityData.get(DATA_LEFT_ROTATION_ID));
+                transformation.store("scale", ExtraCodecs.VECTOR3F, entityData.get(DATA_SCALE_ID));
+                transformation.store("right_rotation", ExtraCodecs.QUATERNIONF, entityData.get(DATA_RIGHT_ROTATION_ID));
+            }
             case "billboard" -> output.store("billboard", Display.BillboardConstraints.CODEC, entity.getBillboardConstraints());
             case "interpolation_duration" -> output.putInt("interpolation_duration", entity.getTransformationInterpolationDuration());
             case "teleport_duration" -> output.putInt("teleport_duration", entity.getPosRotInterpolationDuration());
@@ -63,8 +85,29 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
 
         switch (topLevelNbt) {
             case "transformation" -> {
-                entity.setTransformation(input.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.IDENTITY));
-                entity.setTransformationInterpolationDelay(input.getIntOr("start_interpolation", 0));
+                Optional<ValueInput> transformation = input.child("transformation");
+                if(transformation.isPresent()) {
+                    Optional<Vector3fc> translation = transformation.get().read("translation", ExtraCodecs.VECTOR3F);
+                    Optional<Quaternionfc> left_rotation = transformation.get().read("left_rotation", ExtraCodecs.QUATERNIONF);
+                    Optional<Vector3fc> scale = transformation.get().read("scale", ExtraCodecs.VECTOR3F);
+                    Optional<Quaternionfc> right_rotation = transformation.get().read("right_rotation", ExtraCodecs.QUATERNIONF);
+
+                    if(translation.isPresent() && !this.entityData.get(DATA_TRANSLATION_ID).equals(translation.get())) {
+                        this.entityData.set(DATA_TRANSLATION_ID, translation.get());
+                    }
+                    if(left_rotation.isPresent() && !this.entityData.get(DATA_LEFT_ROTATION_ID).equals(left_rotation.get())) {
+                        this.entityData.set(DATA_LEFT_ROTATION_ID, left_rotation.get());
+                    }
+                    if(scale.isPresent() && !this.entityData.get(DATA_SCALE_ID).equals(scale.get())) {
+                        this.entityData.set(DATA_SCALE_ID, scale.get());
+                    }
+                    if(right_rotation.isPresent() && !this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(right_rotation.get())) {
+                        this.entityData.set(DATA_RIGHT_ROTATION_ID, right_rotation.get());
+                    }
+                    entity.setTransformationInterpolationDelay(input.getIntOr("start_interpolation", 0));
+                } else {
+                    this.setTransformation(input.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.IDENTITY));
+                }
             }
             case "interpolation_duration" -> entity.setTransformationInterpolationDuration(input.getIntOr("interpolation_duration", 0));
             case "start_interpolation" -> {}
@@ -90,8 +133,36 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     @Override
     public boolean radon_hasTransformation(Transformation transformation) {
         return this.entityData.get(DATA_TRANSLATION_ID).equals(transformation.translation())
-            && this.entityData.get(DATA_LEFT_ROTATION_ID).equals(transformation.leftRotation())
-            && this.entityData.get(DATA_SCALE_ID).equals(transformation.scale())
-            && this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(transformation.rightRotation());
+                && this.entityData.get(DATA_LEFT_ROTATION_ID).equals(transformation.leftRotation())
+                && this.entityData.get(DATA_SCALE_ID).equals(transformation.scale())
+                && this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(transformation.rightRotation());
+    }
+
+    @Override
+    public void radon_setTranslation(Vector3fc translation) {
+        if(!this.entityData.get(DATA_TRANSLATION_ID).equals(translation)) {
+            this.entityData.set(DATA_TRANSLATION_ID, translation);
+        }
+    }
+
+    @Override
+    public void radon_setLeftRotation(Quaternionfc leftRotation) {
+        if(!this.entityData.get(DATA_LEFT_ROTATION_ID).equals(leftRotation)) {
+            this.entityData.set(DATA_LEFT_ROTATION_ID, leftRotation);
+        }
+    }
+
+    @Override
+    public void radon_setScale(Vector3fc scale) {
+        if(!this.entityData.get(DATA_SCALE_ID).equals(scale)) {
+            this.entityData.set(DATA_SCALE_ID, scale);
+        }
+    }
+
+    @Override
+    public void radon_setRightRotation(Quaternionfc rightRotation) {
+        if(!this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(rightRotation)) {
+            this.entityData.set(DATA_RIGHT_ROTATION_ID, rightRotation);
+        }
     }
 }
