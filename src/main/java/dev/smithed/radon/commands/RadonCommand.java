@@ -29,8 +29,8 @@ public class RadonCommand {
     }
 
     public static int version(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSuccess(() -> Component.literal("version = 0.10.13pld"), true);
-        return 1013;
+        context.getSource().sendSuccess(() -> Component.literal("version = 0.10.14pld"), true);
+        return 1014;
     }
 
     public static CommandSourceStack debugStart(CommandContext<CommandSourceStack> context) {

@@ -25,7 +25,7 @@ dependencies {
 
 	// mod integrations
 	// modImplementation "maven.modrinth:lithium:${project.lithium_version}"
-    implementation  files("lib/Moonrise-Fabric-1.1.1-SNAPSHOT+c8490c7.jar")
+    implementation  files("lib/Moonrise-Fabric-1.1.0+87549dd.jar")
 }
 
 processResources {

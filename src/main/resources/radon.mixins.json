@@ -22,6 +22,8 @@
     "NbtPredicateMixin",
     "ServerChunkCacheMixin",
     "ServerLevelMixin",
+    "command_stack.CommandSourceStackMixin",
+    "command_stack.EntityMixin",
     "entity.AbstractVillagerMixin",
     "entity.AgeableMobMixin",
     "entity.CopperGolemMixin",

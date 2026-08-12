@@ -18,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
@@ -135,7 +136,7 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
 
     @Override
     public boolean radon_saveWithoutIdFiltered(ValueOutput output, String path) {
-        String topLevelNbt = path.split("[.{\\[]")[0];
+        String topLevelNbt = path.split("[.{\\[]",1)[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
@@ -196,7 +197,11 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
                 }
                 case "data" -> {
                     if (!this.customData.isEmpty()) {
-                        output.store("data", CustomData.CODEC, this.customData);
+                        if(output instanceof TagValueOutput tagValueOutput) {
+                            tagValueOutput.buildResult().put("data", this.customData.copyTag());
+                        } else {
+                            output.store("data", CustomData.CODEC, this.customData);
+                        }
                     }
                 }
                 case "Passengers" -> {
@@ -230,7 +235,7 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
 
     @Override
     public boolean radon_loadFiltered(ValueInput input, String path) {
-        String topLevelNbt = path.split("[\\[.{]")[0];
+        String topLevelNbt = path.split("[\\[.{]",1)[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
