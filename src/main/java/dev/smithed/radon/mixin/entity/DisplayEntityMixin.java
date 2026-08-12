@@ -44,6 +44,18 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
         setTransformation(Transformation.IDENTITY);
     }
 
+    /**
+     * Disables culling calculations on the server, as these are only used on the client.
+     * @param ci
+     */
+    @Inject(method = "updateCulling()V", at = @At("HEAD"), cancellable = true)
+    private void radon_culling(CallbackInfo ci) {
+        Display entity = ((Display) (Object) this);
+        if(!entity.level().isClientSide()) {
+            ci.cancel();
+        }
+    }
+
     @Override
     public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
