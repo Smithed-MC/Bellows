@@ -1,7 +1,8 @@
 package dev.smithed.radon.utils;
 
-import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
+
+import java.util.Set;
 
 public class NBTUtils {
 
@@ -51,5 +52,10 @@ public class NBTUtils {
         if(split.length > 2)
             return split[1] + ":" + split[2];
         return "";
+    }
+
+    public static boolean isPathSelectedItem(String path) {
+        char slot = path.length() < 13 ? ' ' : path.charAt(12);
+        return slot == ' ' || slot == '.' || slot == '{' || slot == '[';
     }
 }

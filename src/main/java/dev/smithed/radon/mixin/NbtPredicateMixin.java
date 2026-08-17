@@ -61,7 +61,7 @@ public abstract class NbtPredicateMixin {
 
     @Unique
     private boolean radon_getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
-        if (mixin instanceof Player player && path.startsWith("SelectedItem")) {
+        if (mixin instanceof Player player && path.startsWith("SelectedItem") && NBTUtils.isPathSelectedItem(path)) {
             ItemStack selected = player.getInventory().getSelectedItem();
             if (!selected.isEmpty()) {
                 output.store("SelectedItem", ItemStack.CODEC, selected);

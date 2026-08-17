@@ -1,14 +1,11 @@
 package dev.smithed.radon;
 
 import com.mojang.brigadier.context.CommandContext;
-import dev.smithed.radon.commands.ProfilerCommand;
-import dev.smithed.radon.commands.RadonCommand;
+import dev.smithed.radon.commands.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +20,9 @@ public class Radon implements ModInitializer {
         LOGGER.info("Initializing Radon");
         CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> RadonCommand.register(dispatcher));
         CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> ProfilerCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> SetMaxPlayersCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> LogCommand.register(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> DataByReference.register(dispatcher));
     }
 
     public static void logDebug(Object message) {
