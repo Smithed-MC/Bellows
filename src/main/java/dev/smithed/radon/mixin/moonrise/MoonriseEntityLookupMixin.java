@@ -1,6 +1,7 @@
 package dev.smithed.radon.mixin.moonrise;
 
 import ca.spottedleaf.moonrise.libs.ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
+import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.ISimpleEntityLookupExtender;
@@ -19,7 +20,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
@@ -96,17 +96,21 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
 
         for (String tag : container.selectorTags) {
             Set<EntityAccess> result = this.entityMap.get(tag);
-            if (result != null && result.size() < size) {
+            if(result == null) {
+                size = 0;
+            } else if(result.size() < size) {
                 set = result;
                 size = result.size();
+            }
 
-                if(size < REASONABLE_SEARCH_SIZE)
-                    break;
+            if(size < REASONABLE_SEARCH_SIZE) {
+                break;
             }
         }
 
-        if (size == 0 || (!container.selectorTags.isEmpty() && size == Integer.MAX_VALUE))
+        if (size == 0) {
             return;
+        }
 
         if(size >= REASONABLE_SEARCH_SIZE) {
             if (!container.isNotType && !container.type.isBlank()) {
@@ -125,8 +129,10 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
                         set = null;
                     }
                 } else {
-                    Set<EntityAccess> result = this.entityMap.getOrDefault(container.type, new HashSet<>());
-                    if (result.size() < size) {
+                    Set<EntityAccess> result = this.entityMap.get(container.type);
+                    if(result == null) {
+                        size = 0;
+                    } else if(result.size() < size) {
                         set = result;
                         size = result.size();
                     }
@@ -134,8 +140,9 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
             }
         }
 
-        if (size == 0)
+        if (size == 0) {
             return;
+        }
 
         Radon.logDebugFormat("searching on %s entities for %s", size, container);
 

@@ -5,7 +5,7 @@ import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import dev.smithed.radon.utils.SelectorContainer;
 import net.minecraft.util.AbortableIterationConsumer;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
@@ -90,17 +90,21 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
 
         for (String tag : container.selectorTags) {
             Set<EntityAccess> result = this.entityMap.get(tag);
-            if (result != null && result.size() < size) {
+            if(result == null) {
+                size = 0;
+            } else if(result.size() < size) {
                 set = result;
                 size = result.size();
+            }
 
-                if(size < REASONABLE_SEARCH_SIZE)
-                    break;
+            if(size < REASONABLE_SEARCH_SIZE) {
+                break;
             }
         }
 
-        if (size == 0)
+        if (size == 0) {
             return;
+        }
 
         if(size >= REASONABLE_SEARCH_SIZE) {
             if (!container.isNotType && !container.type.isBlank()) {
@@ -120,7 +124,9 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
                     }
                 } else {
                     Set<EntityAccess> result = this.entityMap.get(container.type);
-                    if (result != null && result.size() < size) {
+                    if(result == null) {
+                        size = 0;
+                    } else if(result.size() < size) {
                         set = result;
                         size = result.size();
                     }
@@ -128,8 +134,9 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
             }
         }
 
-        if (size == 0)
+        if (size == 0) {
             return;
+        }
 
         Radon.logDebugFormat("searching on %s entities for %s", size, container);
 
