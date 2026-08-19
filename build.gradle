@@ -24,7 +24,6 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// mod integrations
-	// modImplementation "maven.modrinth:lithium:${project.lithium_version}"
     implementation  files("lib/Moonrise-Fabric-1.1.0+87549dd.jar")
 }
 

@@ -1,7 +1,7 @@
 package dev.smithed.radon;
 
 import com.mojang.brigadier.context.CommandContext;
-import dev.smithed.radon.commands.*;
+import dev.smithed.radon.commands.RadonCommand;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
@@ -19,10 +19,6 @@ public class Radon implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("Initializing Radon");
         CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> RadonCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> ProfilerCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> SetMaxPlayersCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> LogCommand.register(dispatcher));
-        CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> DataByReference.register(dispatcher));
     }
 
     public static void logDebug(Object message) {
