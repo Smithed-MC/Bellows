@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 public class MixinConfig implements IMixinConfigPlugin {
-    @Override
-    public void onLoad(String mixinPackage) {
 
-    }
+    @Override
+    public void onLoad(String mixinPackage) {}
 
     @Override
     public String getRefMapperConfig() {
@@ -23,17 +22,12 @@ public class MixinConfig implements IMixinConfigPlugin {
         if (mixinClassName.startsWith("dev.smithed.radon.mixin.moonrise")) {
             return isMoonriseLoaded();
         }
-
         return true;
     }
 
     private boolean isMoonriseLoaded() {
         try {
-            Class.forName(
-                    "ca.spottedleaf.moonrise.common.util.MoonriseCommon",
-                    false,
-                    this.getClass().getClassLoader()
-            );
+            Class.forName("ca.spottedleaf.moonrise.common.util.MoonriseCommon", false, this.getClass().getClassLoader());
             return true;
         } catch (ClassNotFoundException e) {
             return false;
@@ -41,8 +35,7 @@ public class MixinConfig implements IMixinConfigPlugin {
     }
 
     @Override
-    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {
-    }
+    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {}
 
     @Override
     public List<String> getMixins() {
@@ -50,10 +43,8 @@ public class MixinConfig implements IMixinConfigPlugin {
     }
 
     @Override
-    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-    }
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 
     @Override
-    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-    }
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 }
