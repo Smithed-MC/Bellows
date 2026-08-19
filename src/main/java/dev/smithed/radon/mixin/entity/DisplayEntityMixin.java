@@ -57,8 +57,8 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
-        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
+    public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
         Display entity = ((Display) (Object) this);
@@ -92,8 +92,8 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
-        if (super.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
+    public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+        if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
             return true;
         }
         Display entity = ((Display) (Object) this);
@@ -146,7 +146,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public void radon_setTranslation(Vector3fc translation) {
+    public void bellows_setTranslation(Vector3fc translation) {
         if(!this.entityData.get(DATA_TRANSLATION_ID).equals(translation)) {
             this.entityData.set(DATA_TRANSLATION_ID, translation);
             this.setTransformationInterpolationDelay(0);
@@ -154,7 +154,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public void radon_setLeftRotation(Quaternionfc leftRotation) {
+    public void bellows_setLeftRotation(Quaternionfc leftRotation) {
         if(!this.entityData.get(DATA_LEFT_ROTATION_ID).equals(leftRotation)) {
             this.entityData.set(DATA_LEFT_ROTATION_ID, leftRotation);
             this.setTransformationInterpolationDelay(0);
@@ -162,7 +162,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public void radon_setScale(Vector3fc scale) {
+    public void bellows_setScale(Vector3fc scale) {
         if(!this.entityData.get(DATA_SCALE_ID).equals(scale)) {
             this.entityData.set(DATA_SCALE_ID, scale);
             this.setTransformationInterpolationDelay(0);
@@ -170,7 +170,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     }
 
     @Override
-    public void radon_setRightRotation(Quaternionfc rightRotation) {
+    public void bellows_setRightRotation(Quaternionfc rightRotation) {
         if(!this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(rightRotation)) {
             this.entityData.set(DATA_RIGHT_ROTATION_ID, rightRotation);
             this.setTransformationInterpolationDelay(0);

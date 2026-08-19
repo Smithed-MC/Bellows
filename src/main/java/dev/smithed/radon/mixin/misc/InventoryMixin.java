@@ -19,7 +19,7 @@ public abstract class InventoryMixin implements IPlayerInventoryExtender {
     @Shadow public abstract void save(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
 
     @Override
-    public void radon_saveWithoutIdFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
+    public void bellows_saveWithoutIdFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
         int slot = NBTUtils.getSlot(nbt);
         if( (slot >= 0 && slot <= 35) || (slot >= 100 && slot <= 103) || (slot == -106)) {
             ItemStack item = this.items.get(slot);

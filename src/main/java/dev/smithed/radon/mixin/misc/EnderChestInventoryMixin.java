@@ -2,8 +2,6 @@ package dev.smithed.radon.mixin.misc;
 
 import dev.smithed.radon.mixin_interface.IEnderChestInventoryExtender;
 import dev.smithed.radon.utils.NBTUtils;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
@@ -19,7 +17,7 @@ public abstract class EnderChestInventoryMixin extends SimpleContainer implement
     @Shadow public abstract void storeAsSlots(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
 
     @Override
-    public void radon_toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
+    public void bellows_toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
         int slot = NBTUtils.getSlot(nbt);
         if(slot >= 0 && slot <= 26) {
             ItemStack itemStack = this.getItem(slot);

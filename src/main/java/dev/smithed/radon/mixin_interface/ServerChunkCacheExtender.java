@@ -4,6 +4,5 @@ import net.minecraft.world.level.TicketStorage;
 
 public interface ServerChunkCacheExtender {
 
-    TicketStorage radon_getTicketStorage();
-
+    TicketStorage bellows_getTicketStorage();
 }

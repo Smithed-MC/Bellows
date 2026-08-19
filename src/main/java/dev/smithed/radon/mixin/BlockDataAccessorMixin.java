@@ -4,12 +4,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import dev.smithed.radon.utils.RadonContextMutation;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-
-import java.util.function.Function;
+import dev.smithed.radon.utils.ContextMutation;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -18,11 +13,17 @@ import net.minecraft.server.commands.data.BlockDataAccessor;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+
+import java.util.function.Function;
 
 @Mixin(BlockDataAccessor.class)
 public abstract class BlockDataAccessorMixin {
 
-    @Shadow @Final static SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY;
+    @Shadow @Final
+    private static SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY;
 
     /**
      * Overwrites standard lambda variable to include support for not loading chunks when if block is processed
@@ -31,7 +32,7 @@ public abstract class BlockDataAccessorMixin {
     @Shadow public static final Function<String, DataCommands.DataProvider> PROVIDER = (argumentName) -> new DataCommands.DataProvider() {
         public DataAccessor access(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
             BlockPos blockPos = BlockPosArgument.getLoadedBlockPos(context, argumentName + "Pos");
-            BlockEntity blockEntity = RadonContextMutation.getBlockEntity(context.getSource().getLevel(), blockPos);
+            BlockEntity blockEntity = ContextMutation.getBlockEntity(context.getSource().getLevel(), blockPos);
             if (blockEntity == null) {
                 throw ERROR_NOT_A_BLOCK_ENTITY.create();
             } else {

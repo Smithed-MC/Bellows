@@ -16,7 +16,7 @@ public class CompoundTagMixin implements CompoundTagExtender {
     private QuickActions quickActions = null;
 
     @Override
-    public void radon_precompileQuickActions() {
+    public void bellows_precompileQuickActions() {
         QuickActions tag = new QuickActions((CompoundTag) (Object)this);
         if(tag.hasQuickActions()) {
             quickActions = tag;
@@ -24,17 +24,17 @@ public class CompoundTagMixin implements CompoundTagExtender {
     }
 
     @Override
-    public QuickActions radon_getQuickActions() {
+    public QuickActions bellows_getQuickActions() {
         return quickActions;
     }
 
     @Inject(method = "merge", at = @At("TAIL"))
-    private void radon_parse(CompoundTag other, CallbackInfoReturnable<CompoundTag> cir) {
-        if(other instanceof CompoundTagExtender extender && extender.radon_getQuickActions() != null) {
+    private void bellows_parse(CompoundTag other, CallbackInfoReturnable<CompoundTag> cir) {
+        if(other instanceof CompoundTagExtender extender && extender.bellows_getQuickActions() != null) {
             if(quickActions == null) {
-                quickActions = extender.radon_getQuickActions();
+                quickActions = extender.bellows_getQuickActions();
             } else {
-                quickActions.merge(extender.radon_getQuickActions());
+                quickActions.merge(extender.bellows_getQuickActions());
             }
         }
     }

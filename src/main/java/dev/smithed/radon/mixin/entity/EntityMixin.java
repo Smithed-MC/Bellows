@@ -77,8 +77,8 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
     @WrapOperation(method = "addTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z"))
     public boolean addTag(Set instance, Object e, Operation<Boolean> original) {
         if (original.call(instance, e)) {
-            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
-                index.radon_addEntityToTagMap(tag, (Entity) (Object) this);
+            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
+                index.bellows_addEntityToTagMap(tag, (Entity) (Object) this);
             }
             return true;
         }
@@ -90,8 +90,8 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
     @WrapOperation(method = "removeTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"))
     public boolean removeTag(Set instance, Object e, Operation<Boolean> original) {
         if (original.call(instance, e)) {
-            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
-                index.radon_removeEntityFromTagMap(tag, (Entity) (Object) this);
+            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
+                index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this);
             }
             return true;
         }
@@ -103,8 +103,8 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
     private void radon_load(CallbackInfo ci) {
-        if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
-            this.tags.forEach(tag -> index.radon_removeEntityFromTagMap(tag, (Entity) (Object) this));
+        if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+            this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this));
         }
     }
 
@@ -113,29 +113,29 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
     private void radon_load(ValueInput nbt, CallbackInfo ci) {
-        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() != null) {
+        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() != null) {
             Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
             if (tagList.isPresent()) {
                 int max_size = Math.min(tagList.get().size(), 1024);
                 for (int i = 0; i < max_size; ++i) {
-                    world.radon_getEntityIndex().radon_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
+                    world.bellows_getEntityIndex().bellows_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
                 }
             }
         }
     }
 
     @Override
-    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+    public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         return false;
     }
 
     @Override
-    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+    public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         return false;
     }
 
     @Override
-    public boolean radon_saveWithoutIdFiltered(ValueOutput output, String path) {
+    public boolean bellows_saveWithoutIdFiltered(ValueOutput output, String path) {
         String topLevelNbt = path.split("[.{\\[]",1)[0];
         Entity entity = ((Entity) (Object) this);
 
@@ -221,7 +221,7 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
                     }
                 }
                 default -> {
-                    return this.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
+                    return this.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
                 }
             }
             return true;
@@ -234,7 +234,7 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
     }
 
     @Override
-    public boolean radon_loadFiltered(ValueInput input, String path) {
+    public boolean bellows_loadFiltered(ValueInput input, String path) {
         String topLevelNbt = path.split("[\\[.{]",1)[0];
         Entity entity = ((Entity) (Object) this);
 
@@ -276,22 +276,22 @@ public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.E
                 case "HasVisualFire" -> this.hasVisualFire = input.getBooleanOr("HasVisualFire", false);
                 case "data" -> this.customData = input.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                 case "Tags" -> {
-                    if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
-                        this.tags.forEach(tag -> index.radon_removeEntityFromTagMap(tag, entity));
+                    if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+                        this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, entity));
                         this.tags.clear();
 
                         Optional<List<String>> tagList = input.read("Tags", TAG_LIST_CODEC);
                         if (tagList.isPresent()) {
                             int max_size = Math.min(tagList.get().size(), 1024);
                             for (int i = 0; i < max_size; ++i) {
-                                index.radon_addEntityToTagMap(tagList.get().get(i), entity);
+                                index.bellows_addEntityToTagMap(tagList.get().get(i), entity);
                             }
                             this.tags.addAll(tagList.get());
                         }
                     }
                 }
                 default -> {
-                    if (this.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
+                    if (this.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
                         if (this.repositionEntityAfterLoad()) {
                             this.reapplyPosition();
                         }

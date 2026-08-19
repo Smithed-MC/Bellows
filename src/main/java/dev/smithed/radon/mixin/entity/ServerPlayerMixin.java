@@ -31,8 +31,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements ICustomNB
     @Shadow protected abstract void saveEnderPearls(final ValueOutput playerOutput);
 
     @Override
-    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
-        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
+    public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
         ServerPlayer entity = ((ServerPlayer) (Object) this);

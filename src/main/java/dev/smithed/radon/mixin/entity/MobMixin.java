@@ -2,16 +2,16 @@ package dev.smithed.radon.mixin.entity;
 
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.DropChances;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Optional;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.storage.loot.LootTable;
 
 @Mixin(Mob.class)
 public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMixin {
@@ -24,8 +24,8 @@ public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMi
     @Shadow private int homeRadius;
 
     @Override
-    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
-        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
+    public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
         Mob entity = ((Mob) (Object) this);
@@ -65,8 +65,8 @@ public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMi
     }
 
     @Override
-    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
-        if (super.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
+    public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+        if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
             return true;
         }
         Mob entity = ((Mob) (Object) this);

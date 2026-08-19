@@ -1,17 +1,15 @@
 package dev.smithed.radon.mixin_interface;
 
 import dev.smithed.radon.utils.SelectorContainer;
-import java.util.List;
-import java.util.function.Predicate;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 public interface IServerWorldExtender {
 
-    IEntityIndexExtender<?> radon_getEntityIndex();
-
-    <T extends Entity> void radon_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container);
-
+    IEntityIndexExtender<?> bellows_getEntityIndex();
+    <T extends Entity> void bellows_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container);
 }

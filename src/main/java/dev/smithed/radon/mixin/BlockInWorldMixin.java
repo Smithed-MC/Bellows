@@ -1,6 +1,6 @@
 package dev.smithed.radon.mixin;
 
-import dev.smithed.radon.utils.RadonContextMutation;
+import dev.smithed.radon.utils.ContextMutation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class BlockInWorldMixin {
 
     @Redirect(method = "getState()Lnet/minecraft/world/level/block/state/BlockState;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/LevelReader;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
-    public BlockState radon_getBlockState(LevelReader world, BlockPos pos) {
-        return RadonContextMutation.getBlockState(world, pos);
+    public BlockState bellows_getBlockState(LevelReader world, BlockPos pos) {
+        return ContextMutation.getBlockState(world, pos);
     }
 
     @Redirect(method = "getEntity()Lnet/minecraft/world/level/block/entity/BlockEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/LevelReader;getBlockEntity(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/entity/BlockEntity;"))
-    public BlockEntity radon_getBlockEntity(LevelReader world, BlockPos pos) {
-        return RadonContextMutation.getBlockEntity(world, pos);
+    public BlockEntity bellows_getBlockEntity(LevelReader world, BlockPos pos) {
+        return ContextMutation.getBlockEntity(world, pos);
     }
 }

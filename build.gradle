@@ -30,7 +30,7 @@ dependencies {
 processResources {
 	inputs.property "version", project.version
 
-	filesMatching("radon.mod.json") {
+	filesMatching("bellows.mod.json") {
 		expand "version": project.version
 	}
 }
@@ -52,5 +52,5 @@ jar {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/radon.classTweaker")
+	accessWidenerPath = file("src/main/resources/bellows.classTweaker")
 }

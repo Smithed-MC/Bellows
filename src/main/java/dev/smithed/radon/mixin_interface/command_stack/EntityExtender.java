@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 
 public interface EntityExtender {
 
-    Supplier<String> radon_getPlainTextNameSupplier();
-    Supplier<Component> radon_getDisplayNameSupplier();
-
+    Supplier<String> bellows_getPlainTextNameSupplier();
+    Supplier<Component> bellows_getDisplayNameSupplier();
 }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "radon",
+  "id": "bellows",
   "version": "0.10.17",
 
-  "name": "Radon",
+  "name": "Bellows",
   "description": "Targeted optimizations for Minecraft Commands.",
   "authors": [
     "ImCoolYeah105"
@@ -14,16 +14,16 @@
   },
 
   "license": "MIT",
-  "accessWidener": "radon.classTweaker",
+  "accessWidener": "bellows.classTweaker",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.smithed.radon.Radon"
+      "dev.smithed.bellows.Bellows"
     ]
   },
   "mixins": [
-    "radon.mixins.json"
+    "bellows.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.0",

@@ -17,12 +17,12 @@ public abstract class EntityMixin implements EntityExtender {
     public abstract Component getDisplayName();
 
     @Override
-    public Supplier<String> radon_getPlainTextNameSupplier() {
+    public Supplier<String> bellows_getPlainTextNameSupplier() {
         return () -> this.getName().getString();
     }
 
     @Override
-    public Supplier<Component> radon_getDisplayNameSupplier() {
+    public Supplier<Component> bellows_getDisplayNameSupplier() {
         return this::getDisplayName;
     }
 }

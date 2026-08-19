@@ -2,7 +2,7 @@ package dev.smithed.radon.mixin.moonrise;
 
 import ca.spottedleaf.moonrise.libs.ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup;
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.ISimpleEntityLookupExtender;
 import dev.smithed.radon.utils.NBTUtils;
@@ -36,13 +36,13 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
     private final Map<String, Set<EntityAccess>> entityMap = new HashMap<>();
 
     @Override
-    public void radon_addEntityToTagMap(String tag, EntityAccess entity) {
+    public void bellows_addEntityToTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.computeIfAbsent(tag, k -> new HashSet<>());
         set.add(entity);
     }
 
     @Override
-    public void radon_removeEntityFromTagMap(String tag, EntityAccess entity) {
+    public void bellows_removeEntityFromTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.get(tag);
         if(set != null) {
             set.removeAll(Collections.singleton(entity));
@@ -54,14 +54,14 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
      * Add entity type to map when loaded
      */
     @Inject(method = "addEntity", at = @At("TAIL"))
-    private void radon_addEntity(Entity entity, boolean fromDisk, boolean event, CallbackInfoReturnable<Boolean> ci) {
+    private void bellows_addEntity(Entity entity, boolean fromDisk, boolean event, CallbackInfoReturnable<Boolean> ci) {
         if(entityById.containsKey(entity.getId())) {
             String name = NBTUtils.translationToTypeName(entity.getType().getDescriptionId());
             if(!name.isEmpty()) {
-                this.radon_addEntityToTagMap(name, entity);
+                this.bellows_addEntityToTagMap(name, entity);
             }
             if(!entity.entityTags().isEmpty()) {
-                entity.entityTags().forEach(tag -> radon_addEntityToTagMap(tag, entity));
+                entity.entityTags().forEach(tag -> bellows_addEntityToTagMap(tag, entity));
             }
         }
     }
@@ -71,14 +71,14 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
      * Remove entity type & tags from map when unloaded
      */
     @Inject(method = "removeEntity", at = @At("TAIL"))
-    private void radon_removeEntity(Entity entity, CallbackInfo ci) {
+    private void bellows_removeEntity(Entity entity, CallbackInfo ci) {
         if(!entityById.containsKey(entity.getId())) {
             String name = NBTUtils.translationToTypeName(entity.getType().getDescriptionId());
             if(!name.isEmpty()) {
-                this.radon_removeEntityFromTagMap(name, entity);
+                this.bellows_removeEntityFromTagMap(name, entity);
             }
             if(!entity.entityTags().isEmpty()) {
-                entity.entityTags().forEach(tag -> radon_removeEntityFromTagMap(tag, entity));
+                entity.entityTags().forEach(tag -> bellows_removeEntityFromTagMap(tag, entity));
             }
         }
     }
@@ -89,7 +89,7 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
      * retrieved for the @e search instead of all entities.
      */
     @Override
-    public <U extends T> void radon_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action) {
+    public <U extends T> void bellows_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action) {
         Set<EntityAccess> set = null;
         List<Set<EntityAccess>> list = null;
         int size = Integer.MAX_VALUE;
@@ -144,19 +144,19 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
             return;
         }
 
-        Radon.logDebugFormat("searching on %s entities for %s", size, container);
+        Bellows.logDebugFormat("searching on %s entities for %s", size, container);
 
         if (set != null) {
-            radon_forEachInCollection(set, filter, action);
+            bellows_forEachInCollection(set, filter, action);
         } else if (list != null) {
-            list.forEach(iset -> radon_forEachInCollection(iset, filter, action));
+            list.forEach(iset -> bellows_forEachInCollection(iset, filter, action));
         } else {
             this.get((EntityTypeTest<Entity, U>) filter, action);
         }
     }
 
     @Unique
-    public <U extends T> void radon_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<T, U> filter, AbortableIterationConsumer<U> action) {
+    public <U extends T> void bellows_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<T, U> filter, AbortableIterationConsumer<U> action) {
 
         for (EntityAccess entity : collection) {
             Visibility visibility = EntityLookup.getEntityStatus((Entity) entity);
@@ -170,7 +170,7 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEn
     }
 
     @Override
-    public IEntityIndexExtender<?> radon_getVisibleEntities() {
+    public IEntityIndexExtender<?> bellows_getVisibleEntities() {
         return this;
     }
 }

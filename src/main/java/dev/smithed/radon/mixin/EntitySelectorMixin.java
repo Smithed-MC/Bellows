@@ -1,6 +1,6 @@
 package dev.smithed.radon.mixin;
 
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import dev.smithed.radon.mixin_interface.IEntitySelectorExtender;
 import dev.smithed.radon.mixin_interface.IServerWorldExtender;
 import dev.smithed.radon.utils.SelectorContainer;
@@ -28,15 +28,15 @@ public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
     @Shadow protected abstract int getResultLimit();
 
     @Unique
-    private SelectorContainer radon_container;
+    private SelectorContainer bellows_container;
 
     @Inject(method = "addEntities", at=@At("HEAD"), cancellable = true)
-    void radon_addEntities(List<Entity> result, ServerLevel level, @Nullable AABB absoluteAABB, Predicate<Entity> predicate, CallbackInfo ci) {
+    void bellows_addEntities(List<Entity> result, ServerLevel level, @Nullable AABB absoluteAABB, Predicate<Entity> predicate, CallbackInfo ci) {
         int i = this.getResultLimit();
         if (result.size() < i) {
-            if(Radon.CONFIG.entitySelectorOptimizations && level instanceof IServerWorldExtender extender) {
-                if(absoluteAABB == null || !radon_container.selectorTags.isEmpty()) {
-                    extender.radon_collectEntitiesByType(this.type, predicate, result, i, radon_container);
+            if(Bellows.CONFIG.entitySelectorOptimizations && level instanceof IServerWorldExtender extender) {
+                if(absoluteAABB == null || !bellows_container.selectorTags.isEmpty()) {
+                    extender.bellows_collectEntitiesByType(this.type, predicate, result, i, bellows_container);
                 } else {
                     level.getEntities(this.type, absoluteAABB, predicate, result, i);
                 }
@@ -46,12 +46,12 @@ public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
     }
 
     @Override
-    public void radon_setContainer(SelectorContainer container) {
-        this.radon_container = container;
+    public void bellows_setContainer(SelectorContainer container) {
+        this.bellows_container = container;
     }
 
     @Override
-    public SelectorContainer radon_getContainer(SelectorContainer container) {
-        return this.radon_container;
+    public SelectorContainer bellows_getContainer(SelectorContainer container) {
+        return this.bellows_container;
     }
 }

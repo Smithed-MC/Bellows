@@ -28,8 +28,8 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
     @Shadow private long lastGossipDecayTime;
 
     @Override
-    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
-        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
+    public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
         Villager entity = ((Villager)(Object)this);
@@ -58,8 +58,8 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
     }
 
     @Override
-    public boolean radon_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
-        if (super.radon_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
+    public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
+        if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
             return true;
         }
         Villager entity = ((Villager)(Object)this);

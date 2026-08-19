@@ -4,8 +4,8 @@ import dev.smithed.radon.utils.QuickActions;
 
 public interface CompoundTagExtender {
 
-    void radon_precompileQuickActions();
+    void bellows_precompileQuickActions();
 
-    QuickActions radon_getQuickActions();
+    QuickActions bellows_getQuickActions();
 
 }

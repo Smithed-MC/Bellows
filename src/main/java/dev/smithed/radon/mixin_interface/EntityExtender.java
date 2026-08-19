@@ -5,7 +5,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public interface EntityExtender {
 
-    boolean radon_saveWithoutIdFiltered(ValueOutput output, String path);
-    boolean radon_loadFiltered(ValueInput output, String path);
+    boolean bellows_saveWithoutIdFiltered(ValueOutput output, String path);
+    boolean bellows_loadFiltered(ValueInput output, String path);
 
 }

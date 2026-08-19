@@ -91,8 +91,8 @@ public class CommandSourceStackMixin {
     @Unique
     private CommandSourceStack radon_setSuppliers(CommandSourceStack stack, EntityExtender entity) {
         CommandSourceStackMixin stackMixin = (CommandSourceStackMixin)(Object)stack;
-        stackMixin.radon_textNameSupplier = entity.radon_getPlainTextNameSupplier();
-        stackMixin.radon_displayNameSupplier = entity.radon_getDisplayNameSupplier();
+        stackMixin.radon_textNameSupplier = entity.bellows_getPlainTextNameSupplier();
+        stackMixin.radon_displayNameSupplier = entity.bellows_getDisplayNameSupplier();
         return stack;
     }
 

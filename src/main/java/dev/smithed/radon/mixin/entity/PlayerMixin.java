@@ -4,7 +4,7 @@ import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import dev.smithed.radon.mixin_interface.IEnderChestInventoryExtender;
 import dev.smithed.radon.mixin_interface.IPlayerInventoryExtender;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,8 +27,8 @@ public abstract class PlayerMixin extends LivingEntityMixin implements ICustomNB
     @Shadow protected PlayerEnderChestContainer enderChestInventory;
 
     @Override
-    public boolean radon_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
-        if (super.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
+    public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
+        if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
             return true;
         }
         Player entity = ((Player) (Object) this);
@@ -37,7 +37,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements ICustomNB
             case "DataVersion" -> NbtUtils.addCurrentDataVersion(output);
             case "Inventory" -> {
                 if (this.inventory instanceof IPlayerInventoryExtender mixin) {
-                    mixin.radon_saveWithoutIdFiltered(output.list("Inventory", ItemStackWithSlot.CODEC), path);
+                    mixin.bellows_saveWithoutIdFiltered(output.list("Inventory", ItemStackWithSlot.CODEC), path);
                 } else {
                     this.inventory.save(output.list("Inventory", ItemStackWithSlot.CODEC));
                 }
@@ -53,7 +53,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements ICustomNB
             case "abilities" -> output.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
             case "EnderItems" -> {
                 if (this.enderChestInventory instanceof IEnderChestInventoryExtender mixin)
-                    mixin.radon_toNbtListFiltered(output.list("EnderItems", ItemStackWithSlot.CODEC), path);
+                    mixin.bellows_toNbtListFiltered(output.list("EnderItems", ItemStackWithSlot.CODEC), path);
                 else
                     this.enderChestInventory.storeAsSlots(output.list("EnderItems", ItemStackWithSlot.CODEC));
             }

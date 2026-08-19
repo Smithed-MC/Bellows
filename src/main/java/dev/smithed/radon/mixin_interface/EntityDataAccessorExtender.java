@@ -6,9 +6,7 @@ import net.minecraft.world.entity.Entity;
 
 public interface EntityDataAccessorExtender {
 
-    CompoundTag radon_getDataFiltered(String path) throws CommandSyntaxException;
-
-    boolean radon_setDataFiltered(CompoundTag nbt, String path) throws CommandSyntaxException;
-
-    Entity radon_getContents();
+    CompoundTag bellows_getDataFiltered(String path) throws CommandSyntaxException;
+    boolean bellows_setDataFiltered(CompoundTag nbt, String path) throws CommandSyntaxException;
+    Entity bellows_getContents();
 }

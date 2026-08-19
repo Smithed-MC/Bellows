@@ -2,7 +2,7 @@ package dev.smithed.radon.mixin;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import dev.smithed.radon.mixin_interface.EntityDataAccessorExtender;
 import dev.smithed.radon.mixin_interface.EntityExtender;
 import dev.smithed.radon.utils.NBTUtils;
@@ -34,9 +34,9 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
     private static final int MIN_ENTITY_NBT_SIZE = 10; //this is how many NBT tags the base entity class contains
 
     @Override
-    public CompoundTag radon_getDataFiltered(String path) {
+    public CompoundTag bellows_getDataFiltered(String path) {
         CompoundTag nbtCompound = null;
-        if (Radon.CONFIG.nbtOptimizations && this.entity instanceof EntityExtender mixin) {
+        if (Bellows.CONFIG.nbtOptimizations && this.entity instanceof EntityExtender mixin) {
             // if path has multiple top level access ("{a:1,b:2,c:3}"), then split them and attempt to get each individually
             if (path.startsWith("{")) {
                 try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
@@ -46,7 +46,7 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
                             continue;
                         }
                         // if any attempt to get a data element fails, mark output as a failure and break out of the loop
-                        if(!radon_getFilteredNbt(mixin, output, str)) {
+                        if(!bellows_getFilteredNbt(mixin, output, str)) {
                             output = null;
                             break;
                         }
@@ -58,7 +58,7 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
             } else {
                 try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                     TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
-                    if(radon_getFilteredNbt(mixin, output, path)) {
+                    if(bellows_getFilteredNbt(mixin, output, path)) {
                         nbtCompound = output.buildResult();
                     }
                 }
@@ -68,15 +68,15 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
         // if getting the filtered data failed, try using the normal method
         if (nbtCompound == null) {
             nbtCompound = NbtPredicate.getEntityTagToCompare(this.entity);
-            Radon.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s': falling back to default, data=%s", path, this.entity.getClass(), nbtCompound);
+            Bellows.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s': falling back to default, data=%s", path, this.entity.getClass(), nbtCompound);
         } else {
-            Radon.logDebugFormat("Retrieved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
+            Bellows.logDebugFormat("Retrieved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), nbtCompound);
         }
         return nbtCompound;
     }
 
     @Unique
-    private boolean radon_getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
+    private boolean bellows_getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
         if (entity instanceof Player player && path.startsWith("SelectedItem") && NBTUtils.isPathSelectedItem(path)) {
             ItemStack selected = player.getInventory().getSelectedItem();
             if (!selected.isEmpty()) {
@@ -84,12 +84,12 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
             }
             return true;
         } else {
-            return mixin.radon_saveWithoutIdFiltered(output, path);
+            return mixin.bellows_saveWithoutIdFiltered(output, path);
         }
     }
 
     @Override
-    public boolean radon_setDataFiltered(CompoundTag tag, String path) throws CommandSyntaxException {
+    public boolean bellows_setDataFiltered(CompoundTag tag, String path) throws CommandSyntaxException {
         if (this.entity instanceof Player) {
             throw ERROR_NO_PLAYERS.create();
         } else {
@@ -97,17 +97,17 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
 
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
                 // attempt to save filtered data
-                if (this.entity instanceof EntityExtender mixin && mixin.radon_loadFiltered(TagValueInput.create(reporter, this.entity.registryAccess(), tag), path)) {
-                    Radon.logDebugFormat("Saved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
+                if (this.entity instanceof EntityExtender mixin && mixin.bellows_loadFiltered(TagValueInput.create(reporter, this.entity.registryAccess(), tag), path)) {
+                    Bellows.logDebugFormat("Saved filtered NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
                     this.entity.setUUID(uUID);
                     return true;
                 }
                 // if attempt to save filtered data failed and enough data exists to attempt a full save, do so. Otherwise, fail.
                 if (tag.size() >= MIN_ENTITY_NBT_SIZE) {
                     this.entity.load(TagValueInput.create(reporter, this.entity.registryAccess(), tag));
-                    Radon.logDebugFormat("Saved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
+                    Bellows.logDebugFormat("Saved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
                 } else {
-                    Radon.logDebugFormat("Failed to save NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
+                    Bellows.logDebugFormat("Failed to save NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
                 }
             }
             return false;
@@ -115,7 +115,7 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
     }
 
     @Override
-    public Entity radon_getContents() {
+    public Entity bellows_getContents() {
         return this.entity;
     }
 }

@@ -1,7 +1,7 @@
 package dev.smithed.radon.utils;
 
 import com.mojang.math.Transformation;
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import dev.smithed.radon.mixin_interface.DisplayEntityExtender;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -31,10 +31,10 @@ public class QuickActions {
 
                 return transformation.<Consumer<Entity>>map(_ -> (Entity entity) -> {
                     if (entity instanceof Display display && entity instanceof DisplayEntityExtender extender) {
-                        translation.ifPresent(extender::radon_setTranslation);
-                        left_rotation.ifPresent(extender::radon_setLeftRotation);
-                        scale.ifPresent(extender::radon_setScale);
-                        right_rotation.ifPresent(extender::radon_setRightRotation);
+                        translation.ifPresent(extender::bellows_setTranslation);
+                        left_rotation.ifPresent(extender::bellows_setLeftRotation);
+                        scale.ifPresent(extender::bellows_setScale);
+                        right_rotation.ifPresent(extender::bellows_setRightRotation);
                     }
                 }).orElse(null);
             }
@@ -45,10 +45,10 @@ public class QuickActions {
 
                 return transform.<Consumer<Entity>>map(_ -> (Entity entity) -> {
                     if (entity instanceof DisplayEntityExtender extender) {
-                        extender.radon_setTranslation(transform.get().translation());
-                        extender.radon_setLeftRotation(transform.get().leftRotation());
-                        extender.radon_setScale(transform.get().scale());
-                        extender.radon_setRightRotation(transform.get().rightRotation());
+                        extender.bellows_setTranslation(transform.get().translation());
+                        extender.bellows_setLeftRotation(transform.get().leftRotation());
+                        extender.bellows_setScale(transform.get().scale());
+                        extender.bellows_setRightRotation(transform.get().rightRotation());
                     }
                 }).orElse(null);
             }
@@ -74,7 +74,7 @@ public class QuickActions {
             }
             Consumer<Entity> action = function.apply(tag);
             if(action != null) {
-                Radon.logDebugFormat("Found quick action: %s", key);
+                Bellows.logDebugFormat("Found quick action: %s", key);
                 quickActionTags.add(key);
                 actions.add(action);
             }

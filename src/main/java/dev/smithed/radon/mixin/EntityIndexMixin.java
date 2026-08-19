@@ -1,6 +1,6 @@
 package dev.smithed.radon.mixin;
 
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import dev.smithed.radon.utils.SelectorContainer;
@@ -30,13 +30,13 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
     private final Map<String, Set<EntityAccess>> entityMap = new HashMap<>();
 
     @Override
-    public void radon_addEntityToTagMap(String tag, EntityAccess entity) {
+    public void bellows_addEntityToTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.computeIfAbsent(tag, k -> new HashSet<>());
         set.add(entity);
     }
 
     @Override
-    public void radon_removeEntityFromTagMap(String tag, EntityAccess entity) {
+    public void bellows_removeEntityFromTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.get(tag);
         if(set != null) {
             set.removeAll(Collections.singleton(entity));
@@ -48,14 +48,14 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
      * Add entity type to map when loaded
      */
     @Inject(method = "add", at = @At("HEAD"))
-    private void radon_add(T entity, CallbackInfo ci) {
+    private void bellows_add(T entity, CallbackInfo ci) {
         if(entity instanceof Entity entityCast) {
             String name = NBTUtils.translationToTypeName(entityCast.getType().getDescriptionId());
             if(!name.isEmpty()) {
-                this.radon_addEntityToTagMap(name, entity);
+                this.bellows_addEntityToTagMap(name, entity);
             }
             if(!entityCast.entityTags().isEmpty()) {
-                entityCast.entityTags().forEach(tag -> radon_addEntityToTagMap(tag, entity));
+                entityCast.entityTags().forEach(tag -> bellows_addEntityToTagMap(tag, entity));
             }
         }
     }
@@ -65,14 +65,14 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
      * Remove entity type & tags from map when unloaded
      */
     @Inject(method = "remove", at = @At("HEAD"))
-    private void radon_remove(T entity, CallbackInfo ci) {
+    private void bellows_remove(T entity, CallbackInfo ci) {
         if(entity instanceof Entity entityCast) {
             String name = NBTUtils.translationToTypeName(entityCast.getType().getDescriptionId());
             if(!name.isEmpty()) {
-                this.radon_removeEntityFromTagMap(name, entityCast);
+                this.bellows_removeEntityFromTagMap(name, entityCast);
             }
             if(!entityCast.entityTags().isEmpty()) {
-                entityCast.entityTags().forEach(tag -> radon_removeEntityFromTagMap(tag, entity));
+                entityCast.entityTags().forEach(tag -> bellows_removeEntityFromTagMap(tag, entity));
             }
         }
     }
@@ -83,7 +83,7 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
      * retrieved for the @e search instead of all entities.
      */
     @Override
-    public <U extends T> void radon_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action) {
+    public <U extends T> void bellows_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action) {
         Set<EntityAccess> set = null;
         List<Set<EntityAccess>> list = null;
         int size = Integer.MAX_VALUE;
@@ -138,19 +138,19 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
             return;
         }
 
-        Radon.logDebugFormat("searching on %s entities for %s", size, container);
+        Bellows.logDebugFormat("searching on %s entities for %s", size, container);
 
         if (set != null) {
-            radon_forEachInCollection(set, filter, action);
+            bellows_forEachInCollection(set, filter, action);
         } else if (list != null) {
-            list.forEach(iset -> radon_forEachInCollection(iset, filter, action));
+            list.forEach(iset -> bellows_forEachInCollection(iset, filter, action));
         } else {
             this.getEntities(filter, action);
         }
     }
 
     @Unique
-    public <U extends T> void radon_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> consumer) {
+    public <U extends T> void bellows_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> consumer) {
         Iterator<EntityAccess> iterator = collection.iterator();
 
         U entityLike2;

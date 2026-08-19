@@ -1,6 +1,6 @@
 package dev.smithed.radon.mixin;
 
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import net.minecraft.commands.execution.tasks.BuildContexts;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +20,7 @@ public abstract class BuildContextsMixin<T> {
     @Shadow @Final private String commandInput;
 
     @Inject(method = "execute", at = @At(value = "HEAD"))
-    private void radon_execute(CallbackInfo ci) {
-        Radon.logDebugFormat("run: %s", commandInput);
+    private void bellows_execute(CallbackInfo ci) {
+        Bellows.logDebugFormat("run: %s", commandInput);
     }
 }

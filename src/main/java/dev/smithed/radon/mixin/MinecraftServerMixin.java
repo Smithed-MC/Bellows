@@ -5,17 +5,17 @@ import dev.smithed.radon.mixin_interface.IMinecraftServerExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.server.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.Services;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.WorldData;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -44,8 +44,8 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
             method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/util/Optional;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;Lnet/minecraft/server/level/progress/LevelLoadListener;ZLnet/minecraft/server/notifications/NotificationManager;)V",
             at = @At("TAIL")
     )
-    private void radon_init(Thread serverThread, LevelStorageSource.LevelStorageAccess storageSource, PackRepository packRepository, WorldStem worldStem, Optional gameRules, Proxy proxy, DataFixer fixerUpper, Services services, LevelLoadListener levelLoadListener, boolean propagatesCrashes, NotificationManager notificationManager, CallbackInfo ci) {
-        this.radon_constructEntityTypes();
+    private void bellows_init(Thread serverThread, LevelStorageSource.LevelStorageAccess storageSource, PackRepository packRepository, WorldStem worldStem, Optional gameRules, Proxy proxy, DataFixer fixerUpper, Services services, LevelLoadListener levelLoadListener, boolean propagatesCrashes, NotificationManager notificationManager, CallbackInfo ci) {
+        this.bellows_constructEntityTypes();
     }
 
     /**
@@ -53,16 +53,16 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
      * Injects into resource reloading to rebuild entityTypes map
      */
     @Inject(method = "reloadResources(Ljava/util/Collection;)Ljava/util/concurrent/CompletableFuture;", at = @At("TAIL"))
-    public void radon_reloadResources(CallbackInfoReturnable<CompletableFuture<Void>> ci) {
+    public void bellows_reloadResources(CallbackInfoReturnable<CompletableFuture<Void>> ci) {
         if (ci.getReturnValue().isDone()) {
-            this.radon_constructEntityTypes();
+            this.bellows_constructEntityTypes();
         } else {
-            ci.getReturnValue().thenAcceptAsync(resourceManagerHolder -> this.radon_constructEntityTypes());
+            ci.getReturnValue().thenAcceptAsync(resourceManagerHolder -> this.bellows_constructEntityTypes());
         }
     }
 
     @Unique
-    private void radon_constructEntityTypes() {
+    private void bellows_constructEntityTypes() {
         this.entityTypes.clear();
         BuiltInRegistries.ENTITY_TYPE.listTags().forEach(tag -> {
             final Set<String> entries = new HashSet<>();
@@ -72,7 +72,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
     }
 
     @Override
-    public Set<String> radon_getEntityTagEntries(String tag) {
+    public Set<String> bellows_getEntityTagEntries(String tag) {
         return this.entityTypes.get(tag);
     }
 }

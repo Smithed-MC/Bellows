@@ -2,16 +2,7 @@ package dev.smithed.radon.mixin;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
-import dev.smithed.radon.utils.RadonContextMutation;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
-import java.util.OptionalInt;
-import java.util.function.IntFunction;
+import dev.smithed.radon.utils.ContextMutation;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
@@ -26,6 +17,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.OptionalInt;
+import java.util.function.IntFunction;
 
 @Mixin(ExecuteCommand.class)
 public class ExecuteCommandMixin {
@@ -40,8 +40,8 @@ public class ExecuteCommandMixin {
             method = "checkMatchingData(Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
-    private static CompoundTag radon_countPathMatches(DataAccessor object, DataAccessor accessor, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
-        return RadonContextMutation.getDataCommandObjectNbt(path, object);
+    private static CompoundTag bellows_countPathMatches(DataAccessor object, DataAccessor accessor, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
+        return ContextMutation.getDataCommandObjectNbt(path, object);
     }
 
     /**
@@ -53,10 +53,10 @@ public class ExecuteCommandMixin {
     private static CommandSourceStack storeData(CommandSourceStack source, DataAccessor object, NbtPathArgument.NbtPath path, IntFunction<Tag> nbtSetter, boolean requestResult) {
         return source.withCallback((successful, returnValue) -> {
             try {
-                CompoundTag nbtCompound = RadonContextMutation.getDataCommandObjectNbt(path, object);
+                CompoundTag nbtCompound = ContextMutation.getDataCommandObjectNbt(path, object);
                 int i = requestResult ? returnValue : (successful ? 1 : 0);
                 path.set(nbtCompound, nbtSetter.apply(i));
-                RadonContextMutation.setDataCommandObjectNbt(path, object, nbtCompound);
+                ContextMutation.setDataCommandObjectNbt(path, object, nbtCompound);
             } catch (CommandSyntaxException _) {}
         }, CommandResultCallback::chain);
     }
@@ -83,14 +83,14 @@ public class ExecuteCommandMixin {
                     for(int m = blockBox.minX(); m <= blockBox.maxX(); ++m) {
                         BlockPos blockPos2 = new BlockPos(m, l, k);
                         BlockPos blockPos3 = blockPos2.offset(blockPos);
-                        BlockState blockState = RadonContextMutation.getBlockState(world, blockPos2); //world.getBlockState(blockPos2);
+                        BlockState blockState = ContextMutation.getBlockState(world, blockPos2); //world.getBlockState(blockPos2);
                         if (!masked || !blockState.is(Blocks.AIR)) {
-                            if (blockState != RadonContextMutation.getBlockState(world, blockPos3)) { //if (blockState != world.getBlockState(blockPos3)) {
+                            if (blockState != ContextMutation.getBlockState(world, blockPos3)) { //if (blockState != world.getBlockState(blockPos3)) {
                                 return OptionalInt.empty();
                             }
 
-                            BlockEntity blockEntity = RadonContextMutation.getBlockEntity(world, blockPos2);  //world.getBlockEntity(blockPos2);
-                            BlockEntity blockEntity2 = RadonContextMutation.getBlockEntity(world, blockPos2); //world.getBlockEntity(blockPos3);
+                            BlockEntity blockEntity = ContextMutation.getBlockEntity(world, blockPos2);  //world.getBlockEntity(blockPos2);
+                            BlockEntity blockEntity2 = ContextMutation.getBlockEntity(world, blockPos2); //world.getBlockEntity(blockPos3);
                             if (blockEntity != null) {
                                 if (blockEntity2 == null) {
                                     return OptionalInt.empty();

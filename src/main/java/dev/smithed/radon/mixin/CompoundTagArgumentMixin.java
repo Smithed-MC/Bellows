@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 public class CompoundTagArgumentMixin {
 
     @ModifyReturnValue(method = "parse(Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/nbt/CompoundTag;", at = @At("RETURN"))
-    private CompoundTag radon_parse(CompoundTag tag) {
+    private CompoundTag bellows_parse(CompoundTag tag) {
         if(tag instanceof CompoundTagExtender extender) {
-            extender.radon_precompileQuickActions();
+            extender.bellows_precompileQuickActions();
         }
         return tag;
     }

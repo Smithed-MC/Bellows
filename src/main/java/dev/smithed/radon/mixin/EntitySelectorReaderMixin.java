@@ -22,15 +22,15 @@ public class EntitySelectorReaderMixin implements IEntitySelectorReaderExtender 
      * get the constructed return value and inject additional data
      */
     @Inject(method = "parse", at = @At("RETURN"), cancellable = true)
-    private void radon_parse(CallbackInfoReturnable<EntitySelector> cir) {
+    private void bellows_parse(CallbackInfoReturnable<EntitySelector> cir) {
         if(cir.getReturnValue() instanceof IEntitySelectorExtender extender) {
-            extender.radon_setContainer(this.container);
+            extender.bellows_setContainer(this.container);
             cir.setReturnValue((EntitySelector) extender);
         }
     }
 
     @Override
-    public SelectorContainer radon_getSelectorContainer() {
+    public SelectorContainer bellows_getSelectorContainer() {
         return this.container;
     }
 }

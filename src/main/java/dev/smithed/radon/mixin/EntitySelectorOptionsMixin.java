@@ -1,8 +1,8 @@
-package dev.smithed.radon.mixin;
+package dev.smithed.bellows.mixin;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import dev.smithed.radon.Radon;
+import dev.smithed.radon.Bellows;
 import dev.smithed.radon.mixin_interface.EntityExtender;
 import dev.smithed.radon.mixin_interface.IEntitySelectorReaderExtender;
 import dev.smithed.radon.utils.NBTUtils;
@@ -54,7 +54,7 @@ public class EntitySelectorOptionsMixin {
      * It may be better to inject data directly, but lambda support is suspect.
      */
     @Inject(method = "bootStrap()V", at = @At("TAIL"))
-    private static void radon_bootStrap(CallbackInfo ci) {
+    private static void bellows_bootStrap(CallbackInfo ci) {
         register("type", (parser) -> {
             InvertableSetOptionState state = parser.typeOption();
             parser.setSuggestions((b, m) -> {
@@ -92,10 +92,10 @@ public class EntitySelectorOptionsMixin {
 
                 TagKey<@NotNull EntityType<?>> key = TagKey.create(Registries.ENTITY_TYPE, id);
                 // BEGIN INJECT
-                if(Radon.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
-                    entityExtender.radon_getSelectorContainer().type = key.location().toString();
-                    entityExtender.radon_getSelectorContainer().isTypeTag = true;
-                    entityExtender.radon_getSelectorContainer().isNotType = inverted;
+                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+                    entityExtender.bellows_getSelectorContainer().type = key.location().toString();
+                    entityExtender.bellows_getSelectorContainer().isTypeTag = true;
+                    entityExtender.bellows_getSelectorContainer().isNotType = inverted;
                 }
                 // END INJECT
 
@@ -108,10 +108,10 @@ public class EntitySelectorOptionsMixin {
 
                 Identifier id = Identifier.read(parser.getReader());
                 // BEGIN INJECT
-                if(Radon.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
-                    entityExtender.radon_getSelectorContainer().type = id.toString();
-                    entityExtender.radon_getSelectorContainer().isTypeTag = false;
-                    entityExtender.radon_getSelectorContainer().isNotType = inverted;
+                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+                    entityExtender.bellows_getSelectorContainer().type = id.toString();
+                    entityExtender.bellows_getSelectorContainer().isTypeTag = false;
+                    entityExtender.bellows_getSelectorContainer().isNotType = inverted;
                 }
                 // END INJECT
 
@@ -135,11 +135,11 @@ public class EntitySelectorOptionsMixin {
             boolean inverted = parser.shouldInvertValue();
             String tag = parser.getReader().readUnquotedString();
             // BEGIN INJECT
-            if(Radon.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+            if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
                 if (inverted) {
-                    entityExtender.radon_getSelectorContainer().notSelectorTags.add(tag);
+                    entityExtender.bellows_getSelectorContainer().notSelectorTags.add(tag);
                 } else {
-                    entityExtender.radon_getSelectorContainer().selectorTags.add(tag);
+                    entityExtender.bellows_getSelectorContainer().selectorTags.add(tag);
                 }
             }
             // END INJECT
@@ -157,7 +157,7 @@ public class EntitySelectorOptionsMixin {
             CompoundTag tag = TagParser.parseCompoundAsArgument(parser.getReader());
             parser.addPredicate((entity) -> {
                 CompoundTag nbtCompound = null;
-                if (Radon.CONFIG.nbtOptimizations && entity instanceof EntityExtender mixin) {
+                if (Bellows.CONFIG.nbtOptimizations && entity instanceof EntityExtender mixin) {
                     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                         TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
                         for (String str: NBTUtils.getTopLevelPaths(tag)) {
@@ -169,7 +169,7 @@ public class EntitySelectorOptionsMixin {
                                 if (!selected.isEmpty()) {
                                     output.store("SelectedItem", ItemStack.CODEC, selected);
                                 }
-                            } else if(!mixin.radon_saveWithoutIdFiltered(output, str)) {
+                            } else if(!mixin.bellows_saveWithoutIdFiltered(output, str)) {
                                 output = null;
                                 break;
                             }
@@ -191,12 +191,12 @@ public class EntitySelectorOptionsMixin {
                                 output.store("SelectedItem", ItemStack.CODEC, selected);
                             }
                         }
-                        Radon.logDebugFormat("nbt = %s", nbtCompound);
+                        Bellows.logDebugFormat("nbt = %s", nbtCompound);
                         nbtCompound = output.buildResult();
                     }
                 }
 
-                Radon.logDebugFormat("nbt = %s", nbtCompound);
+                Bellows.logDebugFormat("nbt = %s", nbtCompound);
                 return NbtUtils.compareNbt(tag, nbtCompound, true) != inverted;
             });
         }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.nbt.description"));

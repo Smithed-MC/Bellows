@@ -4,6 +4,6 @@ import dev.smithed.radon.utils.SelectorContainer;
 
 public interface IEntitySelectorReaderExtender {
 
-    SelectorContainer radon_getSelectorContainer();
+    SelectorContainer bellows_getSelectorContainer();
 
 }

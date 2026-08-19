@@ -8,10 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 public interface IEntityIndexExtender<T extends EntityAccess> {
 
-    void radon_addEntityToTagMap(String tag, EntityAccess entity);
-
-    void radon_removeEntityFromTagMap(String tag, EntityAccess entity);
-
-    <U extends T> void radon_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action);
-
+    void bellows_addEntityToTagMap(String tag, EntityAccess entity);
+    void bellows_removeEntityFromTagMap(String tag, EntityAccess entity);
+    <U extends T> void bellows_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action);
 }

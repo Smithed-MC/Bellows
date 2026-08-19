@@ -29,28 +29,28 @@ public abstract class ServerLevelMixin implements IServerWorldExtender {
     @Shadow protected abstract LevelEntityGetter<@NotNull Entity> getEntities();
 
     @Override
-    public IEntityIndexExtender<?> radon_getEntityIndex() {
+    public IEntityIndexExtender<?> bellows_getEntityIndex() {
         if(this.getEntities() instanceof ISimpleEntityLookupExtender lookup) {
-            return lookup.radon_getVisibleEntities();
+            return lookup.bellows_getVisibleEntities();
         } else {
             return null;
         }
     }
 
     @Override
-    public <T extends Entity> void radon_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container) {
-        IEntityIndexExtender<Entity> extender = (IEntityIndexExtender<Entity>) radon_getEntityIndex();
+    public <T extends Entity> void bellows_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container) {
+        IEntityIndexExtender<Entity> extender = (IEntityIndexExtender<Entity>) bellows_getEntityIndex();
         if (extender != null) {
             if(container.isTypeTag) {
                 if (server instanceof IMinecraftServerExtender mixin) {
-                    container.entityTypes = mixin.radon_getEntityTagEntries(container.type);
+                    container.entityTypes = mixin.bellows_getEntityTagEntries(container.type);
                 }
                 if (container.entityTypes == null) {
                     return;
                 }
             }
 
-            extender.radon_forEachTaggedEntity(filter, container, (entity) -> {
+            extender.bellows_forEachTaggedEntity(filter, container, (entity) -> {
                 if (predicate.test(entity)) {
                     result.add(entity);
                     if (result.size() >= limit) {
@@ -66,10 +66,10 @@ public abstract class ServerLevelMixin implements IServerWorldExtender {
     }
 
     @Inject(method = "tryAddFreshEntityWithPassengers(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"))
-    public void radon_tryAddFreshEntityWithPassengers(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+    public void bellows_tryAddFreshEntityWithPassengers(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if(!cir.getReturnValue()) {
             for(String tag: entity.entityTags()) {
-                radon_getEntityIndex().radon_removeEntityFromTagMap(tag, entity);
+                bellows_getEntityIndex().bellows_removeEntityFromTagMap(tag, entity);
             }
         }
     }

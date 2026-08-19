@@ -6,6 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 public interface IPlayerInventoryExtender {
 
-    void radon_saveWithoutIdFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt);
+    void bellows_saveWithoutIdFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt);
 
 }

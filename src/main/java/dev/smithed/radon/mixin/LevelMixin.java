@@ -29,7 +29,7 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorld
     @Shadow public abstract LevelChunk getChunkAt(BlockPos pos);
 
     @Override
-    public BlockState radon_getBlockStateNoLoad(BlockPos pos) {
+    public BlockState bellows_getBlockStateNoLoad(BlockPos pos) {
         if (this.isOutsideBuildHeight(pos)) {
             return Blocks.VOID_AIR.defaultBlockState();
         } else {
@@ -38,14 +38,14 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorld
             BlockState blockState = worldChunk.getBlockState(pos);
             if(this.getChunkSource() instanceof ServerChunkCacheExtender manager) {
                 int targetTicketLevel = ChunkLevel.byStatus(ChunkStatus.FULL);
-                manager.radon_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
+                manager.bellows_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
             }
             return blockState;
         }
     }
 
     @Override
-    public BlockEntity radon_getBlockEntityNoLoad(BlockPos pos) {
+    public BlockEntity bellows_getBlockEntityNoLoad(BlockPos pos) {
         if (this.isOutsideBuildHeight(pos)) {
             return null;
         } else if(!this.isClientSide && Thread.currentThread() != this.thread) {
@@ -56,7 +56,7 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorld
             BlockEntity blockEntity = worldChunk.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
             if(this.getChunkSource() instanceof ServerChunkCacheExtender manager) {
                 int targetTicketLevel = ChunkLevel.byStatus(ChunkStatus.FULL);
-                manager.radon_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
+                manager.bellows_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
             }
             return blockEntity;
         }
