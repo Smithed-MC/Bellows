@@ -1,81 +1,96 @@
 package dev.smithed.radon.mixin.entity;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.serialization.Codec;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
-import dev.smithed.radon.mixin_interface.IEntityMixin;
 import dev.smithed.radon.mixin_interface.IServerWorldExtender;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.Vec2;
-import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.*;
-
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
+public abstract class EntityMixin implements dev.smithed.radon.mixin_interface.EntityExtender, ICustomNBTMixin {
 
-    @Shadow @Final protected static EntityDataAccessor<@NotNull Pose> DATA_POSE;
-    @Shadow @Final private static Codec<List<String>> TAG_LIST_CODEC;
-    @Shadow @Final protected SynchedEntityData entityData;
-    @Shadow @Final private Set<String> tags;
-    @Shadow private Level level;
-    @Shadow private boolean hasVisualFire;
-    @Shadow protected UUID uuid;
-    @Shadow protected boolean firstTick;
-    @Shadow private CustomData customData;
+    @Shadow
+    @Final
+    protected static EntityDataAccessor<@NotNull Pose> DATA_POSE;
+    @Shadow
+    @Final
+    private static Codec<List<String>> TAG_LIST_CODEC;
+    @Shadow
+    @Final
+    protected SynchedEntityData entityData;
+    @Shadow
+    @Final
+    private Set<String> tags;
+    @Shadow
+    private Level level;
+    @Shadow
+    private boolean hasVisualFire;
+    @Shadow
+    protected UUID uuid;
+    @Shadow
+    protected boolean firstTick;
+    @Shadow
+    private CustomData customData;
 
-    @Shadow protected abstract void reapplyPosition();
-    @Shadow protected abstract void setRot(float yaw, float pitch);
-    @Shadow protected abstract boolean repositionEntityAfterLoad();
-    @Shadow protected abstract void setSharedFlag(int index, boolean value);
+    @Shadow
+    protected abstract void reapplyPosition();
 
-    /**
-     * @author ImCoolYeah105
-     * @reason 1 line overwrite
-     * Add entity to tag cache when a tag is added
-     */
-    @Overwrite
-    public boolean addTag(String tag) {
-        if (this.tags.size() < 1024 && this.tags.add(tag)) {
-            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+    @Shadow
+    protected abstract void setRot(float yaw, float pitch);
+
+    @Shadow
+    protected abstract boolean repositionEntityAfterLoad();
+
+    @Shadow
+    protected abstract void setSharedFlag(int index, boolean value);
+
+    @WrapOperation(method = "addTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z"))
+    public boolean addTag(Set instance, Object e, Operation<Boolean> original) {
+        if (original.call(instance, e)) {
+            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
                 index.radon_addEntityToTagMap(tag, (Entity) (Object) this);
             }
             return true;
         }
+
         return false;
     }
 
-    /**
-     * @author ImCoolYeah105
-     * @reason 1 line overwrite
-     * Remove entity from tag cache when a tag is removed
-     */
-    @Overwrite
-    public boolean removeTag(String tag) {
-        if (this.tags.remove(tag)) {
-            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+
+    @WrapOperation(method = "removeTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"))
+    public boolean removeTag(Set instance, Object e, Operation<Boolean> original) {
+        if (original.call(instance, e)) {
+            if (this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
                 index.radon_removeEntityFromTagMap(tag, (Entity) (Object) this);
             }
             return true;
@@ -98,12 +113,12 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
     private void radon_load(ValueInput nbt, CallbackInfo ci) {
-        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex().getEntity(uuid) != null && world.radon_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.radon_getEntityIndex() != null) {
             Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
-            if(tagList.isPresent()) {
+            if (tagList.isPresent()) {
                 int max_size = Math.min(tagList.get().size(), 1024);
                 for (int i = 0; i < max_size; ++i) {
-                    index.radon_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
+                    world.radon_getEntityIndex().radon_addEntityToTagMap(tagList.get().get(i), (Entity) (Object) this);
                 }
             }
         }
@@ -121,7 +136,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
 
     @Override
     public boolean radon_saveWithoutIdFiltered(ValueOutput output, String path) {
-        String topLevelNbt = path.split("[.{\\[]")[0];
+        String topLevelNbt = path.split("[.{\\[]",1)[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
@@ -136,13 +151,14 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                 case "Motion" -> output.store("Motion", Vec3.CODEC, entity.getDeltaMovement());
                 case "Rotation" -> output.store("Rotation", Vec2.CODEC, new Vec2(entity.getYRot(), entity.getXRot()));
                 case "FallDistance" -> output.putDouble("fall_distance", entity.fallDistance);
-                case "Fire" -> output.putShort("Fire", (short)entity.getRemainingFireTicks());
-                case "Air" -> output.putShort("Air", (short)entity.getAirSupply());
+                case "Fire" -> output.putShort("Fire", (short) entity.getRemainingFireTicks());
+                case "Air" -> output.putShort("Air", (short) entity.getAirSupply());
                 case "OnGround" -> output.putBoolean("OnGround", entity.onGround());
                 case "Invulnerable" -> output.putBoolean("Invulnerable", entity.isInvulnerable());
                 case "PortalCooldown" -> output.putInt("PortalCooldown", entity.getPortalCooldown());
                 case "UUID" -> output.store("UUID", UUIDUtil.CODEC, entity.getUUID());
-                case "CustomName" -> output.storeNullable("CustomName", ComponentSerialization.CODEC, entity.getCustomName());
+                case "CustomName" ->
+                        output.storeNullable("CustomName", ComponentSerialization.CODEC, entity.getCustomName());
                 case "CustomNameVisible" -> {
                     if (entity.isCustomNameVisible()) {
                         output.putBoolean("CustomNameVisible", entity.isCustomNameVisible());
@@ -181,14 +197,18 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                 }
                 case "data" -> {
                     if (!this.customData.isEmpty()) {
-                        output.store("data", CustomData.CODEC, this.customData);
+                        if(output instanceof TagValueOutput tagValueOutput) {
+                            tagValueOutput.buildResult().put("data", this.customData.copyTag());
+                        } else {
+                            output.store("data", CustomData.CODEC, this.customData);
+                        }
                     }
                 }
                 case "Passengers" -> {
                     if (entity.isVehicle()) {
                         ValueOutput.ValueOutputList passengersList = output.childrenList("Passengers");
 
-                        for(Entity passenger : entity.getPassengers()) {
+                        for (Entity passenger : entity.getPassengers()) {
                             ValueOutput passengerOutput = passengersList.addChild();
                             if (!passenger.saveAsPassenger(passengerOutput)) {
                                 passengersList.discardLast();
@@ -200,9 +220,11 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                         }
                     }
                 }
-                default -> this.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
+                default -> {
+                    return this.radon_addAdditionalSaveDataFiltered(output, path, topLevelNbt);
+                }
             }
-            return !output.isEmpty();
+            return true;
         } catch (Throwable var9) {
             CrashReport crashReport = CrashReport.forThrowable(var9, "Saving entity NBT");
             CrashReportCategory crashReportSection = crashReport.addCategory("Entity being saved");
@@ -213,7 +235,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
 
     @Override
     public boolean radon_loadFiltered(ValueInput input, String path) {
-        String topLevelNbt = path.split("[\\[.{]")[0];
+        String topLevelNbt = path.split("[\\[.{]",1)[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
@@ -226,7 +248,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                 }
                 case "Motion" -> {
                     Vec3 motion = input.read("Motion", Vec3.CODEC).orElse(Vec3.ZERO);
-                    entity.setDeltaMovement(Math.abs(motion.x) > (double)10.0F ? (double)0.0F : motion.x, Math.abs(motion.y) > (double)10.0F ? (double)0.0F : motion.y, Math.abs(motion.z) > (double)10.0F ? (double)0.0F : motion.z);
+                    entity.setDeltaMovement(Math.abs(motion.x) > (double) 10.0F ? (double) 0.0F : motion.x, Math.abs(motion.y) > (double) 10.0F ? (double) 0.0F : motion.y, Math.abs(motion.z) > (double) 10.0F ? (double) 0.0F : motion.z);
                 }
                 case "Rotation" -> {
                     Vec2 rotation = input.read("Rotation", Vec2.CODEC).orElse(Vec2.ZERO);
@@ -238,13 +260,14 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     this.setRot(entity.getYRot(), entity.getXRot());
                 }
                 case "FallDistance" -> entity.fallDistance = input.getDoubleOr("fall_distance", 0.0F);
-                case "Fire" -> entity.setRemainingFireTicks(input.getShortOr("Fire", (short)0));
+                case "Fire" -> entity.setRemainingFireTicks(input.getShortOr("Fire", (short) 0));
                 case "Air" -> entity.setAirSupply(input.getIntOr("Air", entity.getMaxAirSupply()));
                 case "OnGround" -> entity.setOnGround(input.getBooleanOr("OnGround", false));
                 case "Invulnerable" -> entity.setInvulnerable(input.getBooleanOr("Invulnerable", false));
                 case "PortalCooldown" -> entity.setPortalCooldown(input.getIntOr("PortalCooldown", 0));
                 case "UUID" -> input.read("UUID", UUIDUtil.CODEC).ifPresent(entity::setUUID);
-                case "CustomName" -> entity.setCustomName(input.read("CustomName", ComponentSerialization.CODEC).orElse(null));
+                case "CustomName" ->
+                        entity.setCustomName(input.read("CustomName", ComponentSerialization.CODEC).orElse(null));
                 case "CustomNameVisible" -> entity.setCustomNameVisible(input.getBooleanOr("CustomNameVisible", false));
                 case "Silent" -> entity.setSilent(input.getBooleanOr("Silent", false));
                 case "NoGravity" -> entity.setNoGravity(input.getBooleanOr("NoGravity", false));
@@ -258,11 +281,12 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                         this.tags.clear();
 
                         Optional<List<String>> tagList = input.read("Tags", TAG_LIST_CODEC);
-                        if(tagList.isPresent()) {
+                        if (tagList.isPresent()) {
                             int max_size = Math.min(tagList.get().size(), 1024);
                             for (int i = 0; i < max_size; ++i) {
                                 index.radon_addEntityToTagMap(tagList.get().get(i), entity);
                             }
+                            this.tags.addAll(tagList.get());
                         }
                     }
                 }

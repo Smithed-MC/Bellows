@@ -4,6 +4,11 @@ import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntitySelectorExtender;
 import dev.smithed.radon.mixin_interface.IServerWorldExtender;
 import dev.smithed.radon.utils.SelectorContainer;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,11 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraft.world.phys.AABB;
 
 @Mixin(EntitySelector.class)
 public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
@@ -35,10 +35,10 @@ public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
         int i = this.getResultLimit();
         if (result.size() < i) {
             if(Radon.CONFIG.entitySelectorOptimizations && level instanceof IServerWorldExtender extender) {
-                if (absoluteAABB != null) {
-                    level.getEntities(this.type, absoluteAABB, predicate, result, i);
-                } else {
+                if(absoluteAABB == null || !radon_container.selectorTags.isEmpty()) {
                     extender.radon_collectEntitiesByType(this.type, predicate, result, i, radon_container);
+                } else {
+                    level.getEntities(this.type, absoluteAABB, predicate, result, i);
                 }
                 ci.cancel();
             }

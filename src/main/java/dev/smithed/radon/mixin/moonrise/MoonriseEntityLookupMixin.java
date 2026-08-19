@@ -1,28 +1,34 @@
-package dev.smithed.radon.mixin;
+package dev.smithed.radon.mixin.moonrise;
 
+import ca.spottedleaf.moonrise.libs.ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
+import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup;
 import dev.smithed.radon.Radon;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
+import dev.smithed.radon.mixin_interface.ISimpleEntityLookupExtender;
 import dev.smithed.radon.utils.NBTUtils;
 import dev.smithed.radon.utils.SelectorContainer;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityAccess;
-import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.entity.Visibility;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
 
 @Mixin(EntityLookup.class)
-public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntityIndexExtender<T> {
+public abstract class MoonriseEntityLookupMixin<T extends Entity> implements IEntityIndexExtender<T>, ISimpleEntityLookupExtender<T> {
 
-    @Shadow public abstract <U extends T> void getEntities(EntityTypeTest<@NotNull T, @NotNull U> type, AbortableIterationConsumer<@NotNull U> consumer);
+    @Shadow @Final protected ConcurrentChainedLong2ReferenceHashTable<Entity> entityById;
+    @Shadow public abstract <U extends Entity> void get(EntityTypeTest<Entity, U> filter, AbortableIterationConsumer<U> action);
 
     @Unique
     private static final int REASONABLE_SEARCH_SIZE = 100;
@@ -47,15 +53,15 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
      * @author ImCoolYeah105
      * Add entity type to map when loaded
      */
-    @Inject(method = "add", at = @At("HEAD"))
-    private void radon_add(T entity, CallbackInfo ci) {
-        if(entity instanceof Entity entityCast) {
-            String name = NBTUtils.translationToTypeName(entityCast.getType().getDescriptionId());
+    @Inject(method = "addEntity", at = @At("TAIL"))
+    private void radon_addEntity(Entity entity, boolean fromDisk, boolean event, CallbackInfoReturnable<Boolean> ci) {
+        if(entityById.containsKey(entity.getId())) {
+            String name = NBTUtils.translationToTypeName(entity.getType().getDescriptionId());
             if(!name.isEmpty()) {
                 this.radon_addEntityToTagMap(name, entity);
             }
-            if(!entityCast.entityTags().isEmpty()) {
-                entityCast.entityTags().forEach(tag -> radon_addEntityToTagMap(tag, entity));
+            if(!entity.entityTags().isEmpty()) {
+                entity.entityTags().forEach(tag -> radon_addEntityToTagMap(tag, entity));
             }
         }
     }
@@ -64,15 +70,15 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
      * @author ImCoolYeah105
      * Remove entity type & tags from map when unloaded
      */
-    @Inject(method = "remove", at = @At("HEAD"))
-    private void radon_remove(T entity, CallbackInfo ci) {
-        if(entity instanceof Entity entityCast) {
-            String name = NBTUtils.translationToTypeName(entityCast.getType().getDescriptionId());
+    @Inject(method = "removeEntity", at = @At("TAIL"))
+    private void radon_removeEntity(Entity entity, CallbackInfo ci) {
+        if(!entityById.containsKey(entity.getId())) {
+            String name = NBTUtils.translationToTypeName(entity.getType().getDescriptionId());
             if(!name.isEmpty()) {
-                this.radon_removeEntityFromTagMap(name, entityCast);
+                this.radon_removeEntityFromTagMap(name, entity);
             }
-            if(!entityCast.entityTags().isEmpty()) {
-                entityCast.entityTags().forEach(tag -> radon_removeEntityFromTagMap(tag, entity));
+            if(!entity.entityTags().isEmpty()) {
+                entity.entityTags().forEach(tag -> radon_removeEntityFromTagMap(tag, entity));
             }
         }
     }
@@ -145,21 +151,26 @@ public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntit
         } else if (list != null) {
             list.forEach(iset -> radon_forEachInCollection(iset, filter, action));
         } else {
-            this.getEntities(filter, action);
+            this.get((EntityTypeTest<Entity, U>) filter, action);
         }
     }
 
     @Unique
-    public <U extends T> void radon_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> consumer) {
-        Iterator<EntityAccess> iterator = collection.iterator();
+    public <U extends T> void radon_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<T, U> filter, AbortableIterationConsumer<U> action) {
 
-        U entityLike2;
-        do {
-            if (!iterator.hasNext()) {
-                return;
+        for (EntityAccess entity : collection) {
+            Visibility visibility = EntityLookup.getEntityStatus((Entity) entity);
+            if (visibility.isAccessible()) {
+                U casted = filter.tryCast((T) entity);
+                if (casted != null && action.accept(casted).shouldAbort()) {
+                    break;
+                }
             }
-            T entityLike = (T)iterator.next();
-            entityLike2 = filter.tryCast(entityLike);
-        } while(entityLike2 == null || !consumer.accept(entityLike2).shouldAbort());
+        }
+    }
+
+    @Override
+    public IEntityIndexExtender<?> radon_getVisibleEntities() {
+        return this;
     }
 }

@@ -3,9 +3,7 @@ package dev.smithed.radon.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.smithed.radon.Radon;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -13,18 +11,31 @@ import net.minecraft.network.chat.Component;
 
 public class RadonCommand {
 
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) { // You can also return a LiteralCommandNode for use with possible redirects
+        dispatcher.register(
+            Commands.literal("radon")
+            .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+            .then(Commands.literal("version").executes(RadonCommand::version))
+            .then(Commands.literal("nbt-optimizations").executes(RadonCommand::toggle_radon_nbt)
+                .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_radon_nbt)))
+            .then(Commands.literal("selector-optimizations").executes(RadonCommand::toggle_radon_selector)
+                .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_radon_selector)))
+            .then(Commands.literal("debug-mode").executes(RadonCommand::toggle_debug_mode)
+                .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_debug_mode)))
+            .then(Commands.literal("fix-block-access-forceload").executes(RadonCommand::toggle_block_forceload_mode)
+                .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_block_forceload_mode)))
+            .then(Commands.literal("debug").redirect(dispatcher.getRoot(), RadonCommand::debugStart))
+        );
+    }
 
-    public static LiteralCommandNode<?> register(CommandDispatcher<CommandSourceStack> dispatcher) { // You can also return a LiteralCommandNode for use with possible redirects
-        return dispatcher.register( (LiteralArgumentBuilder) ((LiteralArgumentBuilder)Commands.literal("radon").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)))
-                .then(Commands.literal("nbt-optimizations").executes(RadonCommand::toggle_radon_nbt)
-                        .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_radon_nbt)))
-                .then(Commands.literal("selector-optimizations").executes(RadonCommand::toggle_radon_selector)
-                        .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_radon_selector)))
-                .then(Commands.literal("debug-mode").executes(RadonCommand::toggle_debug_mode)
-                        .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_debug_mode)))
-                .then(Commands.literal("fix-block-access-forceload").executes(RadonCommand::toggle_block_forceload_mode)
-                        .then(Commands.argument("enabled", BoolArgumentType.bool()).executes(RadonCommand::set_block_forceload_mode)))
-            );
+    public static int version(CommandContext<CommandSourceStack> context) {
+        context.getSource().sendSuccess(() -> Component.literal("version = 0.10.16pld"), true);
+        return 1016;
+    }
+
+    public static CommandSourceStack debugStart(CommandContext<CommandSourceStack> context) {
+        Radon.CONFIG.debugContext = context;
+        return context.getSource().withCallback((_, _) -> Radon.CONFIG.debugContext = null);
     }
 
     public static int toggle_radon_nbt(CommandContext<CommandSourceStack> context) {
