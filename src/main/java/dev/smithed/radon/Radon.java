@@ -6,9 +6,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 public class Radon implements ModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("radon");
@@ -26,8 +23,9 @@ public class Radon implements ModInitializer {
     }
 
     public static void logDebugFormat(String message, Object ... args) {
-        if(CONFIG.debug && message != null)
+        if(CONFIG.debug && message != null) {
             LOGGER.info(String.format(message, args));
+        }
     }
 
     public static class RadonConfig {

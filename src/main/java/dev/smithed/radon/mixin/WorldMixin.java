@@ -4,6 +4,7 @@ import dev.smithed.radon.mixin_interface.IWorldExtender;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.world.ChunkLevels;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerChunkManager;
@@ -31,12 +32,13 @@ public abstract class WorldMixin implements WorldAccess, AutoCloseable, IWorldEx
             return Blocks.VOID_AIR.getDefaultState();
         } else {
             WorldChunk worldChunk = this.getChunk(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ()));
+            BlockState blockState = worldChunk.getBlockState(pos);
             if(this.getChunkManager() instanceof ServerChunkManager manager) {
-                ChunkTicketManager tickets = manager.threadedAnvilChunkStorage.getTicketManager();
-                int level = 33 + ChunkStatus.getDistanceFromFull(ChunkStatus.FULL);
-                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), level, worldChunk.getPos());
+                ChunkTicketManager tickets = manager.chunkLoadingManager.getTicketManager();
+                int i = ChunkLevels.getLevelFromStatus(ChunkStatus.FULL);
+                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), i, worldChunk.getPos());
             }
-            return worldChunk.getBlockState(pos);
+            return blockState;
         }
     }
 
@@ -50,9 +52,9 @@ public abstract class WorldMixin implements WorldAccess, AutoCloseable, IWorldEx
             WorldChunk worldChunk = this.getWorldChunk(pos);
             BlockEntity blockEntity = worldChunk.getBlockEntity(pos, WorldChunk.CreationType.IMMEDIATE);
             if(this.getChunkManager() instanceof ServerChunkManager manager) {
-                ChunkTicketManager tickets = manager.threadedAnvilChunkStorage.getTicketManager();
-                int level = 33 + ChunkStatus.getDistanceFromFull(ChunkStatus.FULL);
-                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), level, worldChunk.getPos());
+                ChunkTicketManager tickets = manager.chunkLoadingManager.getTicketManager();
+                int i = ChunkLevels.getLevelFromStatus(ChunkStatus.FULL);
+                tickets.removeTicketWithLevel(ChunkTicketType.UNKNOWN, worldChunk.getPos(), i, worldChunk.getPos());
             }
             return blockEntity;
         }

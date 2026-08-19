@@ -1,7 +1,5 @@
 package dev.smithed.radon.mixin.entity;
 
-import dev.smithed.radon.Radon;
-import dev.smithed.radon.integrations.IntegrationRouter;
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import dev.smithed.radon.mixin_interface.IEntityIndexExtender;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
@@ -13,14 +11,15 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -28,17 +27,17 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
 
+    @Shadow @Final private static Logger LOGGER;
     @Shadow @Final static TrackedData<EntityPose> POSE;
-    @Shadow @Final Random random;
     @Shadow World world;
     @Shadow DataTracker dataTracker;
     @Shadow Entity vehicle;
@@ -53,12 +52,15 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Shadow float fallDistance;
     @Shadow String uuidString;
     @Shadow boolean firstUpdate;
+    @Shadow @Final static TrackedData<Optional<Text>> CUSTOM_NAME;
+
     @Shadow abstract void refreshPosition();
     @Shadow abstract void setRotation(float yaw, float pitch);
     @Shadow abstract boolean shouldSetPositionOnLoad();
     @Shadow abstract NbtList toNbtList(double... values);
     @Shadow abstract NbtList toNbtList(float... values);
     @Shadow abstract void setFlag(int index, boolean value);
+    @Shadow protected abstract DynamicRegistryManager getRegistryManager();
 
     /**
      * @author ImCoolYeah105
@@ -67,9 +69,9 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
      */
     @Overwrite
     public boolean addCommandTag(String tag) {
-        if(this.commandTags.size() < 1024 && this.commandTags.add(tag)) {
-            if(this.world instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
-                index.addEntityToTagMap(tag, (Entity)(Object)this);
+        if (this.commandTags.size() < 1024 && this.commandTags.add(tag)) {
+            if (this.world instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
+                index.addEntityToTagMap(tag, (Entity) (Object) this);
             return true;
         }
         return false;
@@ -82,9 +84,9 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
      */
     @Overwrite
     public boolean removeCommandTag(String tag) {
-        if(this.commandTags.remove(tag)) {
-            if(this.world instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
-                index.removeEntityFromTagMap(tag, (Entity)(Object)this);
+        if (this.commandTags.remove(tag)) {
+            if (this.world instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
+                index.removeEntityFromTagMap(tag, (Entity) (Object) this);
             return true;
         }
         return false;
@@ -96,20 +98,20 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
     private void radon_readNbt(CallbackInfo ci) {
         if (this.world instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index)
-            this.commandTags.forEach(tag -> index.removeEntityFromTagMap(tag, (Entity)(Object)this));
+            this.commandTags.forEach(tag -> index.removeEntityFromTagMap(tag, (Entity) (Object) this));
     }
 
     /**
      * add entity to tag cache when tags are added via NBT data
      */
-    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void radon_readNbt(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("Tags", 9) && this.world instanceof IServerWorldExtender world && world.getEntityIndex().get(uuid) != null && world.getEntityIndex() instanceof IEntityIndexExtender index) {
             NbtList nbtList4 = nbt.getList("Tags", 8);
             int i = Math.min(nbtList4.size(), 1024);
 
-            for(int j = 0; j < i; ++j) {
-                index.addEntityToTagMap(nbtList4.getString(j), (Entity)(Object)this);
+            for (int j = 0; j < i; ++j) {
+                index.addEntityToTagMap(nbtList4.getString(j), (Entity) (Object) this);
             }
         }
     }
@@ -118,6 +120,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         return false;
     }
+
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         return false;
@@ -126,10 +129,10 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Override
     public NbtCompound writeNbtFiltered(NbtCompound nbt, String path) {
         String topLevelNbt = path.split("[\\.\\{\\[]")[0];
-        Entity entity = ((Entity)(Object)this);
+        Entity entity = ((Entity) (Object) this);
 
         try {
-            switch(topLevelNbt) {
+            switch (topLevelNbt) {
                 case "Pos":
                     if (this.vehicle != null) {
                         nbt.put("Pos", toNbtList(this.vehicle.getX(), entity.getY(), this.vehicle.getZ()));
@@ -168,7 +171,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                 case "CustomName":
                     Text text = entity.getCustomName();
                     if (text != null) {
-                        nbt.putString("CustomName", Text.Serialization.toJsonString(text));
+                        nbt.putString("CustomName", Text.Serialization.toJsonString(text, this.getRegistryManager()));
                     }
                     break;
                 case "CustomNameVisible":
@@ -236,7 +239,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     }
                     break;
                 default:
-                    if(this.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt))
+                    if (this.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt))
                         return nbt;
                     else
                         return null;
@@ -253,7 +256,7 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
     @Override
     public boolean readNbtFiltered(NbtCompound nbt, String path) {
         String topLevelNbt = path.split("[\\[.{]")[0];
-        Entity entity = ((Entity)(Object)this);
+        Entity entity = ((Entity) (Object) this);
 
         try {
             switch (topLevelNbt) {
@@ -299,11 +302,15 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     this.uuidString = this.uuid.toString();
                 }
                 case "CustomName" -> {
-                    String string = nbt.getString("CustomName");
-                    try {
-                        entity.setCustomName(Text.Serialization.fromJson(string));
-                    } catch (Exception var16) {
-                        Radon.LOGGER.warn("Failed to parse entity custom name {}", string, var16);
+                    if (nbt.contains("CustomName", 8)) {
+                        String string = nbt.getString("CustomName");
+                        try {
+                            entity.setCustomName(Text.Serialization.fromJson(string, this.getRegistryManager()));
+                        } catch (Exception var16) {
+                            LOGGER.warn("Failed to parse entity custom name {}", string, var16);
+                        }
+                    } else {
+                        this.dataTracker.set(CUSTOM_NAME, Optional.empty());
                     }
                 }
                 case "CustomNameVisible" -> entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible"));
@@ -320,8 +327,8 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                         this.commandTags.add(nbtList4.getString(j));
                     }
                     if (this.world instanceof IServerWorldExtender world && world.getEntityIndex() instanceof IEntityIndexExtender index) {
-                        for(int j = 0; j < i; ++j) {
-                            index.addEntityToTagMap(nbtList4.getString(j), (Entity)(Object)this);
+                        for (int j = 0; j < i; ++j) {
+                            index.addEntityToTagMap(nbtList4.getString(j), (Entity) (Object) this);
                         }
                     }
                 }
@@ -329,8 +336,8 @@ public abstract class EntityMixin implements IEntityMixin, ICustomNBTMixin {
                     if (this.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
                         if (this.shouldSetPositionOnLoad())
                             this.refreshPosition();
-                        if (topLevelNbt.equals("ArmorItems") || topLevelNbt.equals("HandItems"))
-                            IntegrationRouter.triggerEquipmentUpdate(this);
+//                        if (topLevelNbt.equals("ArmorItems") || topLevelNbt.equals("HandItems"))
+//                            IntegrationRouter.triggerEquipmentUpdate(this);
                     } else {
                         return false;
                     }

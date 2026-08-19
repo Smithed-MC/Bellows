@@ -12,24 +12,24 @@ public abstract class MarkerEntityMixin extends EntityMixin implements ICustomNB
 
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        MarkerEntity entity = ((MarkerEntity) (Object) this);
-        if (!super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
-            if (topLevelNbt.equals("data")) {
-                nbt.put("data", this.data.copy());
-            } else {
-                return false;
-            }
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
+        if (topLevelNbt.equals("data")) {
+            nbt.put("data", this.data.copy());
+        } else {
+            return false;
         }
         return true;
     }
 
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
-        MarkerEntity entity = ((MarkerEntity)(Object)this);
-        if(!nbt.contains(topLevelNbt))
-            return false;
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
         if (topLevelNbt.equals("data")) {
-            this.data = nbt.getCompound("data");
+            this.data = nbt.getCompound("data").copy();
         } else {
             return false;
         }

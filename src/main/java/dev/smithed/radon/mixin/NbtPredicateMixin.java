@@ -8,10 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.NbtPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 @Mixin(NbtPredicate.class)
 public class NbtPredicateMixin {
@@ -34,7 +31,7 @@ public class NbtPredicateMixin {
                 if (entity instanceof ServerPlayerEntity player && topNbt.equals("SelectedItem")) {
                     ItemStack itemStack = player.getInventory().getMainHandStack();
                     if (!itemStack.isEmpty()) {
-                        nbt.put("SelectedItem", itemStack.writeNbt(new NbtCompound()));
+                        nbt.put("SelectedItem", itemStack.toNbt(entity.getRegistryManager()));
                     }
                 } else {
                     nbt = mixin.writeNbtFiltered(nbt, topNbt);
@@ -46,7 +43,8 @@ public class NbtPredicateMixin {
 
         if(nbt == null)
             nbt = NbtPredicate.entityToNbt(entity);
-        Radon.logDebugFormat("retrieved predicate nbt -> %s", nbt);
-        return predicate.test(nbt);
+        boolean result = predicate.test(nbt);
+        Radon.logDebugFormat("Predicate = %s, nbt = %s", result, nbt);
+        return result;
     }
 }

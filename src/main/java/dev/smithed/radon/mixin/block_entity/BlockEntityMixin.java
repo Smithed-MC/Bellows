@@ -2,7 +2,6 @@ package dev.smithed.radon.mixin.block_entity;
 
 import dev.smithed.radon.mixin_interface.ICustomNBTMixin;
 import dev.smithed.radon.mixin_interface.IEntityMixin;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -16,7 +15,6 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class BlockEntityMixin implements IEntityMixin, ICustomNBTMixin {
 
     @Shadow @Final BlockPos pos;
-    @Shadow abstract BlockState getCachedState();
 
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {

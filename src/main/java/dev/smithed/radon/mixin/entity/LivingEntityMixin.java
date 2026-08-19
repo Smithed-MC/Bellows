@@ -26,7 +26,7 @@ import java.util.Optional;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends EntityMixin implements ICustomNBTMixin {
 
-    @Shadow @Final static Logger LOGGER;
+    @Shadow @Final private static Logger LOGGER;
     @Shadow int lastAttackedTime;
     @Shadow Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
     @Shadow Brain<?> brain;
@@ -36,7 +36,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Override
     public boolean writeCustomDataToNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         LivingEntity entity = ((LivingEntity)(Object)this);
-
+        if (super.writeCustomDataToNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
         switch (topLevelNbt) {
             case "Health" -> nbt.putFloat("Health", entity.getHealth());
             case "HurtTime" -> nbt.putShort("HurtTime", (short) entity.hurtTime);
@@ -51,13 +53,13 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
 
                     while (var3.hasNext()) {
                         StatusEffectInstance statusEffectInstance = (StatusEffectInstance) var3.next();
-                        nbtList.add(statusEffectInstance.writeNbt(new NbtCompound()));
+                        nbtList.add(statusEffectInstance.writeNbt());
                     }
 
                     nbt.put("ActiveEffects", nbtList);
                 }
             }
-            case "FallFlying" -> nbt.putBoolean("FallFlying", entity.isFallFlying());
+            case "FallFlying" -> nbt.putBoolean("FallFlying", entity.isGliding());
             case "SleepingX", "SleepingY", "SleepingZ" -> entity.getSleepingPosition().ifPresent((pos) -> {
                 nbt.putInt("SleepingX", pos.getX());
                 nbt.putInt("SleepingY", pos.getY());
@@ -81,8 +83,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
     @Override
     public boolean readCustomDataFromNbtFiltered(NbtCompound nbt, String path, String topLevelNbt) {
         LivingEntity entity = ((LivingEntity)(Object)this);
-        if(!nbt.contains(topLevelNbt))
-            return false;
+        if (super.readCustomDataFromNbtFiltered(nbt, path, topLevelNbt)) {
+            return true;
+        }
         switch (topLevelNbt) {
             case "AbsorptionAmount" -> entity.setAbsorptionAmount(nbt.getFloat("AbsorptionAmount"));
             case "Attributes" -> {
@@ -96,7 +99,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
                         NbtCompound nbtCompound = nbtList.getCompound(i);
                         StatusEffectInstance statusEffectInstance = StatusEffectInstance.fromNbt(nbtCompound);
                         if (statusEffectInstance != null) {
-                            this.activeStatusEffects.put(statusEffectInstance.getEffectType(), statusEffectInstance);
+                            this.activeStatusEffects.put(statusEffectInstance.getEffectType().value(), statusEffectInstance);
                         }
                     }
                 }
@@ -105,7 +108,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements ICustomNB
                 if (nbt.contains("Health", 99))
                     entity.setHealth(nbt.getFloat("Health"));
             }
-            case "HurtTime" -> entity.hurtTime = nbt.getShort("HurtTime");
+            case "HurtTime" -> {
+                entity.hurtTime = nbt.getShort("HurtTime");
+            }
             case "DeathTime" -> entity.deathTime = nbt.getShort("DeathTime");
             case "HurtByTimestamp" -> this.lastAttackedTime = nbt.getInt("HurtByTimestamp");
             case "Team" -> {
