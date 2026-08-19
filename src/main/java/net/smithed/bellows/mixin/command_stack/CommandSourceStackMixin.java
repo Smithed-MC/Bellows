@@ -2,7 +2,6 @@ package net.smithed.bellows.mixin.command_stack;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.smithed.bellows.mixin_interface.command_stack.EntityExtender;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSource;
@@ -16,6 +15,7 @@ import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.smithed.bellows.mixin_interface.command_stack.EntityExtender;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -60,9 +60,9 @@ public class CommandSourceStackMixin {
     private TaskChainer chatMessageChainer;
 
     @Unique
-    private Supplier<String> radon_textNameSupplier = null;
+    private Supplier<String> bellows_textNameSupplier = null;
     @Unique
-    private Supplier<Component> radon_displayNameSupplier = null;
+    private Supplier<Component> bellows_displayNameSupplier = null;
 
     @Inject(method = "withEntity(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/commands/CommandSourceStack;", at = @At("HEAD"), cancellable = true)
     public void withEntity(Entity entity, CallbackInfoReturnable<CommandSourceStack> cir) {
@@ -83,30 +83,30 @@ public class CommandSourceStackMixin {
                     this.signingContext,
                     this.chatMessageChainer
             );
-            radon_setSuppliers(newStack, extender);
+            bellows_setSuppliers(newStack, extender);
             cir.setReturnValue(newStack);
         }
     }
 
     @Unique
-    private CommandSourceStack radon_setSuppliers(CommandSourceStack stack, EntityExtender entity) {
+    private CommandSourceStack bellows_setSuppliers(CommandSourceStack stack, EntityExtender entity) {
         CommandSourceStackMixin stackMixin = (CommandSourceStackMixin)(Object)stack;
-        stackMixin.radon_textNameSupplier = entity.bellows_getPlainTextNameSupplier();
-        stackMixin.radon_displayNameSupplier = entity.bellows_getDisplayNameSupplier();
+        stackMixin.bellows_textNameSupplier = entity.bellows_getPlainTextNameSupplier();
+        stackMixin.bellows_displayNameSupplier = entity.bellows_getDisplayNameSupplier();
         return stack;
     }
 
     @Inject(method = "getTextName()Ljava/lang/String;", at = @At("HEAD"))
-    public void radon_getTextName(CallbackInfoReturnable<Component> cir) {
+    public void bellows_getTextName(CallbackInfoReturnable<Component> cir) {
         if(textName == null) {
-            textName = radon_textNameSupplier.get();
+            textName = bellows_textNameSupplier.get();
         }
     }
 
     @Inject(method = "getDisplayName()Lnet/minecraft/network/chat/Component;", at = @At("HEAD"))
-    public void radon_getDisplayName(CallbackInfoReturnable<Component> cir) {
+    public void bellows_getDisplayName(CallbackInfoReturnable<Component> cir) {
         if(displayName == null) {
-            displayName = radon_displayNameSupplier.get();
+            displayName = bellows_displayNameSupplier.get();
         }
     }
 
@@ -114,79 +114,79 @@ public class CommandSourceStackMixin {
             method = "withSource(Lnet/minecraft/commands/CommandSource;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withSource(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withSource(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withPosition(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withPosition(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withPosition(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withRotation(Lnet/minecraft/world/phys/Vec2;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withRotation(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withRotation(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withCallback(Lnet/minecraft/commands/CommandResultCallback;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withCallback(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withCallback(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withSuppressedOutput()Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withSuppressedOutput(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withSuppressedOutput(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withPermission(Lnet/minecraft/server/permissions/PermissionSet;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withPermission(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withPermission(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withAnchor(Lnet/minecraft/commands/arguments/EntityAnchorArgument$Anchor;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withAnchor(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withAnchor(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withLevel(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withLevel(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withLevel(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @WrapOperation(
             method = "withSigningContext(Lnet/minecraft/commands/CommandSigningContext;Lnet/minecraft/util/TaskChainer;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
     )
-    public CommandSourceStack radon_withSigningContext(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
-        return radon_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
+    public CommandSourceStack bellows_withSigningContext(CommandSource source, Vec3 position, Vec2 rotation, ServerLevel level, PermissionSet permissions, String textName, Component displayName, MinecraftServer server, Entity entity, boolean silent, CommandResultCallback resultCallback, EntityAnchorArgument.Anchor anchor, CommandSigningContext signingContext, TaskChainer chatMessageChainer, Operation<CommandSourceStack> original) {
+        return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
     @Unique
-    private CommandSourceStack radon_copySuppliers(CommandSourceStack stack) {
+    private CommandSourceStack bellows_copySuppliers(CommandSourceStack stack) {
         CommandSourceStackMixin stackMixin = (CommandSourceStackMixin)(Object)stack;
-        stackMixin.radon_textNameSupplier = this.radon_textNameSupplier;
-        stackMixin.radon_displayNameSupplier = this.radon_displayNameSupplier;
+        stackMixin.bellows_textNameSupplier = this.bellows_textNameSupplier;
+        stackMixin.bellows_displayNameSupplier = this.bellows_displayNameSupplier;
         return stack;
     }
 }

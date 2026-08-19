@@ -19,7 +19,7 @@ public class MixinConfig implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (mixinClassName.startsWith("dev.smithed.radon.mixin.moonrise")) {
+        if (mixinClassName.startsWith("net.smithed.bellows.mixin.moonrise")) {
             return isMoonriseLoaded();
         }
         return true;

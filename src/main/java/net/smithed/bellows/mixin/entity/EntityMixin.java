@@ -3,10 +3,6 @@ package net.smithed.bellows.mixin.entity;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.serialization.Codec;
-import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
-import net.smithed.bellows.mixin_interface.EntityExtender;
-import net.smithed.bellows.mixin_interface.IEntityIndexExtender;
-import net.smithed.bellows.mixin_interface.IServerWorldExtender;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -24,6 +20,10 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.smithed.bellows.mixin_interface.EntityExtender;
+import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
+import net.smithed.bellows.mixin_interface.IEntityIndexExtender;
+import net.smithed.bellows.mixin_interface.IServerWorldExtender;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -103,7 +103,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
      * remove entity from tag cache completely when tags are cleared
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
-    private void radon_load(CallbackInfo ci) {
+    private void bellows_load(CallbackInfo ci) {
         if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
             this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this));
         }
@@ -113,7 +113,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
      * add entity to tag cache when tags are added via NBT data
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
-    private void radon_load(ValueInput nbt, CallbackInfo ci) {
+    private void bellows_load(ValueInput nbt, CallbackInfo ci) {
         if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() != null) {
             Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
             if (tagList.isPresent()) {

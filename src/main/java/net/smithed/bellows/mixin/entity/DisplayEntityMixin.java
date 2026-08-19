@@ -1,7 +1,6 @@
 package net.smithed.bellows.mixin.entity;
 
 import com.mojang.math.Transformation;
-import net.smithed.bellows.mixin_interface.DisplayEntityExtender;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.ExtraCodecs;
@@ -11,6 +10,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.smithed.bellows.mixin_interface.DisplayEntityExtender;
 import org.joml.Quaternionfc;
 import org.joml.Vector3fc;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
     public abstract void setTransformation(Transformation transformation);
 
     @Inject(method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V", at = @At("TAIL"))
-    private void radon_init(EntityType<?> type, Level level, CallbackInfo ci) {
+    private void bellows_init(EntityType<?> type, Level level, CallbackInfo ci) {
         setTransformation(Transformation.IDENTITY);
     }
 
@@ -49,7 +49,7 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
      * @param ci
      */
     @Inject(method = "updateCulling()V", at = @At("HEAD"), cancellable = true)
-    private void radon_culling(CallbackInfo ci) {
+    private void bellows_culling(CallbackInfo ci) {
         Display entity = ((Display) (Object) this);
         if(!entity.level().isClientSide()) {
             ci.cancel();
