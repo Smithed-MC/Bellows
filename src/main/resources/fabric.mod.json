@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.smithed.bellows.Bellows"
+      "net.smithed.bellows.Bellows"
     ]
   },
   "mixins": [
