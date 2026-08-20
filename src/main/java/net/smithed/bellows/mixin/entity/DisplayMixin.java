@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Optional;
 
 @Mixin(Display.class)
-public abstract class DisplayEntityMixin extends EntityMixin implements DisplayEntityExtender {
+public abstract class DisplayMixin extends EntityMixin implements DisplayEntityExtender {
 
     @Shadow @Final private static EntityDataAccessor<Vector3fc> DATA_TRANSLATION_ID;
     @Shadow @Final private static EntityDataAccessor<Vector3fc> DATA_SCALE_ID;
@@ -46,7 +46,6 @@ public abstract class DisplayEntityMixin extends EntityMixin implements DisplayE
 
     /**
      * Disables culling calculations on the server, as these are only used on the client.
-     * @param ci
      */
     @Inject(method = "updateCulling()V", at = @At("HEAD"), cancellable = true)
     private void bellows_culling(CallbackInfo ci) {

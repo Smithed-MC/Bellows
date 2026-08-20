@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Optional;
 
 @Mixin(Display.TextDisplay.class)
-public abstract class TextDisplayMixin extends DisplayEntityMixin {
+public abstract class TextDisplayMixin extends DisplayMixin {
 
     @Shadow private static void storeFlag(final byte flags, final ValueOutput output, final String id, final byte mask) {}
     @Shadow private static byte loadFlag(final byte flags, final ValueInput input, final String id, final byte mask) { return 0; }

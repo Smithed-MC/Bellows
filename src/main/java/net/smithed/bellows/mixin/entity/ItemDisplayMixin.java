@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(Display.ItemDisplay.class)
-public abstract class ItemDisplayMixin extends DisplayEntityMixin {
+public abstract class ItemDisplayMixin extends DisplayMixin {
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

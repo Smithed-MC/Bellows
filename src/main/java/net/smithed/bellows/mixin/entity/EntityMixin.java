@@ -21,8 +21,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.smithed.bellows.mixin_interface.EntityExtender;
+import net.smithed.bellows.mixin_interface.EntityLookupExtender;
 import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
-import net.smithed.bellows.mixin_interface.IEntityIndexExtender;
 import net.smithed.bellows.mixin_interface.IServerWorldExtender;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
@@ -78,7 +78,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
     @WrapOperation(method = "addTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z"))
     public boolean addTag(Set instance, Object e, Operation<Boolean> original) {
         if (original.call(instance, e)) {
-            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
+            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index && e instanceof String tag) {
                 index.bellows_addEntityToTagMap(tag, (Entity) (Object) this);
             }
             return true;
@@ -91,7 +91,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
     @WrapOperation(method = "removeTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"))
     public boolean removeTag(Set instance, Object e, Operation<Boolean> original) {
         if (original.call(instance, e)) {
-            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index && e instanceof String tag) {
+            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index && e instanceof String tag) {
                 index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this);
             }
             return true;
@@ -104,7 +104,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
     private void bellows_load(CallbackInfo ci) {
-        if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+        if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index) {
             this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this));
         }
     }
@@ -277,7 +277,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
                 case "HasVisualFire" -> this.hasVisualFire = input.getBooleanOr("HasVisualFire", false);
                 case "data" -> this.customData = input.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                 case "Tags" -> {
-                    if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof IEntityIndexExtender<?> index) {
+                    if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index) {
                         this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, entity));
                         this.tags.clear();
 

@@ -1,10 +1,10 @@
 package net.smithed.bellows.mixin;
 
-import net.smithed.bellows.mixin_interface.IEntityIndexExtender;
-import net.smithed.bellows.mixin_interface.ISimpleEntityLookupExtender;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.LevelEntityGetterAdapter;
+import net.smithed.bellows.mixin_interface.EntityLookupExtender;
+import net.smithed.bellows.mixin_interface.ISimpleEntityLookupExtender;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,8 +15,8 @@ public abstract class LevelEntityGetterAdapterMixin<T extends EntityAccess> impl
 
     @Shadow @Final private EntityLookup<@NotNull T> visibleEntities;
 
-    public IEntityIndexExtender<?> bellows_getVisibleEntities() {
-        if(visibleEntities instanceof IEntityIndexExtender<?> extender) {
+    public EntityLookupExtender<?> bellows_getVisibleEntities() {
+        if(visibleEntities instanceof EntityLookupExtender<?> extender) {
             return extender;
         } else {
             return null;

@@ -1,14 +1,14 @@
 package net.smithed.bellows.mixin;
 
-import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.IEntityIndexExtender;
-import net.smithed.bellows.utils.NBTUtils;
-import net.smithed.bellows.utils.SelectorContainer;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.EntityLookupExtender;
+import net.smithed.bellows.utils.NBTUtils;
+import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.*;
 
 @Mixin(EntityLookup.class)
-public abstract class EntityIndexMixin<T extends EntityAccess> implements IEntityIndexExtender<T> {
+public abstract class EntityLookupMixin<T extends EntityAccess> implements EntityLookupExtender<T> {
 
     @Shadow public abstract <U extends T> void getEntities(EntityTypeTest<@NotNull T, @NotNull U> type, AbortableIterationConsumer<@NotNull U> consumer);
 

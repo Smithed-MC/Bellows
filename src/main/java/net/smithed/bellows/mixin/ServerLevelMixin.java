@@ -1,16 +1,16 @@
 package net.smithed.bellows.mixin;
 
-import net.smithed.bellows.mixin_interface.IEntityIndexExtender;
-import net.smithed.bellows.mixin_interface.IMinecraftServerExtender;
-import net.smithed.bellows.mixin_interface.IServerWorldExtender;
-import net.smithed.bellows.mixin_interface.ISimpleEntityLookupExtender;
-import net.smithed.bellows.utils.SelectorContainer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
+import net.smithed.bellows.mixin_interface.EntityLookupExtender;
+import net.smithed.bellows.mixin_interface.IMinecraftServerExtender;
+import net.smithed.bellows.mixin_interface.IServerWorldExtender;
+import net.smithed.bellows.mixin_interface.ISimpleEntityLookupExtender;
+import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +29,7 @@ public abstract class ServerLevelMixin implements IServerWorldExtender {
     @Shadow protected abstract LevelEntityGetter<@NotNull Entity> getEntities();
 
     @Override
-    public IEntityIndexExtender<?> bellows_getEntityIndex() {
+    public EntityLookupExtender<?> bellows_getEntityIndex() {
         if(this.getEntities() instanceof ISimpleEntityLookupExtender lookup) {
             return lookup.bellows_getVisibleEntities();
         } else {
@@ -39,7 +39,7 @@ public abstract class ServerLevelMixin implements IServerWorldExtender {
 
     @Override
     public <T extends Entity> void bellows_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container) {
-        IEntityIndexExtender<Entity> extender = (IEntityIndexExtender<Entity>) bellows_getEntityIndex();
+        EntityLookupExtender<Entity> extender = (EntityLookupExtender<Entity>) bellows_getEntityIndex();
         if (extender != null) {
             if(container.isTypeTag) {
                 if (server instanceof IMinecraftServerExtender mixin) {

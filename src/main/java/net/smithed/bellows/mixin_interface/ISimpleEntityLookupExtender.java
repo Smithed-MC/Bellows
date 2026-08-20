@@ -4,5 +4,5 @@ import net.minecraft.world.level.entity.EntityAccess;
 
 public interface ISimpleEntityLookupExtender<T extends EntityAccess> {
 
-    IEntityIndexExtender<?> bellows_getVisibleEntities();
+    EntityLookupExtender<?> bellows_getVisibleEntities();
 }

@@ -1,12 +1,12 @@
 package net.smithed.bellows.mixin_interface;
 
-import net.smithed.bellows.utils.SelectorContainer;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;
 
-public interface IEntityIndexExtender<T extends EntityAccess> {
+public interface EntityLookupExtender<T extends EntityAccess> {
 
     void bellows_addEntityToTagMap(String tag, EntityAccess entity);
     void bellows_removeEntityFromTagMap(String tag, EntityAccess entity);
