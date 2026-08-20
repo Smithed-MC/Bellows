@@ -10,8 +10,10 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(WanderingTrader.class)
 public abstract class WanderingTraderMixin extends AbstractVillagerMixin {
 
-    @Shadow private BlockPos wanderTarget;
-    @Shadow private int despawnDelay;
+    @Shadow
+    private BlockPos wanderTarget;
+    @Shadow
+    private int despawnDelay;
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

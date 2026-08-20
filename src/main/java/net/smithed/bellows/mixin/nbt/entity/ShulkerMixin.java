@@ -12,12 +12,17 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Shulker.class)
 public abstract class ShulkerMixin extends MobMixin {
 
-    @Shadow @Final protected static EntityDataAccessor<Byte> DATA_PEEK_ID;
-    @Shadow @Final protected static EntityDataAccessor<Byte> DATA_COLOR_ID;
-    @Shadow @Final private static Direction DEFAULT_ATTACH_FACE;
+    @Shadow @Final
+    protected static EntityDataAccessor<Byte> DATA_PEEK_ID;
+    @Shadow @Final
+    protected static EntityDataAccessor<Byte> DATA_COLOR_ID;
+    @Shadow @Final
+    private static Direction DEFAULT_ATTACH_FACE;
 
-    @Shadow public Direction getAttachFace() { return null; }
-    @Shadow private void setAttachFace(final Direction attachmentDirection) {}
+    @Shadow
+    public Direction getAttachFace() { return null; }
+    @Shadow
+    private void setAttachFace(final Direction attachmentDirection) {}
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

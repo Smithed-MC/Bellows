@@ -18,8 +18,10 @@ import org.spongepowered.asm.mixin.*;
 @Mixin(NbtPredicate.class)
 public abstract class NbtPredicateMixin {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private CompoundTag tag;
+    @Shadow @Final
+    private static Logger LOGGER;
+    @Shadow @Final
+    private CompoundTag tag;
 
     @Shadow
     public abstract boolean matches(@Nullable Tag tag);

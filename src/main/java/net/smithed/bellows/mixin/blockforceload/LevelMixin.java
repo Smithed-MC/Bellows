@@ -23,10 +23,14 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Level.class)
 public abstract class LevelMixin implements LevelAccessor, AutoCloseable, LevelExtender {
 
-    @Shadow @Final private boolean isClientSide;
-    @Shadow @Final private Thread thread;
-    @Shadow @NotNull public abstract LevelChunk getChunk(int chunkX, int chunkZ);
-    @Shadow public abstract LevelChunk getChunkAt(BlockPos pos);
+    @Shadow @Final
+    private boolean isClientSide;
+    @Shadow @Final
+    private Thread thread;
+    @Shadow @NotNull
+    public abstract LevelChunk getChunk(int chunkX, int chunkZ);
+    @Shadow
+    public abstract LevelChunk getChunkAt(BlockPos pos);
 
     @Override
     public BlockState bellows_getBlockStateNoLoad(BlockPos pos) {

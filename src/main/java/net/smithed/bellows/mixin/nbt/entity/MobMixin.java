@@ -16,12 +16,18 @@ import java.util.Optional;
 @Mixin(Mob.class)
 public abstract class MobMixin extends LivingEntityMixin implements FilteredNbtAccessExtender {
 
-    @Shadow private boolean persistenceRequired;
-    @Shadow private long lootTableSeed;
-    @Shadow private DropChances dropChances;
-    @Shadow private Optional<ResourceKey<LootTable>> lootTable;
-    @Shadow private BlockPos homePosition;
-    @Shadow private int homeRadius;
+    @Shadow
+    private boolean persistenceRequired;
+    @Shadow
+    private long lootTableSeed;
+    @Shadow
+    private DropChances dropChances;
+    @Shadow
+    private Optional<ResourceKey<LootTable>> lootTable;
+    @Shadow
+    private BlockPos homePosition;
+    @Shadow
+    private int homeRadius;
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

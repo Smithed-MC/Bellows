@@ -10,7 +10,8 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(ServerChunkCache.class)
 public abstract class ServerChunkCacheMixin implements ServerChunkCacheExtender {
 
-    @Shadow @Final private TicketStorage ticketStorage;
+    @Shadow @Final
+    private TicketStorage ticketStorage;
 
     @Override
     public TicketStorage bellows_getTicketStorage() {

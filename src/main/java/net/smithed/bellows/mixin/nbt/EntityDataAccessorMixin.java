@@ -26,9 +26,12 @@ import java.util.UUID;
 @Mixin(EntityDataAccessor.class)
 public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private static SimpleCommandExceptionType ERROR_NO_PLAYERS;
-    @Shadow @Final private Entity entity;
+    @Shadow @Final
+    private static Logger LOGGER;
+    @Shadow @Final
+    private static SimpleCommandExceptionType ERROR_NO_PLAYERS;
+    @Shadow @Final
+    private Entity entity;
 
     @Unique
     private static final int MIN_ENTITY_NBT_SIZE = 10; //this is how many NBT tags the base entity class contains

@@ -10,9 +10,13 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(AgeableMob.class)
 public abstract class AgeableMobMixin extends MobMixin implements FilteredNbtAccessExtender {
 
-    @Shadow protected int forcedAge;
-    @Shadow protected abstract boolean canBeABaby();
-    @Shadow protected abstract void setAgeLocked(final boolean locked);
+    @Shadow
+    protected int forcedAge;
+
+    @Shadow
+    protected abstract boolean canBeABaby();
+    @Shadow
+    protected abstract void setAgeLocked(final boolean locked);
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

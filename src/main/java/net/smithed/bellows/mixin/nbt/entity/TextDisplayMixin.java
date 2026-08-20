@@ -19,8 +19,10 @@ import java.util.Optional;
 @Mixin(Display.TextDisplay.class)
 public abstract class TextDisplayMixin extends DisplayMixin {
 
-    @Shadow private static void storeFlag(final byte flags, final ValueOutput output, final String id, final byte mask) {}
-    @Shadow private static byte loadFlag(final byte flags, final ValueInput input, final String id, final byte mask) { return 0; }
+    @Shadow
+    private static void storeFlag(final byte flags, final ValueOutput output, final String id, final byte mask) {}
+    @Shadow
+    private static byte loadFlag(final byte flags, final ValueInput input, final String id, final byte mask) { return 0; }
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

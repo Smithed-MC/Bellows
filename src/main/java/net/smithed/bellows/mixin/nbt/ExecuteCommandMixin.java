@@ -2,7 +2,6 @@ package net.smithed.bellows.mixin.nbt;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
-import net.smithed.bellows.utils.ContextMutation;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
@@ -17,6 +16,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.smithed.bellows.utils.ContextMutation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -30,7 +30,8 @@ import java.util.function.IntFunction;
 @Mixin(ExecuteCommand.class)
 public class ExecuteCommandMixin {
 
-    @Shadow @Final private static Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE;
+    @Shadow @Final
+    private static Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE;
 
     /**
      * @author ImCoolYeah105

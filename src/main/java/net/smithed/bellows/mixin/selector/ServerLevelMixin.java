@@ -25,8 +25,10 @@ import java.util.function.Predicate;
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin implements ServerLevelExtender {
 
-    @Shadow @Final private MinecraftServer server;
-    @Shadow protected abstract LevelEntityGetter<@NotNull Entity> getEntities();
+    @Shadow @Final
+    private MinecraftServer server;
+    @Shadow
+    protected abstract LevelEntityGetter<@NotNull Entity> getEntities();
 
     @Override
     public EntityLookupExtender<?> bellows_getEntityIndex() {

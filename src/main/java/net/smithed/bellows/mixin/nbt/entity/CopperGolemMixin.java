@@ -10,10 +10,13 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(CopperGolem.class)
 public abstract class CopperGolemMixin extends LivingEntityMixin {
 
-    @Shadow private long nextWeatheringTick;
+    @Shadow
+    private long nextWeatheringTick;
 
-    @Shadow public WeatheringCopper.WeatherState getWeatherState() { return null; }
-    @Shadow public void setWeatherState(final WeatheringCopper.WeatherState state) {}
+    @Shadow
+    public WeatheringCopper.WeatherState getWeatherState() { return null; }
+    @Shadow
+    public void setWeatherState(final WeatheringCopper.WeatherState state) {}
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

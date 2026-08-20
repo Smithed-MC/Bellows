@@ -5,16 +5,14 @@ import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.smithed.bellows.mixin_interface.nbt.FilteredNbtAccessExtender;
-import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(AbstractVillager.class)
 public abstract class AbstractVillagerMixin extends AgeableMobMixin implements FilteredNbtAccessExtender {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow protected MerchantOffers offers;
+    @Shadow
+    protected MerchantOffers offers;
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

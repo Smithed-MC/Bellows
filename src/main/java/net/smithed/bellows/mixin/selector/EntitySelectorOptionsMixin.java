@@ -41,12 +41,18 @@ import java.util.stream.Stream;
 @Mixin(EntitySelectorOptions.class)
 public class EntitySelectorOptionsMixin {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private static Predicate<EntitySelectorParser> ALWAYS_AVAILABLE;
-    @Shadow @Final public static DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION;
-    @Shadow @Final public static DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID;
-    @Shadow private static void register(String name, EntitySelectorOptions.Modifier modifier, Predicate<EntitySelectorParser> predicate, Component description) {}
-    @Shadow private static CommandSyntaxException rollbackAndThrow(final EntitySelectorParser parser, final int start, final DynamicCommandExceptionType type, final String argument) {return null;}
+    @Shadow @Final
+    private static Logger LOGGER;
+    @Shadow @Final
+    private static Predicate<EntitySelectorParser> ALWAYS_AVAILABLE;
+    @Shadow @Final
+    public static DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION;
+    @Shadow @Final
+    public static DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID;
+    @Shadow
+    private static void register(String name, EntitySelectorOptions.Modifier modifier, Predicate<EntitySelectorParser> predicate, Component description) {}
+    @Shadow
+    private static CommandSyntaxException rollbackAndThrow(final EntitySelectorParser parser, final int start, final DynamicCommandExceptionType type, final String argument) {return null;}
 
     /**
      * @author ImCoolYeah105, dragoncommands

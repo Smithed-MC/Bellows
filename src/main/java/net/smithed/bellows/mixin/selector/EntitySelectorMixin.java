@@ -24,8 +24,10 @@ import java.util.function.Predicate;
 @Mixin(EntitySelector.class)
 public abstract class EntitySelectorMixin implements EntitySelectorExtender {
 
-    @Shadow @Final private EntityTypeTest<Entity, ?> type;
-    @Shadow protected abstract int getResultLimit();
+    @Shadow @Final
+    private EntityTypeTest<Entity, ?> type;
+    @Shadow
+    protected abstract int getResultLimit();
 
     @Unique
     private SelectorContainer bellows_container;

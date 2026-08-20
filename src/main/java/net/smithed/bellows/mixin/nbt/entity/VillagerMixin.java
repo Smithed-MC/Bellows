@@ -18,14 +18,22 @@ import java.util.Optional;
 @Mixin(Villager.class)
 public abstract class VillagerMixin extends AbstractVillagerMixin {
 
-    @Shadow @Final private static EntityDataAccessor<@NotNull VillagerData> DATA_VILLAGER_DATA;
-    @Shadow @Final private GossipContainer gossips;
-    @Shadow private int foodLevel;
-    @Shadow private long lastRestockGameTime;
-    @Shadow private int numberOfRestocksToday;
-    @Shadow private int villagerXp;
-    @Shadow private boolean assignProfessionWhenSpawned;
-    @Shadow private long lastGossipDecayTime;
+    @Shadow @Final
+    private static EntityDataAccessor<@NotNull VillagerData> DATA_VILLAGER_DATA;
+    @Shadow @Final
+    private GossipContainer gossips;
+    @Shadow
+    private int foodLevel;
+    @Shadow
+    private long lastRestockGameTime;
+    @Shadow
+    private int numberOfRestocksToday;
+    @Shadow
+    private int villagerXp;
+    @Shadow
+    private boolean assignProfessionWhenSpawned;
+    @Shadow
+    private long lastGossipDecayTime;
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

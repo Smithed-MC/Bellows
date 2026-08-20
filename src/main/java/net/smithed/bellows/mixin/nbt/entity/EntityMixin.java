@@ -35,29 +35,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessExtender {
 
-    @Shadow
-    @Final
+    @Shadow @Final
     protected static EntityDataAccessor<@NotNull Pose> DATA_POSE;
-    @Shadow
-    @Final
+    @Shadow @Final
     private static Codec<List<String>> TAG_LIST_CODEC;
-    @Shadow
-    @Final
+    @Shadow @Final
     protected SynchedEntityData entityData;
-    @Shadow
-    @Final
+    @Shadow @Final
     private Set<String> tags;
     @Shadow
     private Level level;
     @Shadow
     private boolean hasVisualFire;
-    @Shadow
-    protected UUID uuid;
     @Shadow
     protected boolean firstTick;
     @Shadow
@@ -65,13 +58,10 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
 
     @Shadow
     protected abstract void reapplyPosition();
-
     @Shadow
     protected abstract void setRot(float yaw, float pitch);
-
     @Shadow
     protected abstract boolean repositionEntityAfterLoad();
-
     @Shadow
     protected abstract void setSharedFlag(int index, boolean value);
 

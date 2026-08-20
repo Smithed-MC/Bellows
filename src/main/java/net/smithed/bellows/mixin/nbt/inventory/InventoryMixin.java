@@ -15,8 +15,10 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Inventory.class)
 public abstract class InventoryMixin implements PlayerInventoryExtender {
 
-    @Final @Shadow private NonNullList<@NotNull ItemStack> items;
-    @Shadow public abstract void save(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
+    @Final @Shadow
+    private NonNullList<@NotNull ItemStack> items;
+    @Shadow
+    public abstract void save(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
 
     @Override
     public void bellows_saveWithoutIdFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {

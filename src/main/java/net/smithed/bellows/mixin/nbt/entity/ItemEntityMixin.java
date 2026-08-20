@@ -17,11 +17,16 @@ import java.util.UUID;
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends EntityMixin implements FilteredNbtAccessExtender {
 
-    @Shadow private int age;
-    @Shadow private int pickupDelay;
-    @Shadow private int health;
-    @Shadow private EntityReference<@NotNull Entity> thrower;
-    @Shadow private UUID target;
+    @Shadow
+    private int age;
+    @Shadow
+    private int pickupDelay;
+    @Shadow
+    private int health;
+    @Shadow
+    private EntityReference<@NotNull Entity> thrower;
+    @Shadow
+    private UUID target;
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

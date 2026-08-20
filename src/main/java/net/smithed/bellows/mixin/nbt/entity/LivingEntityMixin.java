@@ -33,20 +33,35 @@ import java.util.Optional;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends EntityMixin implements FilteredNbtAccessExtender {
 
-    @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;
-    @Shadow @Final protected EntityEquipment equipment;
-    @Shadow protected Brain<?> brain;
-    @Shadow private Waypoint.Icon locatorBarIcon;
-    @Shadow private boolean effectsDirty = true;
-    @Shadow private int lastHurtByMobTimestamp;
-    @Shadow protected int lastHurtByPlayerMemoryTime;
-    @Shadow private int currentImpulseContextResetGraceTime;
-    @Shadow protected abstract void setPosToBed(BlockPos bedPosition);
-    @Shadow protected @Nullable EntityReference<@NotNull Player> lastHurtByPlayer;
-    @Shadow private @Nullable EntityReference<@NotNull LivingEntity> lastHurtByMob;
-    @Shadow abstract protected void internalSetAbsorptionAmount(final float absorptionAmount);
-    @Shadow abstract protected Brain<? extends @NotNull LivingEntity> makeBrain(final Brain.Packed packedBrain);
+    @Shadow @Final
+    private static Logger LOGGER;
+    @Shadow @Final
+    private Map<MobEffect, MobEffectInstance> activeEffects;
+    @Shadow @Final
+    protected EntityEquipment equipment;
+    @Shadow
+    protected Brain<?> brain;
+    @Shadow
+    private Waypoint.Icon locatorBarIcon;
+    @Shadow
+    private boolean effectsDirty = true;
+    @Shadow
+    private int lastHurtByMobTimestamp;
+    @Shadow
+    protected int lastHurtByPlayerMemoryTime;
+    @Shadow
+    private int currentImpulseContextResetGraceTime;
+    @Shadow
+    protected @Nullable EntityReference<@NotNull Player> lastHurtByPlayer;
+    @Shadow
+    private @Nullable EntityReference<@NotNull LivingEntity> lastHurtByMob;
+
+    @Shadow
+    protected abstract void setPosToBed(BlockPos bedPosition);
+    @Shadow
+    abstract protected void internalSetAbsorptionAmount(final float absorptionAmount);
+    @Shadow
+    abstract protected Brain<? extends @NotNull LivingEntity> makeBrain(final Brain.Packed packedBrain);
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

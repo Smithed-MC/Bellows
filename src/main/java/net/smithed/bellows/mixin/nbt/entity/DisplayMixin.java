@@ -26,12 +26,17 @@ import java.util.Optional;
 @Mixin(Display.class)
 public abstract class DisplayMixin extends EntityMixin implements DisplayEntityExtender {
 
-    @Shadow @Final private static EntityDataAccessor<Vector3fc> DATA_TRANSLATION_ID;
-    @Shadow @Final private static EntityDataAccessor<Vector3fc> DATA_SCALE_ID;
-    @Shadow @Final private static EntityDataAccessor<Quaternionfc> DATA_LEFT_ROTATION_ID;
-    @Shadow @Final private static EntityDataAccessor<Quaternionfc> DATA_RIGHT_ROTATION_ID;
+    @Shadow @Final
+    private static EntityDataAccessor<Vector3fc> DATA_TRANSLATION_ID;
+    @Shadow @Final
+    private static EntityDataAccessor<Vector3fc> DATA_SCALE_ID;
+    @Shadow @Final
+    private static EntityDataAccessor<Quaternionfc> DATA_LEFT_ROTATION_ID;
+    @Shadow @Final
+    private static EntityDataAccessor<Quaternionfc> DATA_RIGHT_ROTATION_ID;
 
-    @Shadow @Final protected static Logger LOGGER;
+    @Shadow @Final
+    protected static Logger LOGGER;
 
     @Shadow @Final
     public abstract void setTransformationInterpolationDelay(final int ticks);

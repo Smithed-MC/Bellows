@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(LevelEntityGetterAdapter.class)
 public abstract class LevelEntityGetterAdapterMixin<T extends EntityAccess> implements LevelEntityGetterAdapterExtender<T> {
 
-    @Shadow @Final private EntityLookup<@NotNull T> visibleEntities;
+    @Shadow @Final
+    private EntityLookup<@NotNull T> visibleEntities;
 
     public EntityLookupExtender<?> bellows_getVisibleEntities() {
         if(visibleEntities instanceof EntityLookupExtender<?> extender) {

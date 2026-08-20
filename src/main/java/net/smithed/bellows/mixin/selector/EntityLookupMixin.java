@@ -22,7 +22,8 @@ import java.util.*;
 @Mixin(EntityLookup.class)
 public abstract class EntityLookupMixin<T extends EntityAccess> implements EntityLookupExtender<T> {
 
-    @Shadow public abstract <U extends T> void getEntities(EntityTypeTest<@NotNull T, @NotNull U> type, AbortableIterationConsumer<@NotNull U> consumer);
+    @Shadow
+    public abstract <U extends T> void getEntities(EntityTypeTest<@NotNull T, @NotNull U> type, AbortableIterationConsumer<@NotNull U> consumer);
 
     @Unique
     private static final int REASONABLE_SEARCH_SIZE = 100;

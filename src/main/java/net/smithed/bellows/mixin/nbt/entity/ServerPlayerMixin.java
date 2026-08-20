@@ -19,16 +19,27 @@ import java.util.Set;
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends PlayerMixin implements FilteredNbtAccessExtender {
 
-    @Shadow @Final private ServerRecipeBook recipeBook;
-    @Shadow @Final private Set<ThrownEnderpearl> enderPearls;
-    @Shadow private Vec3 enteredNetherPosition;
-    @Shadow private WardenSpawnTracker wardenSpawnTracker;
-    @Shadow private boolean spawnExtraParticlesOnFall;
-    @Nullable @Shadow private BlockPos raidOmenPosition;
-    @Nullable @Shadow private Vec3 currentExplosionImpactPos;
-    @Shadow protected abstract void storeGameTypes(final ValueOutput playerOutput);
-    @Shadow protected abstract void saveParentVehicle(final ValueOutput playerOutput);
-    @Shadow protected abstract void saveEnderPearls(final ValueOutput playerOutput);
+    @Shadow @Final
+    private ServerRecipeBook recipeBook;
+    @Shadow @Final
+    private Set<ThrownEnderpearl> enderPearls;
+    @Shadow
+    private Vec3 enteredNetherPosition;
+    @Shadow
+    private WardenSpawnTracker wardenSpawnTracker;
+    @Shadow
+    private boolean spawnExtraParticlesOnFall;
+    @Nullable @Shadow
+    private BlockPos raidOmenPosition;
+    @Nullable @Shadow
+    private Vec3 currentExplosionImpactPos;
+
+    @Shadow
+    protected abstract void storeGameTypes(final ValueOutput playerOutput);
+    @Shadow
+    protected abstract void saveParentVehicle(final ValueOutput playerOutput);
+    @Shadow
+    protected abstract void saveEnderPearls(final ValueOutput playerOutput);
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

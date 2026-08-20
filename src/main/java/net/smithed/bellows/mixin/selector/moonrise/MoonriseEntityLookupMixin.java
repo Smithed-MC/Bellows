@@ -27,8 +27,10 @@ import java.util.*;
 @Mixin(EntityLookup.class)
 public abstract class MoonriseEntityLookupMixin<T extends Entity> implements EntityLookupExtender<T>, LevelEntityGetterAdapterExtender<T> {
 
-    @Shadow @Final protected ConcurrentChainedLong2ReferenceHashTable<Entity> entityById;
-    @Shadow public abstract <U extends Entity> void get(EntityTypeTest<Entity, U> filter, AbortableIterationConsumer<U> action);
+    @Shadow @Final
+    protected ConcurrentChainedLong2ReferenceHashTable<Entity> entityById;
+    @Shadow
+    public abstract <U extends Entity> void get(EntityTypeTest<Entity, U> filter, AbortableIterationConsumer<U> action);
 
     @Unique
     private static final int REASONABLE_SEARCH_SIZE = 100;

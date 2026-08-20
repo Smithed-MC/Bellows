@@ -14,7 +14,8 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(PlayerEnderChestContainer.class)
 public abstract class PlayerEnderChestContainerMixin extends SimpleContainer implements EnderChestInventoryExtender {
 
-    @Shadow public abstract void storeAsSlots(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
+    @Shadow
+    public abstract void storeAsSlots(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
 
     @Override
     public void bellows_toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {

@@ -18,16 +18,25 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Mannequin.class)
 public abstract class MannequinMixin extends LivingEntityMixin {
 
-    @Shadow @Final private static Codec<Byte> LAYERS_CODEC;
-    @Shadow @Final private static Component DEFAULT_DESCRIPTION;
-    @Shadow @Final private static byte ALL_LAYERS;
+    @Shadow @Final
+    private static Codec<Byte> LAYERS_CODEC;
+    @Shadow @Final
+    private static Component DEFAULT_DESCRIPTION;
+    @Shadow @Final
+    private static byte ALL_LAYERS;
 
-    @Shadow private boolean getImmovable() { return false; }
-    @Shadow protected @Nullable Component getDescription() { return null; }
-    @Shadow private void setProfile(final ResolvableProfile profile) {}
-    @Shadow private void setImmovable(final boolean immovable) {}
-    @Shadow private void setDescription(final Component description) {}
-    @Shadow private void setHideDescription(final boolean hideDescription) {}
+    @Shadow
+    private boolean getImmovable() { return false; }
+    @Shadow
+    protected @Nullable Component getDescription() { return null; }
+    @Shadow
+    private void setProfile(final ResolvableProfile profile) {}
+    @Shadow
+    private void setImmovable(final boolean immovable) {}
+    @Shadow
+    private void setDescription(final Component description) {}
+    @Shadow
+    private void setHideDescription(final boolean hideDescription) {}
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {

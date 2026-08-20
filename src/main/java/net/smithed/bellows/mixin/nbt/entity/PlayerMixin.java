@@ -19,12 +19,18 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(Player.class)
 public abstract class PlayerMixin extends LivingEntityMixin implements FilteredNbtAccessExtender {
 
-    @Shadow @Final private Abilities abilities;
-    @Shadow @Final private Inventory inventory;
-    @Shadow private int sleepCounter;
-    @Shadow protected int enchantmentSeed;
-    @Shadow protected FoodData foodData;
-    @Shadow protected PlayerEnderChestContainer enderChestInventory;
+    @Shadow @Final
+    private Abilities abilities;
+    @Shadow @Final
+    private Inventory inventory;
+    @Shadow
+    private int sleepCounter;
+    @Shadow
+    protected int enchantmentSeed;
+    @Shadow
+    protected FoodData foodData;
+    @Shadow
+    protected PlayerEnderChestContainer enderChestInventory;
 
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
