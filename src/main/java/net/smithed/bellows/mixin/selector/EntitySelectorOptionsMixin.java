@@ -2,10 +2,6 @@ package net.smithed.bellows.mixin.selector;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.EntityExtender;
-import net.smithed.bellows.mixin_interface.IEntitySelectorReaderExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
@@ -24,6 +20,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
+import net.smithed.bellows.mixin_interface.selector.EntitySelectorParserExtender;
+import net.smithed.bellows.utils.NBTUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -92,7 +92,7 @@ public class EntitySelectorOptionsMixin {
 
                 TagKey<@NotNull EntityType<?>> key = TagKey.create(Registries.ENTITY_TYPE, id);
                 // BEGIN INJECT
-                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
                     entityExtender.bellows_getSelectorContainer().type = key.location().toString();
                     entityExtender.bellows_getSelectorContainer().isTypeTag = true;
                     entityExtender.bellows_getSelectorContainer().isNotType = inverted;
@@ -108,7 +108,7 @@ public class EntitySelectorOptionsMixin {
 
                 Identifier id = Identifier.read(parser.getReader());
                 // BEGIN INJECT
-                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
                     entityExtender.bellows_getSelectorContainer().type = id.toString();
                     entityExtender.bellows_getSelectorContainer().isTypeTag = false;
                     entityExtender.bellows_getSelectorContainer().isNotType = inverted;
@@ -135,7 +135,7 @@ public class EntitySelectorOptionsMixin {
             boolean inverted = parser.shouldInvertValue();
             String tag = parser.getReader().readUnquotedString();
             // BEGIN INJECT
-            if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof IEntitySelectorReaderExtender entityExtender) {
+            if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
                 if (inverted) {
                     entityExtender.bellows_getSelectorContainer().notSelectorTags.add(tag);
                 } else {

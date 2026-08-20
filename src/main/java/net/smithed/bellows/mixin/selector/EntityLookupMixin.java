@@ -6,7 +6,7 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.EntityLookupExtender;
+import net.smithed.bellows.mixin_interface.selector.EntityLookupExtender;
 import net.smithed.bellows.utils.NBTUtils;
 import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;

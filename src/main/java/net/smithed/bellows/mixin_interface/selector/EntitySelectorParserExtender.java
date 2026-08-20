@@ -1,8 +1,8 @@
-package net.smithed.bellows.mixin_interface;
+package net.smithed.bellows.mixin_interface.selector;
 
 import net.smithed.bellows.utils.SelectorContainer;
 
-public interface IEntitySelectorReaderExtender {
+public interface EntitySelectorParserExtender {
 
     SelectorContainer bellows_getSelectorContainer();
 

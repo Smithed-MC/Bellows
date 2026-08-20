@@ -1,6 +1,5 @@
 package net.smithed.bellows.mixin.nbt.entity;
 
-import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,6 +8,7 @@ import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.smithed.bellows.mixin_interface.nbt.FilteredNbtAccessExtender;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Set;
 
 @Mixin(ServerPlayer.class)
-public abstract class ServerPlayerMixin extends PlayerMixin implements ICustomNBTMixin {
+public abstract class ServerPlayerMixin extends PlayerMixin implements FilteredNbtAccessExtender {
 
     @Shadow @Final private ServerRecipeBook recipeBook;
     @Shadow @Final private Set<ThrownEnderpearl> enderPearls;

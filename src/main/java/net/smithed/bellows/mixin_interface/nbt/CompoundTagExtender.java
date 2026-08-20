@@ -1,4 +1,4 @@
-package net.smithed.bellows.mixin_interface;
+package net.smithed.bellows.mixin_interface.nbt;
 
 import net.smithed.bellows.utils.QuickActions;
 

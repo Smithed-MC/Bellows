@@ -1,8 +1,6 @@
 package net.smithed.bellows.mixin.selector;
 
 import com.mojang.datafixers.DataFixer;
-import net.smithed.bellows.mixin_interface.IMinecraftServerExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
@@ -14,6 +12,8 @@ import net.minecraft.server.notifications.NotificationManager;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.smithed.bellows.mixin_interface.selector.MinecraftServerExtender;
+import net.smithed.bellows.utils.NBTUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@NotNull TickTask> implements CommandSource, AutoCloseable, IMinecraftServerExtender {
+public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@NotNull TickTask> implements CommandSource, AutoCloseable, MinecraftServerExtender {
 
     public MinecraftServerMixin(String name, boolean propagatesCrashes) {
         super(name, propagatesCrashes);

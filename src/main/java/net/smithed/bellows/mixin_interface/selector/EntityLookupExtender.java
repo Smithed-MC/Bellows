@@ -1,4 +1,4 @@
-package net.smithed.bellows.mixin_interface;
+package net.smithed.bellows.mixin_interface.selector;
 
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.level.entity.EntityAccess;

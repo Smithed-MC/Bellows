@@ -10,7 +10,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.smithed.bellows.mixin_interface.DisplayEntityExtender;
+import net.smithed.bellows.mixin_interface.nbt.DisplayEntityExtender;
 import org.joml.Quaternionfc;
 import org.joml.Vector3fc;
 import org.slf4j.Logger;

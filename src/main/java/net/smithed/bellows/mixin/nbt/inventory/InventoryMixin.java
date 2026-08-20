@@ -1,19 +1,19 @@
 package net.smithed.bellows.mixin.nbt.inventory;
 
-import net.smithed.bellows.mixin_interface.IPlayerInventoryExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.smithed.bellows.mixin_interface.nbt.PlayerInventoryExtender;
+import net.smithed.bellows.utils.NBTUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Inventory.class)
-public abstract class InventoryMixin implements IPlayerInventoryExtender {
+public abstract class InventoryMixin implements PlayerInventoryExtender {
 
     @Final @Shadow private NonNullList<@NotNull ItemStack> items;
     @Shadow public abstract void save(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);

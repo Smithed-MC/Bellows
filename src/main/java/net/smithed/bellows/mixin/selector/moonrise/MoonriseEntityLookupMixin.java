@@ -8,8 +8,8 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.Visibility;
 import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.EntityLookupExtender;
-import net.smithed.bellows.mixin_interface.ISimpleEntityLookupExtender;
+import net.smithed.bellows.mixin_interface.selector.EntityLookupExtender;
+import net.smithed.bellows.mixin_interface.selector.LevelEntityGetterAdapterExtender;
 import net.smithed.bellows.utils.NBTUtils;
 import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.*;
 
 @Mixin(EntityLookup.class)
-public abstract class MoonriseEntityLookupMixin<T extends Entity> implements EntityLookupExtender<T>, ISimpleEntityLookupExtender<T> {
+public abstract class MoonriseEntityLookupMixin<T extends Entity> implements EntityLookupExtender<T>, LevelEntityGetterAdapterExtender<T> {
 
     @Shadow @Final protected ConcurrentChainedLong2ReferenceHashTable<Entity> entityById;
     @Shadow public abstract <U extends Entity> void get(EntityTypeTest<Entity, U> filter, AbortableIterationConsumer<U> action);

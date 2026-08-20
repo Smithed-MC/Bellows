@@ -1,6 +1,5 @@
 package net.smithed.bellows.mixin.nbt.entity;
 
-import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.DropChances;
@@ -8,13 +7,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.smithed.bellows.mixin_interface.nbt.FilteredNbtAccessExtender;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Optional;
 
 @Mixin(Mob.class)
-public abstract class MobMixin extends LivingEntityMixin implements ICustomNBTMixin {
+public abstract class MobMixin extends LivingEntityMixin implements FilteredNbtAccessExtender {
 
     @Shadow private boolean persistenceRequired;
     @Shadow private long lootTableSeed;

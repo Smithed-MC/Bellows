@@ -1,4 +1,4 @@
-package net.smithed.bellows.mixin_interface.command_stack;
+package net.smithed.bellows.mixin_interface.displaynames;
 
 import net.minecraft.network.chat.Component;
 

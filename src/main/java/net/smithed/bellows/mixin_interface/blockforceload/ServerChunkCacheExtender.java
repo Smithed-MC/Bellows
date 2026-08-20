@@ -1,4 +1,4 @@
-package net.smithed.bellows.mixin_interface;
+package net.smithed.bellows.mixin_interface.blockforceload;
 
 import net.minecraft.world.level.TicketStorage;
 

@@ -1,4 +1,4 @@
-package net.smithed.bellows.mixin_interface;
+package net.smithed.bellows.mixin_interface.nbt;
 
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;

@@ -1,9 +1,6 @@
 package net.smithed.bellows.utils;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.EntityDataAccessorExtender;
-import net.smithed.bellows.mixin_interface.IWorldExtender;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -11,11 +8,14 @@ import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.blockforceload.LevelExtender;
+import net.smithed.bellows.mixin_interface.nbt.EntityDataAccessorExtender;
 
 public class ContextMutation {
 
     public static BlockEntity getBlockEntity(LevelReader world, BlockPos blockPos) {
-        if(Bellows.CONFIG.fixBlockAccessForceload && world instanceof IWorldExtender mixin) {
+        if(Bellows.CONFIG.fixBlockAccessForceload && world instanceof LevelExtender mixin) {
             return mixin.bellows_getBlockEntityNoLoad(blockPos);
         } else {
             return world.getBlockEntity(blockPos);
@@ -23,7 +23,7 @@ public class ContextMutation {
     }
 
     public static BlockState getBlockState(LevelReader world, BlockPos blockPos) {
-        if(Bellows.CONFIG.fixBlockAccessForceload && world instanceof IWorldExtender mixin) {
+        if(Bellows.CONFIG.fixBlockAccessForceload && world instanceof LevelExtender mixin) {
             return mixin.bellows_getBlockStateNoLoad(blockPos);
         } else {
             return world.getBlockState(blockPos);

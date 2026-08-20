@@ -1,6 +1,5 @@
 package net.smithed.bellows.mixin.nbt.entity;
 
-import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -18,6 +17,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.waypoints.Waypoint;
+import net.smithed.bellows.mixin_interface.nbt.FilteredNbtAccessExtender;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends EntityMixin implements ICustomNBTMixin {
+public abstract class LivingEntityMixin extends EntityMixin implements FilteredNbtAccessExtender {
 
     @Shadow @Final private static Logger LOGGER;
     @Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;

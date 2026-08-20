@@ -1,14 +1,14 @@
 package net.smithed.bellows.mixin.selector;
 
-import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.IEntitySelectorExtender;
-import net.smithed.bellows.mixin_interface.IServerWorldExtender;
-import net.smithed.bellows.utils.SelectorContainer;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
+import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.selector.EntitySelectorExtender;
+import net.smithed.bellows.mixin_interface.selector.ServerLevelExtender;
+import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @Mixin(EntitySelector.class)
-public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
+public abstract class EntitySelectorMixin implements EntitySelectorExtender {
 
     @Shadow @Final private EntityTypeTest<Entity, ?> type;
     @Shadow protected abstract int getResultLimit();
@@ -34,7 +34,7 @@ public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
     void bellows_addEntities(List<Entity> result, ServerLevel level, @Nullable AABB absoluteAABB, Predicate<Entity> predicate, CallbackInfo ci) {
         int i = this.getResultLimit();
         if (result.size() < i) {
-            if(Bellows.CONFIG.entitySelectorOptimizations && level instanceof IServerWorldExtender extender) {
+            if(Bellows.CONFIG.entitySelectorOptimizations && level instanceof ServerLevelExtender extender) {
                 if(absoluteAABB == null || !bellows_container.selectorTags.isEmpty()) {
                     extender.bellows_collectEntitiesByType(this.type, predicate, result, i, bellows_container);
                 } else {
@@ -48,10 +48,5 @@ public abstract class EntitySelectorMixin implements IEntitySelectorExtender {
     @Override
     public void bellows_setContainer(SelectorContainer container) {
         this.bellows_container = container;
-    }
-
-    @Override
-    public SelectorContainer bellows_getContainer(SelectorContainer container) {
-        return this.bellows_container;
     }
 }

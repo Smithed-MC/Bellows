@@ -1,9 +1,9 @@
-package net.smithed.bellows.mixin.nbt;
+package net.smithed.bellows.mixin.nbt.quick_data;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.smithed.bellows.mixin_interface.CompoundTagExtender;
 import net.minecraft.commands.arguments.CompoundTagArgument;
 import net.minecraft.nbt.CompoundTag;
+import net.smithed.bellows.mixin_interface.nbt.CompoundTagExtender;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 

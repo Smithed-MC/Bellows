@@ -1,8 +1,5 @@
 package net.smithed.bellows.mixin.nbt;
 
-import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.EntityExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -11,6 +8,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
+import net.smithed.bellows.utils.NBTUtils;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;

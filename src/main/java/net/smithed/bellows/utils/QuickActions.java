@@ -1,13 +1,13 @@
 package net.smithed.bellows.utils;
 
 import com.mojang.math.Transformation;
-import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.DisplayEntityExtender;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
+import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.nbt.DisplayEntityExtender;
 import org.joml.Quaternionfc;
 import org.joml.Vector3fc;
 

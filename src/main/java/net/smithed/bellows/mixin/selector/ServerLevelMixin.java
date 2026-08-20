@@ -6,10 +6,10 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
-import net.smithed.bellows.mixin_interface.EntityLookupExtender;
-import net.smithed.bellows.mixin_interface.IMinecraftServerExtender;
-import net.smithed.bellows.mixin_interface.IServerWorldExtender;
-import net.smithed.bellows.mixin_interface.ISimpleEntityLookupExtender;
+import net.smithed.bellows.mixin_interface.selector.EntityLookupExtender;
+import net.smithed.bellows.mixin_interface.selector.LevelEntityGetterAdapterExtender;
+import net.smithed.bellows.mixin_interface.selector.MinecraftServerExtender;
+import net.smithed.bellows.mixin_interface.selector.ServerLevelExtender;
 import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @Mixin(ServerLevel.class)
-public abstract class ServerLevelMixin implements IServerWorldExtender {
+public abstract class ServerLevelMixin implements ServerLevelExtender {
 
     @Shadow @Final private MinecraftServer server;
     @Shadow protected abstract LevelEntityGetter<@NotNull Entity> getEntities();
 
     @Override
     public EntityLookupExtender<?> bellows_getEntityIndex() {
-        if(this.getEntities() instanceof ISimpleEntityLookupExtender lookup) {
+        if(this.getEntities() instanceof LevelEntityGetterAdapterExtender lookup) {
             return lookup.bellows_getVisibleEntities();
         } else {
             return null;
@@ -42,7 +42,7 @@ public abstract class ServerLevelMixin implements IServerWorldExtender {
         EntityLookupExtender<Entity> extender = (EntityLookupExtender<Entity>) bellows_getEntityIndex();
         if (extender != null) {
             if(container.isTypeTag) {
-                if (server instanceof IMinecraftServerExtender mixin) {
+                if (server instanceof MinecraftServerExtender mixin) {
                     container.entityTypes = mixin.bellows_getEntityTagEntries(container.type);
                 }
                 if (container.entityTypes == null) {

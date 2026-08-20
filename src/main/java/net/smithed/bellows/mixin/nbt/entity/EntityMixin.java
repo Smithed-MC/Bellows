@@ -20,10 +20,10 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.smithed.bellows.mixin_interface.EntityExtender;
-import net.smithed.bellows.mixin_interface.EntityLookupExtender;
-import net.smithed.bellows.mixin_interface.ICustomNBTMixin;
-import net.smithed.bellows.mixin_interface.IServerWorldExtender;
+import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
+import net.smithed.bellows.mixin_interface.nbt.FilteredNbtAccessExtender;
+import net.smithed.bellows.mixin_interface.selector.EntityLookupExtender;
+import net.smithed.bellows.mixin_interface.selector.ServerLevelExtender;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,7 +38,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
+public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessExtender {
 
     @Shadow
     @Final
@@ -78,7 +78,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
     @WrapOperation(method = "addTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z"))
     public boolean addTag(Set instance, Object e, Operation<Boolean> original) {
         if (original.call(instance, e)) {
-            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index && e instanceof String tag) {
+            if (this.level instanceof ServerLevelExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index && e instanceof String tag) {
                 index.bellows_addEntityToTagMap(tag, (Entity) (Object) this);
             }
             return true;
@@ -91,7 +91,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
     @WrapOperation(method = "removeTag", at = @At(value = "INVOKE", target = "Ljava/util/Set;remove(Ljava/lang/Object;)Z"))
     public boolean removeTag(Set instance, Object e, Operation<Boolean> original) {
         if (original.call(instance, e)) {
-            if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index && e instanceof String tag) {
+            if (this.level instanceof ServerLevelExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index && e instanceof String tag) {
                 index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this);
             }
             return true;
@@ -104,7 +104,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"))
     private void bellows_load(CallbackInfo ci) {
-        if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index) {
+        if (this.level instanceof ServerLevelExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index) {
             this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, (Entity) (Object) this));
         }
     }
@@ -114,7 +114,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
      */
     @Inject(method = "load(Lnet/minecraft/world/level/storage/ValueInput;)V", at = @At("TAIL"))
     private void bellows_load(ValueInput nbt, CallbackInfo ci) {
-        if (nbt.contains("Tags") && this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() != null) {
+        if (nbt.contains("Tags") && this.level instanceof ServerLevelExtender world && world.bellows_getEntityIndex() != null) {
             Optional<List<String>> tagList = nbt.read("Tags", TAG_LIST_CODEC);
             if (tagList.isPresent()) {
                 int max_size = Math.min(tagList.get().size(), 1024);
@@ -277,7 +277,7 @@ public abstract class EntityMixin implements EntityExtender, ICustomNBTMixin {
                 case "HasVisualFire" -> this.hasVisualFire = input.getBooleanOr("HasVisualFire", false);
                 case "data" -> this.customData = input.read("data", CustomData.CODEC).orElse(CustomData.EMPTY);
                 case "Tags" -> {
-                    if (this.level instanceof IServerWorldExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index) {
+                    if (this.level instanceof ServerLevelExtender world && world.bellows_getEntityIndex() instanceof EntityLookupExtender<?> index) {
                         this.tags.forEach(tag -> index.bellows_removeEntityFromTagMap(tag, entity));
                         this.tags.clear();
 

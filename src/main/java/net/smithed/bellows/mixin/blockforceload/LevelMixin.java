@@ -1,7 +1,5 @@
 package net.smithed.bellows.mixin.blockforceload;
 
-import net.smithed.bellows.mixin_interface.IWorldExtender;
-import net.smithed.bellows.mixin_interface.ServerChunkCacheExtender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ChunkLevel;
@@ -15,13 +13,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.smithed.bellows.mixin_interface.blockforceload.LevelExtender;
+import net.smithed.bellows.mixin_interface.blockforceload.ServerChunkCacheExtender;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Level.class)
-public abstract class LevelMixin implements LevelAccessor, AutoCloseable, IWorldExtender {
+public abstract class LevelMixin implements LevelAccessor, AutoCloseable, LevelExtender {
 
     @Shadow @Final private boolean isClientSide;
     @Shadow @Final private Thread thread;
