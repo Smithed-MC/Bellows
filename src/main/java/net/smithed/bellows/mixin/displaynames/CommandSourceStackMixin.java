@@ -89,11 +89,10 @@ public class CommandSourceStackMixin {
     }
 
     @Unique
-    private CommandSourceStack bellows_setSuppliers(CommandSourceStack stack, EntityExtender entity) {
+    private void bellows_setSuppliers(CommandSourceStack stack, EntityExtender entity) {
         CommandSourceStackMixin stackMixin = (CommandSourceStackMixin)(Object)stack;
         stackMixin.bellows_textNameSupplier = entity.bellows_getPlainTextNameSupplier();
         stackMixin.bellows_displayNameSupplier = entity.bellows_getDisplayNameSupplier();
-        return stack;
     }
 
     @Inject(method = "getTextName()Ljava/lang/String;", at = @At("HEAD"))

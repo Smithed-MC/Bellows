@@ -1,11 +1,10 @@
 package net.smithed.bellows;
 
-import com.mojang.brigadier.context.CommandContext;
-import net.smithed.bellows.commands.BellowsCommand;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.smithed.bellows.commands.BellowsCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,7 @@ public class Bellows implements ModInitializer {
         }
         if(CONFIG.debugContext != null) {
             Component text = Component.literal(message.toString());
-            CONFIG.debugContext.getSource().getServer().getPlayerList().broadcastSystemMessage(text, false);
+            CONFIG.debugContext.sendSystemMessage(text);
         }
     }
 
@@ -44,7 +43,7 @@ public class Bellows implements ModInitializer {
         }
         if(CONFIG.debugContext != null) {
             Component text = Component.literal(String.format(message, args));
-            CONFIG.debugContext.getSource().getServer().getPlayerList().broadcastSystemMessage(text, false);
+            CONFIG.debugContext.sendSystemMessage(text);
         }
     }
 
@@ -55,7 +54,7 @@ public class Bellows implements ModInitializer {
         public boolean entitySelectorOptimizations = true;
         public boolean fixBlockAccessForceload = true;
 
-        public CommandContext<CommandSourceStack> debugContext = null;
+        public CommandSourceStack debugContext = null;
 
     }
 
