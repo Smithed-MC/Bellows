@@ -13,7 +13,6 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.smithed.bellows.mixin_interface.selector.MinecraftServerExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,11 +33,11 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
     }
 
     @Unique
-    private final Map<String, Set<String>> entityTypes = new HashMap<>();
+    private final Map<String, Set<String>> bellows_entityTypes = new HashMap<>();
 
     /**
+     * Constructs entity type tag cache on init.
      * @author ImCoolYeah105
-     * Injects into constructor to build entityTypes map on load
      */
     @Inject(
             method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/util/Optional;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;Lnet/minecraft/server/level/progress/LevelLoadListener;ZLnet/minecraft/server/notifications/NotificationManager;)V",
@@ -49,8 +48,8 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
     }
 
     /**
+     * Constructs entity type tag cache on reload.
      * @author ImCoolYeah105
-     * Injects into resource reloading to rebuild entityTypes map
      */
     @Inject(method = "reloadResources(Ljava/util/Collection;)Ljava/util/concurrent/CompletableFuture;", at = @At("TAIL"))
     public void bellows_reloadResources(CallbackInfoReturnable<CompletableFuture<Void>> ci) {
@@ -61,18 +60,24 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
         }
     }
 
+    /**
+     * Rebuilds entity type tag cache.
+     */
     @Unique
     private void bellows_constructEntityTypes() {
-        this.entityTypes.clear();
+        this.bellows_entityTypes.clear();
         BuiltInRegistries.ENTITY_TYPE.listTags().forEach(tag -> {
             final Set<String> entries = new HashSet<>();
-            tag.forEach(item -> entries.add(NBTUtils.translationToTypeName(item.value().toString())));
-            this.entityTypes.put(tag.key().location().toString(), entries);
+            tag.forEach(item -> entries.add(item.getRegisteredName()));
+            this.bellows_entityTypes.put(tag.key().location().toString(), entries);
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> bellows_getEntityTagEntries(String tag) {
-        return this.entityTypes.get(tag);
+        return this.bellows_entityTypes.get(tag);
     }
 }

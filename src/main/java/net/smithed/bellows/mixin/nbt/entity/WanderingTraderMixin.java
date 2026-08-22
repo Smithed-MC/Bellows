@@ -15,6 +15,9 @@ public abstract class WanderingTraderMixin extends AbstractVillagerMixin {
     @Shadow
     private int despawnDelay;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -31,6 +34,9 @@ public abstract class WanderingTraderMixin extends AbstractVillagerMixin {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

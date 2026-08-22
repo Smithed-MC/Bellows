@@ -32,13 +32,22 @@ public abstract class EntitySelectorMixin implements EntitySelectorExtender {
     @Unique
     private SelectorContainer bellows_container;
 
+    /**
+     * Bypass for addEntities method that redirects to type/tag cached version if possible. Cancels the original method.
+     * @author ICY105
+     * @param result - (from vanilla) list to add matching entities to
+     * @param level - (from vanilla) level
+     * @param absoluteAABB - (from vanilla) bounding box
+     * @param predicate - (from vanilla) predicate
+     * @param ci - callback info
+     */
     @Inject(method = "addEntities", at=@At("HEAD"), cancellable = true)
     void bellows_addEntities(List<Entity> result, ServerLevel level, @Nullable AABB absoluteAABB, Predicate<Entity> predicate, CallbackInfo ci) {
         int i = this.getResultLimit();
         if (result.size() < i) {
             if(Bellows.CONFIG.entitySelectorOptimizations && level instanceof ServerLevelExtender extender) {
                 if(absoluteAABB == null || !bellows_container.selectorTags.isEmpty()) {
-                    extender.bellows_collectEntitiesByType(this.type, predicate, result, i, bellows_container);
+                    extender.bellows_getEntities(this.type, predicate, result, i, bellows_container);
                 } else {
                     level.getEntities(this.type, absoluteAABB, predicate, result, i);
                 }
@@ -47,6 +56,9 @@ public abstract class EntitySelectorMixin implements EntitySelectorExtender {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_setContainer(SelectorContainer container) {
         this.bellows_container = container;

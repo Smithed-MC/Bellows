@@ -17,8 +17,11 @@ public abstract class PlayerEnderChestContainerMixin extends SimpleContainer imp
     @Shadow
     public abstract void storeAsSlots(final ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void bellows_toNbtListFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
+    public void bellows_storeAsSlotsFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt) {
         int slot = NBTUtils.getSlot(nbt);
         if(slot >= 0 && slot <= 26) {
             ItemStack itemStack = this.getItem(slot);

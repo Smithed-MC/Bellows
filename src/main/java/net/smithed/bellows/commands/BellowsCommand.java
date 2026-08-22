@@ -34,8 +34,18 @@ public class BellowsCommand {
     }
 
     public static CommandSourceStack debugStart(CommandContext<CommandSourceStack> context) {
+        boolean isDebugMode = Bellows.CONFIG.debugLogger instanceof ActiveBellowsDebugLogger;
         Bellows.CONFIG.debugContext = context.getSource();
-        return context.getSource().withCallback((_, _) -> Bellows.CONFIG.debugContext = null);
+
+        if(isDebugMode) {
+            return context.getSource().withCallback((_, _) -> Bellows.CONFIG.debugContext = null);
+        } else {
+            Bellows.CONFIG.debugLogger = new ActiveBellowsDebugLogger();
+            return context.getSource().withCallback((_, _) -> {
+                Bellows.CONFIG.debugContext = null;
+                Bellows.CONFIG.debugLogger = new EmptyBellowsDebugLogger();
+            });
+        }
     }
 
     public static int getBellowsNbtMode(CommandContext<CommandSourceStack> context) {
@@ -65,21 +75,22 @@ public class BellowsCommand {
     }
 
     public static int getBellowsDebugMode(CommandContext<CommandSourceStack> context) {
-        String state = Bellows.CONFIG.debug ? "enabled" : "disabled";
+        String state = Bellows.CONFIG.debugLogger instanceof ActiveBellowsDebugLogger ? "enabled" : "disabled";
         context.getSource().sendSuccess(() -> Component.literal("debug mode is " + state), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     public static int setBellowsDebugMode(CommandContext<CommandSourceStack> ctx) {
-        Component text = Component.literal("Bellows Debug Mode has been set to: " + BoolArgumentType.getBool(ctx, "enabled"));
-        Bellows.CONFIG.debug = BoolArgumentType.getBool(ctx, "enabled");
+        boolean enable = BoolArgumentType.getBool(ctx, "enabled");
+        Component text = Component.literal("Bellows Debug Mode has been set to: " + enable);
+        Bellows.CONFIG.debugLogger = enable ? new ActiveBellowsDebugLogger() : new EmptyBellowsDebugLogger();
         ctx.getSource().getServer().getPlayerList().broadcastSystemMessage(text, false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int getBellowsBlockForceloadFix(CommandContext<CommandSourceStack> context) {
-        String state = Bellows.CONFIG.debug ? "enabled" : "disabled";
+        String state = Bellows.CONFIG.fixBlockAccessForceload ? "enabled" : "disabled";
         context.getSource().sendSuccess(() -> Component.literal("block forceload fix is " + state), true);
         return Command.SINGLE_SUCCESS;
     }

@@ -18,6 +18,9 @@ public abstract class AgeableMobMixin extends MobMixin implements FilteredNbtAcc
     @Shadow
     protected abstract void setAgeLocked(final boolean locked);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -48,6 +51,9 @@ public abstract class AgeableMobMixin extends MobMixin implements FilteredNbtAcc
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

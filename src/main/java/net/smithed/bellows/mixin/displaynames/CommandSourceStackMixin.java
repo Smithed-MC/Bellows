@@ -64,6 +64,13 @@ public class CommandSourceStackMixin {
     @Unique
     private Supplier<Component> bellows_displayNameSupplier = null;
 
+    /**
+     * Modifies withEntity to use name suppliers instead of computing entity name every time context changes.
+     * Cancels original method.
+     * @author ICY105
+     * @param entity - (from vanilla) entity being swapped to
+     * @param cir - callback info
+     */
     @Inject(method = "withEntity(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/commands/CommandSourceStack;", at = @At("HEAD"), cancellable = true)
     public void withEntity(Entity entity, CallbackInfoReturnable<CommandSourceStack> cir) {
         if(entity instanceof EntityExtender extender && this.entity != entity) {
@@ -88,6 +95,11 @@ public class CommandSourceStackMixin {
         }
     }
 
+    /**
+     * Sets the name suppliers the supplied entity.
+     * @param stack - new stack
+     * @param entity - entity being swapped to
+     */
     @Unique
     private void bellows_setSuppliers(CommandSourceStack stack, EntityExtender entity) {
         CommandSourceStackMixin stackMixin = (CommandSourceStackMixin)(Object)stack;
@@ -95,6 +107,10 @@ public class CommandSourceStackMixin {
         stackMixin.bellows_displayNameSupplier = entity.bellows_getDisplayNameSupplier();
     }
 
+    /**
+     * Uses name supplier to set name if needed when get name is called.
+     * @param cir - callback info
+     */
     @Inject(method = "getTextName()Ljava/lang/String;", at = @At("HEAD"))
     public void bellows_getTextName(CallbackInfoReturnable<Component> cir) {
         if(textName == null) {
@@ -102,6 +118,10 @@ public class CommandSourceStackMixin {
         }
     }
 
+    /**
+     * Uses name supplier to set name if needed when get name is called.
+     * @param cir - callback info
+     */
     @Inject(method = "getDisplayName()Lnet/minecraft/network/chat/Component;", at = @At("HEAD"))
     public void bellows_getDisplayName(CallbackInfoReturnable<Component> cir) {
         if(displayName == null) {
@@ -109,6 +129,25 @@ public class CommandSourceStackMixin {
         }
     }
 
+    /**
+     * Makes command source context mutation copy name suppliers to new command source stack.
+     * @param source - (from vanilla)
+     * @param position - (from vanilla)
+     * @param rotation - (from vanilla)
+     * @param level - (from vanilla)
+     * @param permissions - (from vanilla)
+     * @param textName - (from vanilla)
+     * @param displayName - (from vanilla)
+     * @param server - (from vanilla)
+     * @param entity - (from vanilla)
+     * @param silent - (from vanilla)
+     * @param resultCallback - (from vanilla)
+     * @param anchor - (from vanilla)
+     * @param signingContext - (from vanilla)
+     * @param chatMessageChainer - (from vanilla)
+     * @param original - (from vanilla)
+     * @return CommandSourceStack - (from vanilla) new command source stack
+     */
     @WrapOperation(
             method = "withSource(Lnet/minecraft/commands/CommandSource;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -117,6 +156,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withPosition(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -125,6 +167,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withRotation(Lnet/minecraft/world/phys/Vec2;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -133,6 +178,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withCallback(Lnet/minecraft/commands/CommandResultCallback;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -141,6 +189,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withSuppressedOutput()Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -149,6 +200,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withPermission(Lnet/minecraft/server/permissions/PermissionSet;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -157,6 +211,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withAnchor(Lnet/minecraft/commands/arguments/EntityAnchorArgument$Anchor;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -165,6 +222,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withLevel(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -173,6 +233,9 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * @see CommandSourceStackMixin#bellows_withSource
+     */
     @WrapOperation(
             method = "withSigningContext(Lnet/minecraft/commands/CommandSigningContext;Lnet/minecraft/util/TaskChainer;)Lnet/minecraft/commands/CommandSourceStack;",
             at = @At(value = "NEW", target = "Lnet/minecraft/commands/CommandSourceStack;")
@@ -181,6 +244,11 @@ public class CommandSourceStackMixin {
         return bellows_copySuppliers(original.call(source, position, rotation, level, permissions, textName, displayName, server, entity, silent, resultCallback, anchor, signingContext, chatMessageChainer));
     }
 
+    /**
+     * Copies name suppliers to new CommandSourceStack instance.
+     * @param stack - new CommandSourceStack
+     * @return CommandSourceStack - new CommandSourceStack instance
+     */
     @Unique
     private CommandSourceStack bellows_copySuppliers(CommandSourceStack stack) {
         CommandSourceStackMixin stackMixin = (CommandSourceStackMixin)(Object)stack;

@@ -35,6 +35,9 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
     @Shadow
     private long lastGossipDecayTime;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -65,6 +68,9 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

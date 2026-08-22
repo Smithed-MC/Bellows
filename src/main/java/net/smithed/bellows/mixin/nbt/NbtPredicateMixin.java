@@ -29,7 +29,7 @@ public abstract class NbtPredicateMixin {
     public abstract boolean matches(@Nullable Tag tag);
 
     /**
-     * @author ImCoolYeah105
+     * @author ICY105
      * @reason overwrite get nbt function to add filter support
      */
     @Overwrite

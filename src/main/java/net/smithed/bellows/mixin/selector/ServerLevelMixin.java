@@ -30,6 +30,24 @@ public abstract class ServerLevelMixin implements ServerLevelExtender {
     @Shadow
     protected abstract LevelEntityGetter<@NotNull Entity> getEntities();
 
+    /**
+     * Removes an entity from the type/tag cache if it failed to load into the world (do to duplicate UUIDs).
+     * @author ICY105
+     * @param entity - entity that was added
+     * @param cir - callback info
+     */
+    @Inject(method = "tryAddFreshEntityWithPassengers(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"))
+    public void bellows_tryAddFreshEntityWithPassengers(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if(!cir.getReturnValue()) {
+            for(String tag: entity.entityTags()) {
+                bellows_getEntityIndex().bellows_removeEntityFromTagMap(tag, entity);
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public EntityLookupExtender<?> bellows_getEntityIndex() {
         if(this.getEntities() instanceof LevelEntityGetterAdapterExtender lookup) {
@@ -39,8 +57,11 @@ public abstract class ServerLevelMixin implements ServerLevelExtender {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public <T extends Entity> void bellows_collectEntitiesByType(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container) {
+    public <T extends Entity> void bellows_getEntities(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container) {
         EntityLookupExtender<Entity> extender = (EntityLookupExtender<Entity>) bellows_getEntityIndex();
         if (extender != null) {
             if(container.isTypeTag) {
@@ -52,7 +73,7 @@ public abstract class ServerLevelMixin implements ServerLevelExtender {
                 }
             }
 
-            extender.bellows_forEachTaggedEntity(filter, container, (entity) -> {
+            extender.bellows_getTaggedEntities(filter, (entity) -> {
                 if (predicate.test(entity)) {
                     result.add(entity);
                     if (result.size() >= limit) {
@@ -61,18 +82,9 @@ public abstract class ServerLevelMixin implements ServerLevelExtender {
                 }
 
                 return AbortableIterationConsumer.Continuation.CONTINUE;
-            });
+            }, container);
         } else {
             ((ServerLevel) (Object) this).getEntities(filter, predicate, result, limit);
-        }
-    }
-
-    @Inject(method = "tryAddFreshEntityWithPassengers(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"))
-    public void bellows_tryAddFreshEntityWithPassengers(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if(!cir.getReturnValue()) {
-            for(String tag: entity.entityTags()) {
-                bellows_getEntityIndex().bellows_removeEntityFromTagMap(tag, entity);
-            }
         }
     }
 }

@@ -24,21 +24,21 @@ import java.util.List;
 public abstract class DataCommandsMixin {
 
     /**
-     * @author ImCoolYeah105
      * Redirects DataCommandObject.getData() to mixin.getNbtFiltered() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "getSingleTag(Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;Lnet/minecraft/server/commands/data/DataAccessor;)Lnet/minecraft/nbt/Tag;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
     private static CompoundTag bellows_getSingleTag(DataAccessor dataCommandObject, NbtPathArgument.NbtPath nbtPath, DataAccessor dataCommandObject2) throws CommandSyntaxException {
-        return ContextMutation.getDataCommandObjectNbt(nbtPath, dataCommandObject);
+        return ContextMutation.getData(nbtPath, dataCommandObject);
     }
 
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeModify call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
@@ -46,12 +46,12 @@ public abstract class DataCommandsMixin {
     )
     private static CompoundTag bellows_manipulateData_get(DataAccessor dataCommandObject, CommandContext<CommandSourceStack> context, DataCommands.DataProvider objectType, DataCommands.DataManipulator modifier, List<Tag> elements) throws CommandSyntaxException {
         NbtPathArgument.NbtPath nbtPath = NbtPathArgument.getPath(context, "targetPath");
-        return ContextMutation.getDataCommandObjectNbt(nbtPath, dataCommandObject);
+        return ContextMutation.getData(nbtPath, dataCommandObject);
     }
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeModify call to DataCommandObject.setData() to mixin.setDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
@@ -59,13 +59,13 @@ public abstract class DataCommandsMixin {
     )
     private static void bellows_manipulateData_set(DataAccessor dataCommandObject, CompoundTag nbtCompound, CommandContext<CommandSourceStack> context, DataCommands.DataProvider objectType, DataCommands.DataManipulator modifier, List<Tag> elements) throws CommandSyntaxException {
         NbtPathArgument.NbtPath nbtPath = NbtPathArgument.getPath(context, "targetPath");
-        ContextMutation.setDataCommandObjectNbt(nbtPath, dataCommandObject, nbtCompound);
+        ContextMutation.setData(nbtPath, dataCommandObject, nbtCompound);
     }
 
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeMerge call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "mergeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/nbt/CompoundTag;)I",
@@ -98,8 +98,8 @@ public abstract class DataCommandsMixin {
     }
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeMerge call to DataCommandObject.setData() to mixin.setDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "mergeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/nbt/CompoundTag;)I",
@@ -140,33 +140,33 @@ public abstract class DataCommandsMixin {
 
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeRemove call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "removeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
     private static CompoundTag bellows_removeData_get(DataAccessor dataCommandObject, CommandSourceStack source, DataAccessor object, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
-        return ContextMutation.getDataCommandObjectNbt(path, dataCommandObject);
+        return ContextMutation.getData(path, dataCommandObject);
     }
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeRemove call to DataCommandObject.setData() to mixin.setDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "removeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;setData(Lnet/minecraft/nbt/CompoundTag;)V")
     )
     private static void bellows_removeData_set(DataAccessor dataCommandObject, CompoundTag nbtCompound, CommandSourceStack source, DataAccessor object, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
-        ContextMutation.setDataCommandObjectNbt(path, dataCommandObject, nbtCompound);
+        ContextMutation.setData(path, dataCommandObject, nbtCompound);
     }
 
 
     /**
-     * @author ImCoolYeah105
      * Redirects executeRemove call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "resolveSourcePath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;)Ljava/util/List;",
@@ -174,7 +174,7 @@ public abstract class DataCommandsMixin {
     )
     private static CompoundTag bellows_resolveSourcePath(DataAccessor dataCommandObject, CommandContext<CommandSourceStack> context, DataCommands.DataProvider objectType) throws CommandSyntaxException {
         NbtPathArgument.NbtPath nbtPath = NbtPathArgument.getPath(context, "sourcePath");
-        return ContextMutation.getDataCommandObjectNbt(nbtPath, dataCommandObject);
+        return ContextMutation.getData(nbtPath, dataCommandObject);
     }
 
 }

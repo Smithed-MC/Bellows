@@ -8,8 +8,8 @@ public class NBTUtils {
 
     /**
      * Gets the inventory slot from a nbt path.
-     * @param nbt path
-     * @return Slot in nbt path, or -1 for no slot specified
+     * @param nbt - path
+     * @return int - Slot in nbt path, or -1 for no slot specified
      */
     public static int getSlot(String nbt) {
         //isolate first bracket pair, ie. Items"[]"
@@ -36,26 +36,24 @@ public class NBTUtils {
         return -1;
     }
 
+    /**
+     * Finds all top level nbt paths in a data merge tag from nbt string.
+     * @param nbt - nbt string
+     * @return String[] - top level paths
+     */
     public static String[] getTopLevelPaths(String nbt) {
         nbt = nbt.substring(1,nbt.length()-1) + ",";
-        return nbt.split(":(\\[(.*?)\\])*(\\{(.*?)\\})*(.*?),");
+        return nbt.split(":(\\[(.*?)])*(\\{(.*?)})*(.*?),");
     }
 
+    /**
+     * Finds all top level nbt paths in a data merge tag from nbt compound.
+     * @param nbt - nbt compound
+     * @return String[] - top level paths
+     */
     public static String[] getTopLevelPaths(CompoundTag nbt) {
         Set<String> set = nbt.keySet();
         String[] strings = new String[set.size()];
         return nbt.keySet().toArray(strings);
-    }
-
-    public static String translationToTypeName(String name) {
-        String[] split = name.split("\\.");
-        if(split.length > 2)
-            return split[1] + ":" + split[2];
-        return "";
-    }
-
-    public static boolean isPathSelectedItem(String path) {
-        char slot = path.length() < 13 ? ' ' : path.charAt(12);
-        return slot == ' ' || slot == '.' || slot == '{' || slot == '[';
     }
 }

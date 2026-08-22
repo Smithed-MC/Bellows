@@ -10,6 +10,11 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(CompoundTagArgument.class)
 public class CompoundTagArgumentMixin {
 
+    /**
+     * Compiled quick actions onto an nbt compound when parsed.
+     * @param tag - compound tag
+     * @return CompoundTag - compound tag
+     */
     @ModifyReturnValue(method = "parse(Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/nbt/CompoundTag;", at = @At("RETURN"))
     private CompoundTag bellows_parse(CompoundTag tag) {
         if(tag instanceof CompoundTagExtender extender) {

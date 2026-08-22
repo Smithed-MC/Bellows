@@ -60,6 +60,9 @@ public abstract class DisplayMixin extends EntityMixin implements DisplayEntityE
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -95,6 +98,9 @@ public abstract class DisplayMixin extends EntityMixin implements DisplayEntityE
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {
@@ -149,6 +155,9 @@ public abstract class DisplayMixin extends EntityMixin implements DisplayEntityE
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_setTranslation(Vector3fc translation) {
         if(!this.entityData.get(DATA_TRANSLATION_ID).equals(translation)) {
@@ -157,6 +166,9 @@ public abstract class DisplayMixin extends EntityMixin implements DisplayEntityE
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_setLeftRotation(Quaternionfc leftRotation) {
         if(!this.entityData.get(DATA_LEFT_ROTATION_ID).equals(leftRotation)) {
@@ -165,6 +177,9 @@ public abstract class DisplayMixin extends EntityMixin implements DisplayEntityE
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_setScale(Vector3fc scale) {
         if(!this.entityData.get(DATA_SCALE_ID).equals(scale)) {
@@ -173,6 +188,9 @@ public abstract class DisplayMixin extends EntityMixin implements DisplayEntityE
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_setRightRotation(Quaternionfc rightRotation) {
         if(!this.entityData.get(DATA_RIGHT_ROTATION_ID).equals(rightRotation)) {

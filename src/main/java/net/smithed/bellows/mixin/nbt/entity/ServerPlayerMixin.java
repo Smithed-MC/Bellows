@@ -41,6 +41,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements FilteredN
     @Shadow
     protected abstract void saveEnderPearls(final ValueOutput playerOutput);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {

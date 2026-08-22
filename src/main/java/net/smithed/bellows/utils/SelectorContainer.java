@@ -12,6 +12,9 @@ public class SelectorContainer {
     public boolean isTypeTag = false;
     public boolean isNotType = false;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "SelectorContainer{" +

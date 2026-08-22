@@ -5,7 +5,19 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public interface EntityExtender {
 
+    /**
+     * Bypass of Entity::saveWithoutId, only saves nbt at specified path instead of all nbt.
+     * @param output - (from vanilla) out tag to place data in
+     * @param path - path to nbt data
+     * @return boolean - true if nbt path matched a valid tag, otherwise false
+     */
     boolean bellows_saveWithoutIdFiltered(ValueOutput output, String path);
-    boolean bellows_loadFiltered(ValueInput output, String path);
 
+    /**
+     * Bypass of Entity::load, only saves nbt at specified path instead of all nbt.
+     * @param input - (from vanilla) out tag to load data from
+     * @param path - path to nbt data
+     * @return boolean - true if nbt path matched a valid tag, otherwise false
+     */
+    boolean bellows_loadFiltered(ValueInput input, String path);
 }

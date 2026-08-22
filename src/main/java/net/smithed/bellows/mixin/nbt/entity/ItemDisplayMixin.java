@@ -10,6 +10,9 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(Display.ItemDisplay.class)
 public abstract class ItemDisplayMixin extends DisplayMixin {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -32,6 +35,9 @@ public abstract class ItemDisplayMixin extends DisplayMixin {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

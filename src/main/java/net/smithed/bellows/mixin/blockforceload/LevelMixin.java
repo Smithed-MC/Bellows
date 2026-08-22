@@ -31,15 +31,21 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, LevelE
     public abstract LevelChunk getChunk(int chunkX, int chunkZ);
     @Shadow
     public abstract LevelChunk getChunkAt(BlockPos pos);
+    @Shadow
+    public abstract boolean isInValidBounds(final BlockPos pos);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BlockState bellows_getBlockStateNoLoad(BlockPos pos) {
-        if (this.isOutsideBuildHeight(pos)) {
+        if (!this.isInValidBounds(pos)) {
             return Blocks.VOID_AIR.defaultBlockState();
         } else {
             ChunkPos chunkPos = new ChunkPos(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
             LevelChunk worldChunk = this.getChunk(chunkPos.x(), chunkPos.z());
             BlockState blockState = worldChunk.getBlockState(pos);
+
             if(this.getChunkSource() instanceof ServerChunkCacheExtender manager) {
                 int targetTicketLevel = ChunkLevel.byStatus(ChunkStatus.FULL);
                 manager.bellows_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);
@@ -48,9 +54,12 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, LevelE
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BlockEntity bellows_getBlockEntityNoLoad(BlockPos pos) {
-        if (this.isOutsideBuildHeight(pos)) {
+        if (!this.isInValidBounds(pos)) {
             return null;
         } else if(!this.isClientSide && Thread.currentThread() != this.thread) {
             return null;
@@ -58,6 +67,7 @@ public abstract class LevelMixin implements LevelAccessor, AutoCloseable, LevelE
             ChunkPos chunkPos = new ChunkPos(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
             LevelChunk worldChunk = this.getChunkAt(pos);
             BlockEntity blockEntity = worldChunk.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
+
             if(this.getChunkSource() instanceof ServerChunkCacheExtender manager) {
                 int targetTicketLevel = ChunkLevel.byStatus(ChunkStatus.FULL);
                 manager.bellows_getTicketStorage().removeTicket(new Ticket(TicketType.UNKNOWN, targetTicketLevel), chunkPos);

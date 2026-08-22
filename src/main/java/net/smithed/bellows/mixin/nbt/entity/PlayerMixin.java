@@ -32,6 +32,9 @@ public abstract class PlayerMixin extends LivingEntityMixin implements FilteredN
     @Shadow
     protected PlayerEnderChestContainer enderChestInventory;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -43,7 +46,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements FilteredN
             case "DataVersion" -> NbtUtils.addCurrentDataVersion(output);
             case "Inventory" -> {
                 if (this.inventory instanceof PlayerInventoryExtender mixin) {
-                    mixin.bellows_saveWithoutIdFiltered(output.list("Inventory", ItemStackWithSlot.CODEC), path);
+                    mixin.bellows_saveFiltered(output.list("Inventory", ItemStackWithSlot.CODEC), path);
                 } else {
                     this.inventory.save(output.list("Inventory", ItemStackWithSlot.CODEC));
                 }
@@ -59,7 +62,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements FilteredN
             case "abilities" -> output.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
             case "EnderItems" -> {
                 if (this.enderChestInventory instanceof EnderChestInventoryExtender mixin)
-                    mixin.bellows_toNbtListFiltered(output.list("EnderItems", ItemStackWithSlot.CODEC), path);
+                    mixin.bellows_storeAsSlotsFiltered(output.list("EnderItems", ItemStackWithSlot.CODEC), path);
                 else
                     this.enderChestInventory.storeAsSlots(output.list("EnderItems", ItemStackWithSlot.CODEC));
             }

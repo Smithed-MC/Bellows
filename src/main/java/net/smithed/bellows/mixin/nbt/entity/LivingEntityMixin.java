@@ -63,6 +63,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
     @Shadow
     abstract protected Brain<? extends @NotNull LivingEntity> makeBrain(final Brain.Packed packedBrain);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -115,6 +118,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

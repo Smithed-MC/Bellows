@@ -16,6 +16,10 @@ public abstract class LevelEntityGetterAdapterMixin<T extends EntityAccess> impl
     @Shadow @Final
     private EntityLookup<@NotNull T> visibleEntities;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public EntityLookupExtender<?> bellows_getVisibleEntities() {
         if(visibleEntities instanceof EntityLookupExtender<?> extender) {
             return extender;

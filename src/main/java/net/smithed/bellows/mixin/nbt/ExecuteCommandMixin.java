@@ -34,38 +34,39 @@ public class ExecuteCommandMixin {
     private static Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE;
 
     /**
-     * @author ImCoolYeah105
      * Redirects countPathMatches call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @author ICY105
      */
     @Redirect(
             method = "checkMatchingData(Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;")
     )
     private static CompoundTag bellows_countPathMatches(DataAccessor object, DataAccessor accessor, NbtPathArgument.NbtPath path) throws CommandSyntaxException {
-        return ContextMutation.getDataCommandObjectNbt(path, object);
+        return ContextMutation.getData(path, object);
     }
 
     /**
-     * @author ImCoolYeah105
-     * @reason Redirect absolutely refused to work here. In theory in should be fine, but...
      * Redirects executeStoreData call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @author ICY105
+     * @reason Redirect absolutely refused to work here. In theory in should be fine, but...
      */
     @Overwrite
     private static CommandSourceStack storeData(CommandSourceStack source, DataAccessor object, NbtPathArgument.NbtPath path, IntFunction<Tag> nbtSetter, boolean requestResult) {
         return source.withCallback((successful, returnValue) -> {
             try {
-                CompoundTag nbtCompound = ContextMutation.getDataCommandObjectNbt(path, object);
+                CompoundTag nbtCompound = ContextMutation.getData(path, object);
                 int i = requestResult ? returnValue : (successful ? 1 : 0);
                 path.set(nbtCompound, nbtSetter.apply(i));
-                ContextMutation.setDataCommandObjectNbt(path, object, nbtCompound);
+                ContextMutation.setData(path, object, nbtCompound);
             } catch (CommandSyntaxException _) {}
         }, CommandResultCallback::chain);
     }
 
     /**
-     * @author ImCoolYeah105
      * @reason Redirect absolutely refused to work here. In theory in should be fine, but...
      * Redirects executeStoreData call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
+     * @reason Redirect absolutely refused to work here. In theory in should be fine, but...
+     * @author ICY105
      */
     @Overwrite
     private static OptionalInt checkRegions(ServerLevel world, BlockPos start, BlockPos end, BlockPos destination, boolean masked) throws CommandSyntaxException {

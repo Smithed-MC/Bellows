@@ -125,6 +125,9 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_saveWithoutIdFiltered(ValueOutput output, String path) {
         String topLevelNbt = path.split("[.{\\[]",1)[0];
@@ -224,6 +227,9 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_loadFiltered(ValueInput input, String path) {
         String topLevelNbt = path.split("[\\[.{]",1)[0];

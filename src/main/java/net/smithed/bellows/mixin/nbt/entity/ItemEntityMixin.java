@@ -28,6 +28,9 @@ public abstract class ItemEntityMixin extends EntityMixin implements FilteredNbt
     @Shadow
     private UUID target;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -53,6 +56,9 @@ public abstract class ItemEntityMixin extends EntityMixin implements FilteredNbt
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

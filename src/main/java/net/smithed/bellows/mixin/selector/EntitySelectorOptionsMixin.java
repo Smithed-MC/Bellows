@@ -8,22 +8,13 @@ import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.commands.arguments.selector.options.InvertableSetOptionState;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.TagValueOutput;
 import net.smithed.bellows.Bellows;
-import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
 import net.smithed.bellows.mixin_interface.selector.EntitySelectorParserExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -55,9 +46,9 @@ public class EntitySelectorOptionsMixin {
     private static CommandSyntaxException rollbackAndThrow(final EntitySelectorParser parser, final int start, final DynamicCommandExceptionType type, final String argument) {return null;}
 
     /**
-     * @author ImCoolYeah105, dragoncommands
      * This inject overwrites statically registered selector options to wrap extra data.
      * It may be better to inject data directly, but lambda support is suspect.
+     * @author ICY105
      */
     @Inject(method = "bootStrap()V", at = @At("TAIL"))
     private static void bellows_bootStrap(CallbackInfo ci) {
@@ -135,8 +126,6 @@ public class EntitySelectorOptionsMixin {
 
         }, (s) -> s.typeOption().canParseAny(), Component.translatable("argument.entity.options.type.description"));
 
-
-
         register("tag", (parser) -> {
             boolean inverted = parser.shouldInvertValue();
             String tag = parser.getReader().readUnquotedString();
@@ -157,55 +146,5 @@ public class EntitySelectorOptionsMixin {
                 }
             });
         }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.tag.description"));
-
-        register("nbt", (parser) -> {
-            boolean inverted = parser.shouldInvertValue();
-            CompoundTag tag = TagParser.parseCompoundAsArgument(parser.getReader());
-            parser.addPredicate((entity) -> {
-                CompoundTag nbtCompound = null;
-                if (Bellows.CONFIG.nbtOptimizations && entity instanceof EntityExtender mixin) {
-                    try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
-                        TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
-                        for (String str: NBTUtils.getTopLevelPaths(tag)) {
-                            if(output.buildResult().contains(str)) {
-                                continue;
-                            }
-                            if (entity instanceof ServerPlayer player && str.startsWith("SelectedItem")) {
-                                ItemStack selected = player.getInventory().getSelectedItem();
-                                if (!selected.isEmpty()) {
-                                    output.store("SelectedItem", ItemStack.CODEC, selected);
-                                }
-                            } else if(!mixin.bellows_saveWithoutIdFiltered(output, str)) {
-                                output = null;
-                                break;
-                            }
-                        }
-                        if(output != null) {
-                            nbtCompound = output.buildResult();
-                        }
-                    }
-                }
-
-                // if getting the filtered data failed, try using the normal method
-                if (nbtCompound == null) {
-                    try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
-                        TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
-                        entity.saveWithoutId(output);
-                        if (entity instanceof ServerPlayer player) {
-                            ItemStack selected = player.getInventory().getSelectedItem();
-                            if (!selected.isEmpty()) {
-                                output.store("SelectedItem", ItemStack.CODEC, selected);
-                            }
-                        }
-                        Bellows.logDebugFormat("nbt = %s", nbtCompound);
-                        nbtCompound = output.buildResult();
-                    }
-                }
-
-                Bellows.logDebugFormat("nbt = %s", nbtCompound);
-                return NbtUtils.compareNbt(tag, nbtCompound, true) != inverted;
-            });
-        }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.nbt.description"));
     }
-
 }

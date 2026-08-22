@@ -6,8 +6,8 @@ import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.smithed.bellows.Bellows;
+import net.smithed.bellows.mixin_interface.selector.EntityExtender;
 import net.smithed.bellows.mixin_interface.selector.EntityLookupExtender;
-import net.smithed.bellows.utils.NBTUtils;
 import net.smithed.bellows.utils.SelectorContainer;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,12 +30,48 @@ public abstract class EntityLookupMixin<T extends EntityAccess> implements Entit
     @Unique
     private final Map<String, Set<EntityAccess>> entityMap = new HashMap<>();
 
+    /**
+     * Add entity type to cache when the entity is loaded.
+     * @author ICY105
+     */
+    @Inject(method = "add", at = @At("HEAD"))
+    private void bellows_add(T entity, CallbackInfo ci) {
+        if(entity instanceof Entity entityCast && entity instanceof EntityExtender extender) {
+            String id = extender.bellows_getEncodeId();
+            this.bellows_addEntityToTagMap(id, entity);
+            if(!entityCast.entityTags().isEmpty()) {
+                entityCast.entityTags().forEach(tag -> bellows_addEntityToTagMap(tag, entity));
+            }
+        }
+    }
+
+    /**
+     * Remove entity type & tags from cache when the entity is unloaded.
+     * @author ICY105
+     */
+    @Inject(method = "remove", at = @At("HEAD"))
+    private void bellows_remove(T entity, CallbackInfo ci) {
+        if(entity instanceof Entity entityCast && entity instanceof EntityExtender extender) {
+            String id = extender.bellows_getEncodeId();
+            this.bellows_removeEntityFromTagMap(id, entityCast);
+            if(!entityCast.entityTags().isEmpty()) {
+                entityCast.entityTags().forEach(tag -> bellows_removeEntityFromTagMap(tag, entity));
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_addEntityToTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.computeIfAbsent(tag, k -> new HashSet<>());
         set.add(entity);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_removeEntityFromTagMap(String tag, EntityAccess entity) {
         Set<EntityAccess> set = entityMap.get(tag);
@@ -45,46 +81,10 @@ public abstract class EntityLookupMixin<T extends EntityAccess> implements Entit
     }
 
     /**
-     * @author ImCoolYeah105
-     * Add entity type to map when loaded
-     */
-    @Inject(method = "add", at = @At("HEAD"))
-    private void bellows_add(T entity, CallbackInfo ci) {
-        if(entity instanceof Entity entityCast) {
-            String name = NBTUtils.translationToTypeName(entityCast.getType().getDescriptionId());
-            if(!name.isEmpty()) {
-                this.bellows_addEntityToTagMap(name, entity);
-            }
-            if(!entityCast.entityTags().isEmpty()) {
-                entityCast.entityTags().forEach(tag -> bellows_addEntityToTagMap(tag, entity));
-            }
-        }
-    }
-
-    /**
-     * @author ImCoolYeah105
-     * Remove entity type & tags from map when unloaded
-     */
-    @Inject(method = "remove", at = @At("HEAD"))
-    private void bellows_remove(T entity, CallbackInfo ci) {
-        if(entity instanceof Entity entityCast) {
-            String name = NBTUtils.translationToTypeName(entityCast.getType().getDescriptionId());
-            if(!name.isEmpty()) {
-                this.bellows_removeEntityFromTagMap(name, entityCast);
-            }
-            if(!entityCast.entityTags().isEmpty()) {
-                entityCast.entityTags().forEach(tag -> bellows_removeEntityFromTagMap(tag, entity));
-            }
-        }
-    }
-
-    /**
-     * This is a modified version of the forEach method in the base class.
-     * It will check the cache for the type and tags of the selector, and use the smallest list of entities
-     * retrieved for the @e search instead of all entities.
+     * {@inheritDoc}
      */
     @Override
-    public <U extends T> void bellows_forEachTaggedEntity(EntityTypeTest<@NotNull T, @NotNull U> filter, SelectorContainer container, AbortableIterationConsumer<@NotNull U> action) {
+    public <U extends T> void bellows_getTaggedEntities(EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> action, SelectorContainer container) {
         Set<EntityAccess> set = null;
         List<Set<EntityAccess>> list = null;
         int size = Integer.MAX_VALUE;
@@ -142,25 +142,25 @@ public abstract class EntityLookupMixin<T extends EntityAccess> implements Entit
         Bellows.logDebugFormat("searching on %s entities for %s", size, container);
 
         if (set != null) {
-            bellows_forEachInCollection(set, filter, action);
+            bellows_getEntities(set, filter, action);
         } else if (list != null) {
-            list.forEach(iset -> bellows_forEachInCollection(iset, filter, action));
+            list.forEach(iset -> bellows_getEntities(iset, filter, action));
         } else {
             this.getEntities(filter, action);
         }
     }
 
+    /**
+     * Mostly a copy/paste from EntityLookup:getEntities, however it accepts any collection instead of the special fast map.
+     */
     @Unique
-    public <U extends T> void bellows_forEachInCollection(Collection<EntityAccess> collection, EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> consumer) {
-        Iterator<EntityAccess> iterator = collection.iterator();
-
-        U entityLike2;
-        do {
-            if (!iterator.hasNext()) {
+    private <U extends T> void bellows_getEntities(Collection<EntityAccess> collection, EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> consumer) {
+        for (EntityAccess entityAccess : collection) {
+            T entity = (T) entityAccess;
+            U maybeEntity = filter.tryCast(entity);
+            if (maybeEntity != null && consumer.accept(maybeEntity).shouldAbort()) {
                 return;
             }
-            T entityLike = (T)iterator.next();
-            entityLike2 = filter.tryCast(entityLike);
-        } while(entityLike2 == null || !consumer.accept(entityLike2).shouldAbort());
+        }
     }
 }

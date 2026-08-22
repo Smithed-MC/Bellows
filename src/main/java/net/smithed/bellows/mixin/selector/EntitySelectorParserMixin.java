@@ -29,6 +29,9 @@ public class EntitySelectorParserMixin implements EntitySelectorParserExtender {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SelectorContainer bellows_getSelectorContainer() {
         return this.container;

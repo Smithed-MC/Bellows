@@ -15,6 +15,9 @@ public class CompoundTagMixin implements CompoundTagExtender {
     @Unique
     private QuickActions quickActions = null;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void bellows_precompileQuickActions() {
         QuickActions tag = new QuickActions((CompoundTag) (Object)this);
@@ -23,13 +26,22 @@ public class CompoundTagMixin implements CompoundTagExtender {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public QuickActions bellows_getQuickActions() {
         return quickActions;
     }
 
+    /**
+     * Merges quick data when 2 tags are merged.
+     * @author ICY105
+     * @param other - tagged being merged into this one
+     * @param cir - callback info
+     */
     @Inject(method = "merge", at = @At("TAIL"))
-    private void bellows_parse(CompoundTag other, CallbackInfoReturnable<CompoundTag> cir) {
+    private void bellows_merge(CompoundTag other, CallbackInfoReturnable<CompoundTag> cir) {
         if(other instanceof CompoundTagExtender extender && extender.bellows_getQuickActions() != null) {
             if(quickActions == null) {
                 quickActions = extender.bellows_getQuickActions();

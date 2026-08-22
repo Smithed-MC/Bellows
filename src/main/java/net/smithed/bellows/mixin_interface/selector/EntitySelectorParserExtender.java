@@ -4,6 +4,9 @@ import net.smithed.bellows.utils.SelectorContainer;
 
 public interface EntitySelectorParserExtender {
 
+    /**
+     * Retrieves the type/tag selector container.
+     * @return SelectorContainer - selector container
+     */
     SelectorContainer bellows_getSelectorContainer();
-
 }

@@ -24,6 +24,9 @@ public abstract class TextDisplayMixin extends DisplayMixin {
     @Shadow
     private static byte loadFlag(final byte flags, final ValueInput input, final String id, final byte mask) { return 0; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_addAdditionalSaveDataFiltered(ValueOutput output, String path, String topLevelNbt) {
         if (super.bellows_addAdditionalSaveDataFiltered(output, path, topLevelNbt)) {
@@ -50,6 +53,9 @@ public abstract class TextDisplayMixin extends DisplayMixin {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_readAdditionalSaveDataFiltered(ValueInput input, String path, String topLevelNbt) {
         if (super.bellows_readAdditionalSaveDataFiltered(input, path, topLevelNbt)) {

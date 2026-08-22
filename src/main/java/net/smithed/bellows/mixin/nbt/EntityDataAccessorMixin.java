@@ -39,6 +39,9 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
     @Unique
     private static final Map<EntityType<?>,Integer> NBT_SIZE_CACHE = new HashMap<>();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CompoundTag bellows_getDataFiltered(String path) {
         CompoundTag nbtCompound = null;
@@ -81,6 +84,9 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
         return nbtCompound;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean bellows_setDataFiltered(CompoundTag tag, String path) throws CommandSyntaxException {
         if (this.entity instanceof Player) {
@@ -116,6 +122,9 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Entity bellows_getContents() {
         return this.entity;

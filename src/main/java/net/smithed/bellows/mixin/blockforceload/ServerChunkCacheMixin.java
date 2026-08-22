@@ -13,6 +13,9 @@ public abstract class ServerChunkCacheMixin implements ServerChunkCacheExtender 
     @Shadow @Final
     private TicketStorage ticketStorage;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TicketStorage bellows_getTicketStorage() {
         return ticketStorage;

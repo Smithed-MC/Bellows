@@ -4,7 +4,6 @@ import com.mojang.math.Transformation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.nbt.DisplayEntityExtender;
@@ -30,7 +29,7 @@ public class QuickActions {
                 Optional<Quaternionfc> right_rotation = transformation.get().read("right_rotation", ExtraCodecs.QUATERNIONF);
 
                 return transformation.<Consumer<Entity>>map(_ -> (Entity entity) -> {
-                    if (entity instanceof Display display && entity instanceof DisplayEntityExtender extender) {
+                    if (entity instanceof DisplayEntityExtender extender) {
                         translation.ifPresent(extender::bellows_setTranslation);
                         left_rotation.ifPresent(extender::bellows_setLeftRotation);
                         scale.ifPresent(extender::bellows_setScale);
@@ -60,11 +59,20 @@ public class QuickActions {
     private final Set<String> quickActionTags;
     private final Set<Consumer<Entity>> quickActions;
 
+    /**
+     * Constructor accepting compound tag to compile into quick actions.
+     * @param tag - compound tag to compile
+     */
     public QuickActions(CompoundTag tag) {
         quickActionTags = new HashSet<>();
         quickActions = computeQuickActions(tag);
     }
 
+    /**
+     * Compile valid elements in a compound tag into quick actions.
+     * @param tag - compound tag to compile
+     * @return Set<Consumer<Entity>> - quick actions
+     */
     private Set<Consumer<Entity>> computeQuickActions(CompoundTag tag) {
         Set<Consumer<Entity>> actions = new HashSet<>();
         for(String key: tag.keySet()) {
@@ -82,18 +90,34 @@ public class QuickActions {
         return actions.isEmpty() ? null : actions;
     }
 
+    /**
+     * Returns true if there are quick actions.
+     * @return boolean - true if has quick actions
+     */
     public boolean hasQuickActions() {
         return !quickActionTags.isEmpty();
     }
 
+    /**
+     * Returns all quick action compound tag keys.
+     * @return Set<String> - compound tag keys
+     */
     public Set<String> getQuickActionTags() {
         return quickActionTags;
     }
 
+    /**
+     * Returns all quick actions.
+     * @return Set<Consumer<Entity>> - quick actions
+     */
     public Set<Consumer<Entity>> getQuickActions() {
         return quickActions;
     }
 
+    /**
+     * Merges another QuickActions object into this object.
+     * @param other - QuickActions object to merge
+     */
     public void merge(QuickActions other) {
         quickActionTags.addAll(other.getQuickActionTags());
         quickActions.addAll(other.getQuickActions());

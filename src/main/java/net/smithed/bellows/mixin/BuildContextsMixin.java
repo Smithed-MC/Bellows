@@ -20,6 +20,11 @@ public abstract class BuildContextsMixin<T> {
     @Shadow @Final
     private String commandInput;
 
+    /**
+     * Logs the command being run.
+     * @author ICY105
+     * @param ci - info
+     */
     @Inject(method = "execute", at = @At(value = "HEAD"))
     private void bellows_execute(CallbackInfo ci) {
         Bellows.logDebugFormat("run: %s", commandInput);
