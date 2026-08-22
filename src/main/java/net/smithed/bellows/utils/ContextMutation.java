@@ -5,12 +5,16 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.commands.data.DataAccessor;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.blockforceload.LevelExtender;
 import net.smithed.bellows.mixin_interface.nbt.EntityDataAccessorExtender;
+import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
 
 public class ContextMutation {
 
@@ -51,4 +55,15 @@ public class ContextMutation {
         }
     }
 
+    public static boolean getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
+        if (mixin instanceof Player player && path.startsWith("SelectedItem") && NBTUtils.isPathSelectedItem(path)) {
+            ItemStack selected = player.getInventory().getSelectedItem();
+            if (!selected.isEmpty()) {
+                output.store("SelectedItem", ItemStack.CODEC, selected);
+            }
+            return true;
+        } else {
+            return mixin.bellows_saveWithoutIdFiltered(output, path);
+        }
+    }
 }

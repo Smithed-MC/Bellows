@@ -5,15 +5,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
+import net.smithed.bellows.utils.ContextMutation;
 import net.smithed.bellows.utils.NBTUtils;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(NbtPredicate.class)
 public abstract class NbtPredicateMixin {
@@ -41,7 +43,7 @@ public abstract class NbtPredicateMixin {
                         continue;
                     }
                     // if any attempt to get a data element fails, mark output as a failure and break out of the loop
-                    if(!bellows_getFilteredNbt(mixin, output, str)) {
+                    if(!ContextMutation.getFilteredNbt(mixin, output, str)) {
                         output = null;
                         break;
                     }
@@ -59,18 +61,5 @@ public abstract class NbtPredicateMixin {
         boolean result = this.matches(nbt);
         Bellows.logDebugFormat("Predicate = %s, nbt = %s", result, nbt);
         return result;
-    }
-
-    @Unique
-    private boolean bellows_getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
-        if (mixin instanceof Player player && path.startsWith("SelectedItem") && NBTUtils.isPathSelectedItem(path)) {
-            ItemStack selected = player.getInventory().getSelectedItem();
-            if (!selected.isEmpty()) {
-                output.store("SelectedItem", ItemStack.CODEC, selected);
-            }
-            return true;
-        } else {
-            return mixin.bellows_saveWithoutIdFiltered(output, path);
-        }
     }
 }

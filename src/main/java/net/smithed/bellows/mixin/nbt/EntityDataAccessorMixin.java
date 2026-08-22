@@ -7,13 +7,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.commands.data.EntityDataAccessor;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.nbt.EntityDataAccessorExtender;
 import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
+import net.smithed.bellows.utils.ContextMutation;
 import net.smithed.bellows.utils.NBTUtils;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -21,6 +22,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Mixin(EntityDataAccessor.class)
@@ -30,11 +33,11 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
     private static Logger LOGGER;
     @Shadow @Final
     private static SimpleCommandExceptionType ERROR_NO_PLAYERS;
+
     @Shadow @Final
     private Entity entity;
-
     @Unique
-    private static final int MIN_ENTITY_NBT_SIZE = 10; //this is how many NBT tags the base entity class contains
+    private static final Map<EntityType<?>,Integer> NBT_SIZE_CACHE = new HashMap<>();
 
     @Override
     public CompoundTag bellows_getDataFiltered(String path) {
@@ -49,7 +52,7 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
                             continue;
                         }
                         // if any attempt to get a data element fails, mark output as a failure and break out of the loop
-                        if(!bellows_getFilteredNbt(mixin, output, str)) {
+                        if(!ContextMutation.getFilteredNbt(mixin, output, str)) {
                             output = null;
                             break;
                         }
@@ -61,7 +64,7 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
             } else {
                 try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
                     TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
-                    if(bellows_getFilteredNbt(mixin, output, path)) {
+                    if(ContextMutation.getFilteredNbt(mixin, output, path)) {
                         nbtCompound = output.buildResult();
                     }
                 }
@@ -78,19 +81,6 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
         return nbtCompound;
     }
 
-    @Unique
-    private boolean bellows_getFilteredNbt(EntityExtender mixin, TagValueOutput output, String path) {
-        if (entity instanceof Player player && path.startsWith("SelectedItem") && NBTUtils.isPathSelectedItem(path)) {
-            ItemStack selected = player.getInventory().getSelectedItem();
-            if (!selected.isEmpty()) {
-                output.store("SelectedItem", ItemStack.CODEC, selected);
-            }
-            return true;
-        } else {
-            return mixin.bellows_saveWithoutIdFiltered(output, path);
-        }
-    }
-
     @Override
     public boolean bellows_setDataFiltered(CompoundTag tag, String path) throws CommandSyntaxException {
         if (this.entity instanceof Player) {
@@ -105,8 +95,17 @@ public class EntityDataAccessorMixin implements EntityDataAccessorExtender {
                     this.entity.setUUID(uUID);
                     return true;
                 }
+
+                // if nbt size cache does not contain this entity type, generate a value
+                if(!NBT_SIZE_CACHE.containsKey(this.entity.getType())) {
+                    TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+                    this.entity.save(output);
+                    int nbtSize = Math.max(0, output.buildResult().size()-3);
+                    NBT_SIZE_CACHE.put(this.entity.getType(), nbtSize);
+                }
+
                 // if attempt to save filtered data failed and enough data exists to attempt a full save, do so. Otherwise, fail.
-                if (tag.size() >= MIN_ENTITY_NBT_SIZE) {
+                if (tag.size() >= NBT_SIZE_CACHE.get(this.entity.getType())) {
                     this.entity.load(TagValueInput.create(reporter, this.entity.registryAccess(), tag));
                     Bellows.logDebugFormat("Saved NBT '%s' for entity '%s', data = %s", path, this.entity.getClass(), tag);
                 } else {
