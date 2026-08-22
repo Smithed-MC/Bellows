@@ -16,7 +16,6 @@ import net.minecraft.world.entity.EntityTypes;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.selector.EntitySelectorParserExtender;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,8 +31,6 @@ import java.util.stream.Stream;
 @Mixin(EntitySelectorOptions.class)
 public class EntitySelectorOptionsMixin {
 
-    @Shadow @Final
-    private static Logger LOGGER;
     @Shadow @Final
     private static Predicate<EntitySelectorParser> ALWAYS_AVAILABLE;
     @Shadow @Final

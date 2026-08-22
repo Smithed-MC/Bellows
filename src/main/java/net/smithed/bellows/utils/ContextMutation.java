@@ -1,36 +1,16 @@
 package net.smithed.bellows.utils;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.blockforceload.LevelExtender;
-import net.smithed.bellows.mixin_interface.nbt.EntityDataAccessorExtender;
 import net.smithed.bellows.mixin_interface.nbt.EntityExtender;
 
 public class ContextMutation {
-
-    /**
-     * Redirects to LevelExtender::bellows_getBlockStateNoLoad if possible, otherwise falls back to vanilla method.
-     * @param world - (from vanilla) level to get block from
-     * @param blockPos - (from vanilla) pos of block
-     * @return BlockState - (from vanilla) block state at location
-     */
-    public static BlockState getBlockState(LevelReader world, BlockPos blockPos) {
-        if(Bellows.CONFIG.fixBlockAccessForceload && world instanceof LevelExtender extender) {
-            return extender.bellows_getBlockStateNoLoad(blockPos);
-        } else {
-            return world.getBlockState(blockPos);
-        }
-    }
 
     /**
      * Redirects to LevelExtender::bellows_getBlockEntityNoLoad if possible, otherwise falls back to vanilla method.
@@ -43,39 +23,6 @@ public class ContextMutation {
             return extender.bellows_getBlockEntityNoLoad(blockPos);
         } else {
             return world.getBlockEntity(blockPos);
-        }
-    }
-
-    /**
-     * Redirects to EntityDataAccessorExtender::bellows_getDataFiltered if possible, otherwise falls back to vanilla method.
-     * @param nbtPath - (from vanilla) nbt path
-     * @param dataAccessor - (from vanilla) data accessor
-     * @return BlockEntity - (from vanilla) block entity at location
-     */
-    public static CompoundTag getData(NbtPathArgument.NbtPath nbtPath, DataAccessor dataAccessor) throws CommandSyntaxException {
-        CompoundTag nbtCompound = null;
-        if (Bellows.CONFIG.nbtOptimizations && dataAccessor instanceof EntityDataAccessorExtender extender) {
-            nbtCompound = extender.bellows_getDataFiltered(nbtPath.toString());
-        }
-
-        if(nbtCompound != null) {
-            return nbtCompound;
-        } else {
-            return dataAccessor.getData();
-        }
-    }
-
-    /**
-     * Redirects to EntityDataAccessorExtender::bellows_getDataFiltered if possible, otherwise falls back to vanilla method.
-     * @param nbtPath - (from vanilla) nbt path
-     * @param dataAccessor - (from vanilla) data accessor
-     * @param nbtCompound - (from vanilla) nbt to store to entity
-     */
-    public static void setData(NbtPathArgument.NbtPath nbtPath, DataAccessor dataAccessor, CompoundTag nbtCompound) throws CommandSyntaxException {
-        if (Bellows.CONFIG.nbtOptimizations && dataAccessor instanceof EntityDataAccessorExtender extender) {
-            extender.bellows_setDataFiltered(nbtCompound, nbtPath.toString());
-        } else {
-            dataAccessor.setData(nbtCompound);
         }
     }
 

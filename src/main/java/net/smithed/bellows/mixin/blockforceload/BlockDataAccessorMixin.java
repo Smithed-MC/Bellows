@@ -4,7 +4,6 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.smithed.bellows.utils.ContextMutation;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -13,6 +12,7 @@ import net.minecraft.server.commands.data.BlockDataAccessor;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.smithed.bellows.utils.ContextMutation;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,7 +27,7 @@ public abstract class BlockDataAccessorMixin {
 
     /**
      * Overwrites standard lambda variable to include support for not loading chunks when if block is processed
-     * @reason afaik, there is no way to inject code into a lambda
+     * @reason Need a way to mixin into a static field.
      */
     @Shadow public static final Function<String, DataCommands.DataProvider> PROVIDER = (argumentName) -> new DataCommands.DataProvider() {
         public DataAccessor access(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

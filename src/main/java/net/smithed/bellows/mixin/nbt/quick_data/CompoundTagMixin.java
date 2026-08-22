@@ -16,6 +16,23 @@ public class CompoundTagMixin implements CompoundTagExtender {
     private QuickActions quickActions = null;
 
     /**
+     * Merges quick data when 2 tags are merged.
+     * @author ICY105
+     * @param other - tagged being merged into this one
+     * @param cir - callback info
+     */
+    @Inject(method = "merge", at = @At("TAIL"))
+    private void bellows_merge(CompoundTag other, CallbackInfoReturnable<CompoundTag> cir) {
+        if(other instanceof CompoundTagExtender extender && extender.bellows_getQuickActions() != null) {
+            if(quickActions == null) {
+                quickActions = extender.bellows_getQuickActions();
+            } else {
+                quickActions.merge(extender.bellows_getQuickActions());
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -32,22 +49,5 @@ public class CompoundTagMixin implements CompoundTagExtender {
     @Override
     public QuickActions bellows_getQuickActions() {
         return quickActions;
-    }
-
-    /**
-     * Merges quick data when 2 tags are merged.
-     * @author ICY105
-     * @param other - tagged being merged into this one
-     * @param cir - callback info
-     */
-    @Inject(method = "merge", at = @At("TAIL"))
-    private void bellows_merge(CompoundTag other, CallbackInfoReturnable<CompoundTag> cir) {
-        if(other instanceof CompoundTagExtender extender && extender.bellows_getQuickActions() != null) {
-            if(quickActions == null) {
-                quickActions = extender.bellows_getQuickActions();
-            } else {
-                quickActions.merge(extender.bellows_getQuickActions());
-            }
-        }
     }
 }

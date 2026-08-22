@@ -1,7 +1,5 @@
 package net.smithed.bellows.mixin.nbt;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.nbt.CompoundTag;
@@ -32,14 +30,8 @@ public class EntitySelectorOptionsMixin {
     private static Logger LOGGER;
     @Shadow @Final
     private static Predicate<EntitySelectorParser> ALWAYS_AVAILABLE;
-    @Shadow @Final
-    public static DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION;
-    @Shadow @Final
-    public static DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID;
     @Shadow
     private static void register(String name, EntitySelectorOptions.Modifier modifier, Predicate<EntitySelectorParser> predicate, Component description) {}
-    @Shadow
-    private static CommandSyntaxException rollbackAndThrow(final EntitySelectorParser parser, final int start, final DynamicCommandExceptionType type, final String argument) {return null;}
 
     /**
      * This inject overwrites statically registered selector options to wrap extra data.
