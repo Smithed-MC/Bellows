@@ -42,6 +42,5 @@ public class Bellows implements ModInitializer {
     /**
      * TODO: Mixins that still need fixing
      *  - BlockDataAccessor
-     *  - EntitySelectorOptions (both)
      */
 }

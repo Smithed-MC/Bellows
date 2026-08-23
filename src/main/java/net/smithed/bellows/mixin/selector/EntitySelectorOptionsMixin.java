@@ -1,147 +1,68 @@
 package net.smithed.bellows.mixin.selector;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.commands.SharedSuggestionProvider;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
-import net.minecraft.commands.arguments.selector.options.InvertableSetOptionState;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.smithed.bellows.Bellows;
 import net.smithed.bellows.mixin_interface.selector.EntitySelectorParserExtender;
-import org.jetbrains.annotations.NotNull;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 @Mixin(EntitySelectorOptions.class)
 public class EntitySelectorOptionsMixin {
 
-    @Shadow @Final
-    private static Predicate<EntitySelectorParser> ALWAYS_AVAILABLE;
-    @Shadow @Final
-    public static DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION;
-    @Shadow @Final
-    public static DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID;
-    @Shadow
-    private static void register(String name, EntitySelectorOptions.Modifier modifier, Predicate<EntitySelectorParser> predicate, Component description) {}
-    @Shadow
-    private static CommandSyntaxException rollbackAndThrow(final EntitySelectorParser parser, final int start, final DynamicCommandExceptionType type, final String argument) {return null;}
+    /**
+     * Injects into "type" selector option to store entity type tags onto type/tag container.
+     * @param parser - (from vanilla)
+     * @param ci - callback info
+     * @param inverted - is option inverted
+     * @param key - type tag key
+     */
+    @Inject(method = "lambda$bootStrap$35", at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/options/InvertableSetOptionState;markParsedTag(Lnet/minecraft/resources/Identifier;)V"))
+    private static void bellows_bootstrap_typeTag(EntitySelectorParser parser, CallbackInfo ci, @Local(name = "inverted") boolean inverted, @Local(name = "key") TagKey<EntityType<?>> key) {
+        if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
+            entityExtender.bellows_getSelectorContainer().type = key.location().toString();
+            entityExtender.bellows_getSelectorContainer().isTypeTag = true;
+            entityExtender.bellows_getSelectorContainer().isNotType = inverted;
+        }
+    }
 
     /**
-     * This inject overwrites statically registered selector options to wrap extra data.
-     * It may be better to inject data directly, but lambda support is suspect.
-     * @author ICY105
+     * Injects into "type"" selector option to store entity type onto type/tag container.
+     * @param parser - (from vanilla)
+     * @param ci - callback info
+     * @param inverted - is option inverted
+     * @param id - identifier of tag
      */
-    @Inject(method = "bootStrap()V", at = @At("TAIL"))
-    private static void bellows_bootStrap(CallbackInfo ci) {
-        register("type", (parser) -> {
-            InvertableSetOptionState state = parser.typeOption();
-            parser.setSuggestions((b, m) -> {
-                if (state.canParseNegativeElement()) {
-                    SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b, String.valueOf('!'));
-                }
+    @Inject(method = "lambda$bootStrap$35", at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/options/InvertableSetOptionState;markParsedElement(Z)V"))
+    private static void bellows_bootstrap_type(EntitySelectorParser parser, CallbackInfo ci, @Local(name = "inverted") boolean inverted, @Local(name = "id") Identifier id) {
+        if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
+            entityExtender.bellows_getSelectorContainer().type = id.toString();
+            entityExtender.bellows_getSelectorContainer().isTypeTag = false;
+            entityExtender.bellows_getSelectorContainer().isNotType = inverted;
+        }
+    }
 
-                if (state.canParsePositiveElement()) {
-                    SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b);
-                }
-
-                if (state.canParseAnyTag()) {
-                    Stream<Identifier> var10000 = BuiltInRegistries.ENTITY_TYPE.getTags().map((tag) -> tag.key().location());
-                    Objects.requireNonNull(state);
-                    List<Identifier> allowedTags = var10000.filter(state::canParseTag).toList();
-                    if (!allowedTags.isEmpty()) {
-                        SharedSuggestionProvider.suggestResource(allowedTags, b, String.valueOf('#'));
-                        SharedSuggestionProvider.suggestResource(allowedTags, b, "!#");
-                    }
-                }
-
-                return b.buildFuture();
-            });
-            int start = parser.getReader().getCursor();
-            boolean inverted = parser.shouldInvertValue();
-            if (parser.isTag()) {
-                if (!state.canParseAnyTag()) {
-                    throw rollbackAndThrow(parser, start, ERROR_INAPPLICABLE_OPTION, "type");
-                }
-
-                Identifier id = Identifier.read(parser.getReader());
-                if (!state.canParseTag(id)) {
-                    throw rollbackAndThrow(parser, start, ERROR_INAPPLICABLE_OPTION, "type");
-                }
-
-                TagKey<@NotNull EntityType<?>> key = TagKey.create(Registries.ENTITY_TYPE, id);
-                // BEGIN INJECT
-                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
-                    entityExtender.bellows_getSelectorContainer().type = key.location().toString();
-                    entityExtender.bellows_getSelectorContainer().isTypeTag = true;
-                    entityExtender.bellows_getSelectorContainer().isNotType = inverted;
-                }
-                // END INJECT
-
-                parser.addPredicate((e) -> e.is(key) != inverted);
-                state.markParsedTag(id);
+    /**
+     * Injects into "tag" selector option to store tags onto type/tag container.
+     * @param parser - (from vanilla)
+     * @param ci - callback info
+     * @param inverted - is option inverted
+     * @param tag - tag to store
+     */
+    @Inject(method = "lambda$bootStrap$42", at = @At(value = "INVOKE", target = "Lnet/minecraft/commands/arguments/selector/EntitySelectorParser;addPredicate(Ljava/util/function/Predicate;)V"))
+    private static void bellows_bootstrap_tag(EntitySelectorParser parser, CallbackInfo ci, @Local(name = "inverted") boolean inverted, @Local(name = "tag") String tag) {
+        if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
+            if (inverted) {
+                entityExtender.bellows_getSelectorContainer().notSelectorTags.add(tag);
             } else {
-                if (!state.canParseElement(inverted)) {
-                    throw rollbackAndThrow(parser, start, ERROR_INAPPLICABLE_OPTION, "type");
-                }
-
-                Identifier id = Identifier.read(parser.getReader());
-                // BEGIN INJECT
-                if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
-                    entityExtender.bellows_getSelectorContainer().type = id.toString();
-                    entityExtender.bellows_getSelectorContainer().isTypeTag = false;
-                    entityExtender.bellows_getSelectorContainer().isNotType = inverted;
-                }
-                // END INJECT
-
-                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElseThrow(() -> rollbackAndThrow(parser, start, ERROR_ENTITY_TYPE_INVALID, id.toString()));
-                if (Objects.equals(EntityTypes.PLAYER, type) && !inverted) {
-                    parser.setIncludesEntities(false);
-                }
-
-                parser.addPredicate((e) -> Objects.equals(type, e.getType()) != inverted);
-                if (!inverted) {
-                    parser.limitToType(type);
-                }
-                state.markParsedElement(inverted);
+                entityExtender.bellows_getSelectorContainer().selectorTags.add(tag);
             }
-
-        }, (s) -> s.typeOption().canParseAny(), Component.translatable("argument.entity.options.type.description"));
-
-        register("tag", (parser) -> {
-            boolean inverted = parser.shouldInvertValue();
-            String tag = parser.getReader().readUnquotedString();
-            // BEGIN INJECT
-            if(Bellows.CONFIG.entitySelectorOptimizations && parser instanceof EntitySelectorParserExtender entityExtender) {
-                if (inverted) {
-                    entityExtender.bellows_getSelectorContainer().notSelectorTags.add(tag);
-                } else {
-                    entityExtender.bellows_getSelectorContainer().selectorTags.add(tag);
-                }
-            }
-            // END INJECT
-            parser.addPredicate((e) -> {
-                if ("".equals(tag)) {
-                    return e.entityTags().isEmpty() != inverted;
-                } else {
-                    return e.entityTags().contains(tag) != inverted;
-                }
-            });
-        }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.tag.description"));
+        }
     }
 }
