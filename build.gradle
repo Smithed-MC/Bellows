@@ -24,7 +24,14 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// mod integrations
-    implementation  files("lib/Moonrise-Fabric-1.1.0+87549dd.jar")
+    implementation files("lib/Moonrise-Fabric-1.1.0+87549dd.jar")
+
+	// testing
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+}
+
+test {
+	useJUnitPlatform()
 }
 
 processResources {
@@ -53,4 +60,15 @@ jar {
 
 loom {
 	accessWidenerPath = file("src/main/resources/bellows.classTweaker")
+}
+
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "${project.archives_base_name}-tests"
+		enableGameTests = true
+		enableClientGameTests = true
+		eula = true
+		username = "Player"
+	}
 }

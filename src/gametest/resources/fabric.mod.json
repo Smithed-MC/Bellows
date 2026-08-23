@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "bellows-tests",
+  "version": "0.10.17",
+  "name": "Bellows Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "net.smithed.bellows.NbtGameTest"
+    ]
+  }
+}
