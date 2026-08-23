@@ -80,15 +80,15 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
             case "AbsorptionAmount" -> output.putFloat("AbsorptionAmount", entity.getAbsorptionAmount());
             case "current_impulse_context_reset_grace_time" -> output.putInt("current_impulse_context_reset_grace_time", this.currentImpulseContextResetGraceTime);
             case "current_explosion_impact_pos" -> output.storeNullable("current_explosion_impact_pos", Vec3.CODEC, entity.currentImpulseImpactPos);
-            case "Attributes" -> output.store("attributes", net.minecraft.world.entity.ai.attributes.AttributeInstance.Packed.LIST_CODEC, entity.getAttributes().pack());
-            case "ActiveEffects" -> {
+            case "attributes" -> output.store("attributes", net.minecraft.world.entity.ai.attributes.AttributeInstance.Packed.LIST_CODEC, entity.getAttributes().pack());
+            case "active_effects" -> {
                 if (!this.activeEffects.isEmpty()) {
                     output.store("active_effects", MobEffectInstance.CODEC.listOf(), List.copyOf(this.activeEffects.values()));
                 }
             }
             case "FallFlying" -> output.putBoolean("FallFlying", entity.isFallFlying());
             case "sleeping_pos" -> entity.getSleepingPos().ifPresent((sleepingPos) -> output.store("sleeping_pos", BlockPos.CODEC, sleepingPos));
-            case "brain" -> output.store("Brain", Brain.Packed.CODEC, this.brain.pack());
+            case "Brain" -> output.store("Brain", Brain.Packed.CODEC, this.brain.pack());
             case "last_hurt_by_player", "last_hurt_by_player_memory_time" -> {
                 if (this.lastHurtByPlayer != null) {
                     this.lastHurtByPlayer.store(output, "last_hurt_by_player");

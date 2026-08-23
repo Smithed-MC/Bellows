@@ -144,7 +144,7 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
                 }
                 case "Motion" -> output.store("Motion", Vec3.CODEC, entity.getDeltaMovement());
                 case "Rotation" -> output.store("Rotation", Vec2.CODEC, new Vec2(entity.getYRot(), entity.getXRot()));
-                case "FallDistance" -> output.putDouble("fall_distance", entity.fallDistance);
+                case "fall_distance" -> output.putDouble("fall_distance", entity.fallDistance);
                 case "Fire" -> output.putShort("Fire", (short) entity.getRemainingFireTicks());
                 case "Air" -> output.putShort("Air", (short) entity.getAirSupply());
                 case "OnGround" -> output.putBoolean("OnGround", entity.onGround());
