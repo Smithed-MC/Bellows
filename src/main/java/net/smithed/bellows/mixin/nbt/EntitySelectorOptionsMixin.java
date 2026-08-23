@@ -36,11 +36,14 @@ public class EntitySelectorOptionsMixin {
                     // if any attempt to get a data element fails, mark output as a failure and break out of the loop
                     if(!ContextMutation.getFilteredNbt(mixin, output, str)) {
                         output = null;
+                        Bellows.logDebugFormat("Failed to get filtered nbt '%s' for entity '%s': falling back to default", str, entity.getClass());
                         break;
                     }
                 }
                 if(output != null) {
-                    cir.setReturnValue(NbtUtils.compareNbt(tag, output.buildResult(), true) != inverted);
+                    CompoundTag compoundTag = output.buildResult();
+                    cir.setReturnValue(NbtUtils.compareNbt(tag, compoundTag, true) != inverted);
+                    Bellows.logDebugFormat("Retrieved filtered NBT for entity '%s', data = %s", entity.getClass(), compoundTag);
                 }
             }
         }
