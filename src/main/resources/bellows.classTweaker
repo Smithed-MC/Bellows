@@ -9,6 +9,7 @@ accessible class net/minecraft/server/commands/data/DataCommands$DataManipulator
 accessible field net/minecraft/server/commands/FunctionCommand ERROR_NO_FUNCTIONS Lcom/mojang/brigadier/exceptions/DynamicCommandExceptionType;
 accessible field net/minecraft/server/commands/FunctionCommand FULL_CONTEXT_CALLBACKS Lnet/minecraft/server/commands/FunctionCommand$Callbacks;
 accessible field net/minecraft/world/entity/Avatar DATA_PLAYER_MODE_CUSTOMISATION Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible field net/minecraft/world/entity/Mob persistenceRequired Z
 mutable field net/minecraft/commands/CommandSourceStack displayName Lnet/minecraft/network/chat/Component;
 mutable field net/minecraft/commands/CommandSourceStack textName Ljava/lang/String;
 

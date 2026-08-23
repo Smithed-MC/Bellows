@@ -256,7 +256,7 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
                     entity.setYBodyRot(entity.getYRot());
                     this.setRot(entity.getYRot(), entity.getXRot());
                 }
-                case "FallDistance" -> entity.fallDistance = input.getDoubleOr("fall_distance", 0.0F);
+                case "fall_distance" -> entity.fallDistance = input.getDoubleOr("fall_distance", 0.0F);
                 case "Fire" -> entity.setRemainingFireTicks(input.getShortOr("Fire", (short) 0));
                 case "Air" -> entity.setAirSupply(input.getIntOr("Air", entity.getMaxAirSupply()));
                 case "OnGround" -> entity.setOnGround(input.getBooleanOr("OnGround", false));

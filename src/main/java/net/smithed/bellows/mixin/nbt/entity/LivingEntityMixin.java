@@ -130,7 +130,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
 
         switch (topLevelNbt) {
             case "AbsorptionAmount" -> this.internalSetAbsorptionAmount(input.getFloatOr("AbsorptionAmount", 0.0F));
-            case "Attributes" -> {
+            case "attributes" -> {
                 if (entity.level() != null && !entity.level().isClientSide()) {
                     Optional<List<AttributeInstance.Packed>> var10000 = input.read("attributes", net.minecraft.world.entity.ai.attributes.AttributeInstance.Packed.LIST_CODEC);
                     AttributeMap attributes = entity.getAttributes();
@@ -138,7 +138,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
                     var10000.ifPresent(attributes::apply);
                 }
             }
-            case "ActiveEffects" -> {
+            case "active_effects" -> {
                 List<MobEffectInstance> effects = input.read("active_effects", MobEffectInstance.CODEC.listOf()).orElse(List.of());
                 this.activeEffects.clear();
 
