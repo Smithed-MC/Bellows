@@ -39,6 +39,8 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements Ent
     /**
      * Add entity type to cache when the entity is loaded.
      * @author ICY105
+     * @param entity - (from vanilla)
+     * @param ci - callback info
      */
     @Inject(method = "addEntity", at = @At("TAIL"))
     private void bellows_addEntity(Entity entity, boolean fromDisk, boolean event, CallbackInfoReturnable<Boolean> ci) {
@@ -54,6 +56,8 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements Ent
     /**
      * Remove entity type & tags from cache when the entity is unloaded.
      * @author ICY105
+     * @param entity - (from vanilla)
+     * @param ci - callback info
      */
     @Inject(method = "removeEntity", at = @At("TAIL"))
     private void bellows_removeEntity(Entity entity, CallbackInfo ci) {
@@ -158,6 +162,10 @@ public abstract class MoonriseEntityLookupMixin<T extends Entity> implements Ent
 
     /**
      * Mostly a copy/paste from EntityLookup:getEntities, however it accepts any collection instead of the special fast map.
+     * @param collection - collection of entities
+     * @param filter - (from vanilla)
+     * @param consumer - (from vanilla)
+     * @param <U> - (from vanilla)
      */
     @Unique
     private <U extends T> void bellows_getEntities(Collection<EntityAccess> collection, EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> consumer) {

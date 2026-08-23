@@ -28,7 +28,8 @@ public abstract class NbtPredicateMixin {
     /**
      * Bypass for NbtPredicate::getEntityTagToCompare to get only specified nbt path instead of all nbt.
      * @param selected - (from vanilla)
-     * @return CompoundTag - compound tag
+     * @param original - original method
+     * @return CompoundTag - (from vanilla)
      */
     @WrapOperation(
         method = "matches(Lnet/minecraft/world/entity/Entity;)Z",

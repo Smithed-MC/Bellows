@@ -25,6 +25,11 @@ public abstract class DataCommandsMixin {
     /**
      * Bypasses DataAccessor::getData to get specified nbt path instead of all nbt data.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param path - nbt path
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "getSingleTag(Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;Lnet/minecraft/server/commands/data/DataAccessor;)Lnet/minecraft/nbt/Tag;",
@@ -36,6 +41,11 @@ public abstract class DataCommandsMixin {
     /**
      * Bypasses DataAccessor::getData to get specified nbt path instead of all nbt data.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param context - command context
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
@@ -48,6 +58,10 @@ public abstract class DataCommandsMixin {
     /**
      * Bypasses DataAccessor::setData to set specified nbt path instead of all nbt data.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param context - command context
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
@@ -60,6 +74,11 @@ public abstract class DataCommandsMixin {
     /**
      * Bypasses DataAccessor::getData to set specified nbt path instead of all nbt data.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param nbt - nbt compound to set
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "mergeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/nbt/CompoundTag;)I",
@@ -93,6 +112,10 @@ public abstract class DataCommandsMixin {
     /**
      * Redirects executeMerge call to DataCommandObject.setData() to mixin.setDataCommandObjectNbt() if possible.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param nbt - nbt compound to set
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "mergeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/nbt/CompoundTag;)I",
@@ -133,6 +156,11 @@ public abstract class DataCommandsMixin {
     /**
      * Redirects executeRemove call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param path - nbt path
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "removeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
@@ -144,6 +172,10 @@ public abstract class DataCommandsMixin {
     /**
      * Redirects executeRemove call to DataCommandObject.setData() to mixin.setDataCommandObjectNbt() if possible.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param path - nbt path
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "removeData(Lnet/minecraft/commands/CommandSourceStack;Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
@@ -155,6 +187,11 @@ public abstract class DataCommandsMixin {
     /**
      * Redirects executeRemove call to DataCommandObject.getData() to mixin.getDataCommandObjectNbt() if possible.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param context - command context
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "resolveSourcePath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;)Ljava/util/List;",

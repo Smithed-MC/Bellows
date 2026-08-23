@@ -17,6 +17,10 @@ public class ExecuteCommandMixin {
     /**
      * Bypasses ServerLevel::getBlockState to get block state without force loading the chunk.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param blockPos - (from vanilla)
+     * @param original - original method
+     * @return BlockState - (from vanilla)
      */
     @WrapOperation(
         method = "checkRegions(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Z)Ljava/util/OptionalInt;",
@@ -28,6 +32,10 @@ public class ExecuteCommandMixin {
     /**
      * Bypasses ServerLevel::getBlockEntity to get block entity without force loading the chunk.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param blockPos - (from vanilla)
+     * @param original - original method
+     * @return BlockEntity - (from vanilla)
      */
     @WrapOperation(
             method = "checkRegions(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Z)Ljava/util/OptionalInt;",

@@ -7,7 +7,7 @@ public interface FilteredNbtAccessExtender {
 
     /**
      * Bypass of Entity::addAdditionalSaveData, only stores nbt from specified path instead of all nbt.
-     * @param output - (from vanilla) output to store data on
+     * @param output - (from vanilla)
      * @param path - path to retrieve data from
      * @param topLevelNbt - preprocessed first nbt path level
      * @return boolean - true if nbt path matched a valid tag, otherwise false
@@ -16,7 +16,7 @@ public interface FilteredNbtAccessExtender {
 
     /**
      * Bypass of Entity::addAdditionalSaveData, only stores nbt from specified path instead of all nbt.
-     * @param input - (from vanilla) input to load data on
+     * @param input - (from vanilla)
      * @param path - path to retrieve data from
      * @param topLevelNbt - preprocessed first nbt path level
      * @return boolean - true if nbt path matched a valid tag, otherwise false

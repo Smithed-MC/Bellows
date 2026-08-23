@@ -18,10 +18,11 @@ public class EntitySelectorParserMixin implements EntitySelectorParserExtender {
     private final SelectorContainer container = new SelectorContainer();
 
     /**
-     * @author ImCoolYeah105
-     * get the constructed return value and inject additional data
+     * Gets the constructed value from parse and inserts the type/tag container.
+     * @author ICY105
+     * @param cir - callback info
      */
-    @Inject(method = "parse", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "parse()Lnet/minecraft/commands/arguments/selector/EntitySelector;", at = @At("RETURN"), cancellable = true)
     private void bellows_parse(CallbackInfoReturnable<EntitySelector> cir) {
         if(cir.getReturnValue() instanceof EntitySelectorExtender extender) {
             extender.bellows_setContainer(this.container);

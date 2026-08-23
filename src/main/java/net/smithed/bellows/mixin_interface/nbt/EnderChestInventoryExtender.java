@@ -9,7 +9,7 @@ public interface EnderChestInventoryExtender {
     /**
      * Bypass of PlayerEnderChestContainer::storeAsSlots. Determines which slot is the target and only adds that
      * item to the output.
-     * @param output - (from vanilla) output compound
+     * @param output - (from vanilla)
      * @param nbt - nbt path
      */
     void bellows_storeAsSlotsFiltered(ValueOutput.TypedOutputList<@NotNull ItemStackWithSlot> output, String nbt);

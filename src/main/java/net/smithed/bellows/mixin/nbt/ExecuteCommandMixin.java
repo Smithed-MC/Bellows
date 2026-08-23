@@ -18,6 +18,11 @@ public class ExecuteCommandMixin {
     /**
      * Bypasses DataAccessor::getData to get specified nbt path instead of all nbt data.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param path - nbt path
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
         method = "checkMatchingData(Lnet/minecraft/server/commands/data/DataAccessor;Lnet/minecraft/commands/arguments/NbtPathArgument$NbtPath;)I",
@@ -29,6 +34,11 @@ public class ExecuteCommandMixin {
     /**
      * Bypasses DataAccessor::getData to get specified nbt path instead of all nbt data.
      * @author ICY105
+     * @param instance - (from vanilla)
+     * @param original - original method
+     * @param path - nbt path
+     * @return CompoundTag - (from vanilla)
+     * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(method = "lambda$storeData$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;"))
     private static CompoundTag bellows_storeData(DataAccessor instance, Operation<CompoundTag> original, @Local(argsOnly = true) NbtPathArgument.NbtPath path) throws CommandSyntaxException {

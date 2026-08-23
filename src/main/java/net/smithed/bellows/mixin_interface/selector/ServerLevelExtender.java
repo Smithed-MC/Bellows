@@ -18,12 +18,12 @@ public interface ServerLevelExtender {
 
     /**
      * Bypass of ServerLevel::getEntities that uses the type/tag cache to speed up entity search.
-     * @param filter - (from vanilla) entity type test
-     * @param predicate - (from vanilla) test predicate
-     * @param result - (from vanilla) list to add matching entities to
-     * @param limit - (from vanilla) max entities to add to list
+     * @param filter - (from vanilla)
+     * @param predicate - (from vanilla)
+     * @param result - (from vanilla)
+     * @param limit - (from vanilla)
      * @param container - type/tag info container
-     * @param <T> - entity type
+     * @param <T> - (from vanilla)
      */
     <T extends Entity> void bellows_getEntities(EntityTypeTest<@NotNull Entity, @NotNull T> filter, Predicate<? super T> predicate, List<? super T> result, int limit, SelectorContainer container);
 }

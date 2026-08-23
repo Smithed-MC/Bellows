@@ -7,16 +7,16 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface LevelExtender {
 
     /**
-     * Bypass of Level::getBlockState and unregisteres the chunk loading ticket created by accessing the block.
-     * @param pos - (from vanilla) block position
-     * @return BlockState - (from vanilla) block state
+     * Bypass of Level::getBlockState and unregisters the chunk loading ticket created by accessing the block.
+     * @param pos - (from vanilla)
+     * @return BlockState - (from vanilla)
      */
     BlockState bellows_getBlockStateNoLoad(BlockPos pos);
 
     /**
-     * Bypass of Level::getBlockEntity and unregisteres the chunk loading ticket created by accessing the block.
-     * @param pos - (from vanilla) block position
-     * @return BlockState - (from vanilla) block state
+     * Bypass of Level::getBlockEntity and unregisters the chunk loading ticket created by accessing the block.
+     * @param pos - (from vanilla)
+     * @return BlockState - (from vanilla)
      */
     BlockEntity bellows_getBlockEntityNoLoad(BlockPos pos);
 }

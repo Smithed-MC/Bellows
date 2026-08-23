@@ -26,10 +26,10 @@ public interface EntityLookupExtender<T extends EntityAccess> {
      * Bypass of the vanilla EntityLookup::getEntities method that uses a cache to locate entities by type/tag.
      * It will check the cache for the type and tags of the selector, and use the smallest list of entities
      * retrieved for the @e search instead of all entities.
-     * @param filter - (from vanilla) entity type filter
-     * @param action - (from vanilla) action to perform on each entity
+     * @param filter - (from vanilla)
+     * @param action - (from vanilla)
      * @param container - type/tag information from selector
-     * @param <U> - (from vanilla) target entity type
+     * @param <U> - (from vanilla)
      */
     <U extends T> void bellows_getTaggedEntities(EntityTypeTest<@NotNull T, @NotNull U> filter, AbortableIterationConsumer<@NotNull U> action, SelectorContainer container);
 }

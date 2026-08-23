@@ -38,6 +38,18 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
     /**
      * Constructs entity type tag cache on init.
      * @author ImCoolYeah105
+     * @param serverThread - (from vanilla)
+     * @param storageSource - (from vanilla)
+     * @param packRepository - (from vanilla)
+     * @param worldStem - (from vanilla)
+     * @param gameRules - (from vanilla)
+     * @param proxy - (from vanilla)
+     * @param fixerUpper - (from vanilla)
+     * @param services - (from vanilla)
+     * @param levelLoadListener - (from vanilla)
+     * @param propagatesCrashes - (from vanilla)
+     * @param notificationManager - (from vanilla)
+     * @param ci - callback info
      */
     @Inject(
         method = "<init>(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/util/Optional;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;Lnet/minecraft/server/level/progress/LevelLoadListener;ZLnet/minecraft/server/notifications/NotificationManager;)V",
@@ -50,6 +62,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<@
     /**
      * Constructs entity type tag cache on reload.
      * @author ImCoolYeah105
+     * @param ci - callback info
      */
     @Inject(method = "reloadResources(Ljava/util/Collection;)Ljava/util/concurrent/CompletableFuture;", at = @At("TAIL"))
     public void bellows_reloadResources(CallbackInfoReturnable<CompletableFuture<Void>> ci) {

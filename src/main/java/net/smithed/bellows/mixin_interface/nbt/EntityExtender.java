@@ -7,7 +7,7 @@ public interface EntityExtender {
 
     /**
      * Bypass of Entity::saveWithoutId, only saves nbt at specified path instead of all nbt.
-     * @param output - (from vanilla) out tag to place data in
+     * @param output - (from vanilla)
      * @param path - path to nbt data
      * @return boolean - true if nbt path matched a valid tag, otherwise false
      */
@@ -15,7 +15,7 @@ public interface EntityExtender {
 
     /**
      * Bypass of Entity::load, only saves nbt at specified path instead of all nbt.
-     * @param input - (from vanilla) out tag to load data from
+     * @param input - (from vanilla)
      * @param path - path to nbt data
      * @return boolean - true if nbt path matched a valid tag, otherwise false
      */

@@ -24,8 +24,8 @@ public abstract class EntityMixin implements EntityExtender {
 
     /**
      * Caches entity's encode id on init.
-     * @param type - (from vanilla) entity type
-     * @param level - (from vanilla) level
+     * @param type - (from vanilla)
+     * @param level - (from vanilla)
      * @param ci - callback info
      */
     @Inject(method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V", at = @At("TAIL"))
