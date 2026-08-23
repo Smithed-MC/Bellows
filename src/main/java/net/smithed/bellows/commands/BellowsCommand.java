@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -36,16 +37,19 @@ public class BellowsCommand {
     public static CommandSourceStack debugStart(CommandContext<CommandSourceStack> context) {
         boolean isDebugMode = Bellows.CONFIG.debugLogger instanceof ActiveBellowsDebugLogger;
         Bellows.CONFIG.debugContext = context.getSource();
-
-        if(isDebugMode) {
-            return context.getSource().withCallback((_, _) -> Bellows.CONFIG.debugContext = null);
-        } else {
-            Bellows.CONFIG.debugLogger = new ActiveBellowsDebugLogger();
-            return context.getSource().withCallback((_, _) -> {
-                Bellows.CONFIG.debugContext = null;
+        boolean ideMode = SharedConstants.IS_RUNNING_IN_IDE;
+        SharedConstants.IS_RUNNING_IN_IDE = true;
+        Bellows.CONFIG.debugLogger = new ActiveBellowsDebugLogger();
+        
+        return context.getSource().withCallback((_, _) -> {
+            Bellows.CONFIG.debugContext = null;
+            if(!isDebugMode) {
                 Bellows.CONFIG.debugLogger = new EmptyBellowsDebugLogger();
-            });
-        }
+            }
+            if(!ideMode) {
+                SharedConstants.IS_RUNNING_IN_IDE = false;
+            }
+        });
     }
 
     public static int getBellowsNbtMode(CommandContext<CommandSourceStack> context) {

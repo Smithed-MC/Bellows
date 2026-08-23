@@ -2,7 +2,6 @@ package net.smithed.bellows;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.SharedConstants;
 import net.smithed.bellows.commands.BellowsCommand;
 import net.smithed.bellows.commands.BellowsConfig;
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ public class Bellows implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("Initializing Bellows");
-        SharedConstants.IS_RUNNING_IN_IDE = true; // TODO: remove before release
         CommandRegistrationCallback.EVENT.register((dispatcher, _, _) -> BellowsCommand.register(dispatcher));
     }
 
