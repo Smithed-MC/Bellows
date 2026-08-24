@@ -30,7 +30,6 @@
     "java": ">=21"
   },
   "suggests": {
-    "lithium": ">=0.12.0",
     "moonrise": ">=1.1.0"
   }
 }
