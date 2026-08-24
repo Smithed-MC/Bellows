@@ -1,4 +1,7 @@
 # Bellows (formally Radon)
+
+<img alt="Project icon" src=".github/icon.png" width="256px" align="right"/>
+
 Bellows is a no-compromises drop-in Fabric mod designed to apply targeted optimizations for Minecraft commands-- especially in environments with many large datapacks. Do to the targeted nature of Bellow's optimizations, performance gains are somewhat variable. Most large datapacks see a 50-60% reduction in tick time using Bellows. Certain packs like Animated Java can see a 70-90% reduction in tick time.
 
 The following optimizations are used:
