@@ -4,18 +4,17 @@
   "version": "0.10.17",
 
   "name": "Bellows",
-  "description": "Targeted optimizations for Minecraft Commands.",
+  "description": "Targeted optimizations for Minecraft Commands/datapacks.",
   "authors": [
-    "ImCoolYeah105"
+    "ICY105"
   ],
   "contact": {
     "homepage": "https://smithed.dev/",
     "source": "https://github.com/Smithed-MC/Radon"
   },
-
   "license": "MIT",
+  "icon": "assets/bellows/icon.png",
   "accessWidener": "bellows.classTweaker",
-
   "environment": "*",
   "entrypoints": {
     "main": [
