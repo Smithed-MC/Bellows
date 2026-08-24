@@ -1,7 +1,0 @@
-accessWidener v1 named
-
-accessible class net/minecraft/server/command/DataCommand$Processor
-accessible class net/minecraft/server/command/DataCommand$ModifyOperation
-accessible class net/minecraft/server/command/DataCommand$ModifyArgumentCreator
-accessible class net/minecraft/server/MinecraftServer$ResourceManagerHolder
-mutable field net/minecraft/command/BlockDataObject TYPE_FACTORY Ljava/util/function/Function;

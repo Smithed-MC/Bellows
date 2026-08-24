@@ -1,0 +1,23 @@
+package net.smithed.bellows.mixin.blockforceload;
+
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.world.level.TicketStorage;
+import net.smithed.bellows.mixin_interface.blockforceload.ServerChunkCacheExtender;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+
+@Mixin(ServerChunkCache.class)
+public abstract class ServerChunkCacheMixin implements ServerChunkCacheExtender {
+
+    @Shadow @Final
+    private TicketStorage ticketStorage;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TicketStorage bellows_getTicketStorage() {
+        return ticketStorage;
+    }
+}

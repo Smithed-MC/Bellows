@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.10-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -19,30 +19,37 @@ repositories {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// mod integrations
-	// modImplementation "maven.modrinth:lithium:${project.lithium_version}"
+    implementation files("lib/Moonrise-Fabric-1.1.0+87549dd.jar")
+
+	// testing
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+}
+
+test {
+	useJUnitPlatform()
 }
 
 processResources {
 	inputs.property "version", project.version
 
-	filesMatching("radon.mod.json") {
+	filesMatching("bellows.mod.json") {
 		expand "version": project.version
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
@@ -52,5 +59,16 @@ jar {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/radon.accesswidener")
+	accessWidenerPath = file("src/main/resources/bellows.classTweaker")
+}
+
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "${project.archives_base_name}-tests"
+		enableGameTests = true
+		enableClientGameTests = true
+		eula = true
+		username = "Player"
+	}
 }

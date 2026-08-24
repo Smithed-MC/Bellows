@@ -1,38 +1,34 @@
 {
   "schemaVersion": 1,
-  "id": "radon",
-  "version": "0.10.0",
-
-  "name": "Radon",
-  "description": "Targeted optimizations for Minecraft Commands.",
+  "id": "bellows",
+  "version": "1.0.0",
+  "name": "Bellows",
+  "description": "Targeted optimizations for Minecraft Commands/datapacks.",
   "authors": [
-    "ImCoolYeah105",
-    "dragoncommands"
+    "ICY105"
   ],
   "contact": {
     "homepage": "https://smithed.dev/",
     "source": "https://github.com/Smithed-MC/Radon"
   },
-
   "license": "MIT",
-  "accessWidener": "radon.accesswidener",
-
+  "icon": "assets/bellows/icon.png",
+  "accessWidener": "bellows.classTweaker",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.smithed.radon.Radon"
+      "net.smithed.bellows.Bellows"
     ]
   },
   "mixins": [
-    "radon.mixins.json"
+    "bellows.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.0",
-    "fabric": "*",
-    "minecraft": "1.21.4",
-    "java": ">=21"
+    "minecraft": "26.2",
+    "java": ">=25"
   },
   "suggests": {
-    "lithium": ">=0.12.0"
+    "moonrise": ">=1.1.0"
   }
 }
