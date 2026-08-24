@@ -37,8 +37,8 @@ public class BellowsCommand {
      * @return int - version id
      */
     public static int version(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSuccess(() -> Component.literal("version = 0.10.17"), true);
-        return 1017;
+        context.getSource().sendSuccess(() -> Component.literal("version = 1.0.0"), true);
+        return 10000;
     }
 
     /**
