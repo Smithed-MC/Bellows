@@ -45,7 +45,7 @@ public class MixinShortcuts {
             extender.bellows_setDataFiltered(compoundTag, path.toString());
             return;
         }
-        original.call();
+        original.call(dataAccessor, compoundTag);
     }
 
     /**
