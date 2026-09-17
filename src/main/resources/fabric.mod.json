@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "bellows",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Bellows",
   "description": "Targeted optimizations for Minecraft Commands/datapacks.",
   "authors": [

@@ -20,7 +20,7 @@ public class ExecuteCommandMixin {
      * @author ICY105
      * @param instance - (from vanilla)
      * @param original - original method
-     * @param path - nbt path
+     * @param path - (from vanilla)
      * @return CompoundTag - (from vanilla)
      * @throws CommandSyntaxException - (from vanilla)
      */
@@ -36,12 +36,24 @@ public class ExecuteCommandMixin {
      * @author ICY105
      * @param instance - (from vanilla)
      * @param original - original method
-     * @param path - nbt path
+     * @param path - (from vanilla)
      * @return CompoundTag - (from vanilla)
      * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(method = "lambda$storeData$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;"))
-    private static CompoundTag bellows_storeData(DataAccessor instance, Operation<CompoundTag> original, @Local(argsOnly = true) NbtPathArgument.NbtPath path) throws CommandSyntaxException {
+    private static CompoundTag bellows_storeData_getData(DataAccessor instance, Operation<CompoundTag> original, @Local(argsOnly = true) NbtPathArgument.NbtPath path) throws CommandSyntaxException {
         return MixinShortcuts.getData(instance, path, original);
+    }
+
+    /**
+     * Bypasses DataAccessor::setData to get specified nbt path instead of all nbt data.
+     * @param instance - (from vanilla)
+     * @param compoundTag - (from vanilla)
+     * @param original - original method
+     * @param path - (from vanilla)
+     */
+    @WrapOperation(method = "lambda$storeData$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;setData(Lnet/minecraft/nbt/CompoundTag;)V"))
+    private static void bellows_storeData_setData(DataAccessor instance, CompoundTag compoundTag, Operation<Void> original, @Local(argsOnly = true) NbtPathArgument.NbtPath path) throws CommandSyntaxException {
+        MixinShortcuts.setData(instance, path, compoundTag, original);
     }
 }
