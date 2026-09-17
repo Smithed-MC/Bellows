@@ -2,7 +2,7 @@ package net.smithed.bellows.mixin.selector;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.util.Continuation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
@@ -77,11 +77,11 @@ public abstract class ServerLevelMixin implements ServerLevelExtender {
                 if (predicate.test(entity)) {
                     result.add(entity);
                     if (result.size() >= limit) {
-                        return AbortableIterationConsumer.Continuation.ABORT;
+                        return Continuation.ABORT;
                     }
                 }
 
-                return AbortableIterationConsumer.Continuation.CONTINUE;
+                return Continuation.CONTINUE;
             }, container);
         } else {
             ((ServerLevel) (Object) this).getEntities(filter, predicate, result, limit);

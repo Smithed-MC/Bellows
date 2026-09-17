@@ -57,11 +57,11 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
     private @Nullable EntityReference<@NotNull LivingEntity> lastHurtByMob;
 
     @Shadow
-    protected abstract void setPosToBed(BlockPos bedPosition);
+    protected abstract boolean setPosToBed(final BlockPos bedPosition);
     @Shadow
-    abstract protected void internalSetAbsorptionAmount(final float absorptionAmount);
+    protected abstract void internalSetAbsorptionAmount(final float absorptionAmount);
     @Shadow
-    abstract protected Brain<? extends @NotNull LivingEntity> makeBrain(final Brain.Packed packedBrain);
+    protected abstract Brain<? extends @NotNull LivingEntity> makeBrain(final Brain.Packed packedBrain);
 
     /**
      * {@inheritDoc}
@@ -162,14 +162,14 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
             }
             case "FallFlying" -> this.setSharedFlag(7, input.getBooleanOr("FallFlying", false));
             case "sleeping_pos" -> {
-                input.read("sleeping_pos", BlockPos.CODEC).ifPresentOrElse((sleepingPos) -> {
-                    entity.setSleepingPos(sleepingPos);
-                    this.entityData.set(DATA_POSE, Pose.SLEEPING);
-                    if (!this.firstTick) {
-                        this.setPosToBed(sleepingPos);
-                    }
+                    input.read("sleeping_pos", BlockPos.CODEC).ifPresentOrElse((sleepingPos) -> {
+                        entity.setSleepingPos(sleepingPos);
+                        this.entityData.set(DATA_POSE, Pose.SLEEPING);
+                        if (!this.firstTick && !this.setPosToBed(sleepingPos)) {
+                            entity.stopSleeping();
+                        }
 
-                }, entity::clearSleepingPos);
+                    }, entity::clearSleepingPos);
             }
             case "Brain" -> input.read("Brain", Brain.Packed.CODEC).ifPresent((packedBrain) -> this.brain = this.makeBrain(packedBrain));
             case "last_hurt_by_player" -> this.lastHurtByPlayer = EntityReference.read(input, "last_hurt_by_player");

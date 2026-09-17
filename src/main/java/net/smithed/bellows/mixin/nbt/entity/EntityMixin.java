@@ -148,9 +148,14 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
                 case "Fire" -> output.putShort("Fire", (short) entity.getRemainingFireTicks());
                 case "Air" -> output.putShort("Air", (short) entity.getAirSupply());
                 case "OnGround" -> output.putBoolean("OnGround", entity.onGround());
-                case "Invulnerable" -> output.putBoolean("Invulnerable", entity.isInvulnerable());
+                case "Invulnerable" -> output.putBoolean("Invulnerable", entity.isPermanentlyInvulnerable());
                 case "PortalCooldown" -> output.putInt("PortalCooldown", entity.getPortalCooldown());
                 case "UUID" -> output.store("UUID", UUIDUtil.CODEC, entity.getUUID());
+                case "invulnerable_time" -> {
+                    if (entity.getInvulnerableTime() > 0) {
+                        output.putInt("invulnerable_time", entity.getInvulnerableTime());
+                    }
+                }
                 case "CustomName" ->
                         output.storeNullable("CustomName", ComponentSerialization.CODEC, entity.getCustomName());
                 case "CustomNameVisible" -> {
@@ -260,7 +265,8 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
                 case "Fire" -> entity.setRemainingFireTicks(input.getShortOr("Fire", (short) 0));
                 case "Air" -> entity.setAirSupply(input.getIntOr("Air", entity.getMaxAirSupply()));
                 case "OnGround" -> entity.setOnGround(input.getBooleanOr("OnGround", false));
-                case "Invulnerable" -> entity.setInvulnerable(input.getBooleanOr("Invulnerable", false));
+                case "Invulnerable" -> entity.setPermanentlyInvulnerable(input.getBooleanOr("Invulnerable", false));
+                case "invulnerable_time" -> entity.setInvulnerableTime(input.getIntOr("invulnerable_time", 0));
                 case "PortalCooldown" -> entity.setPortalCooldown(input.getIntOr("PortalCooldown", 0));
                 case "UUID" -> input.read("UUID", UUIDUtil.CODEC).ifPresent(entity::setUUID);
                 case "CustomName" ->

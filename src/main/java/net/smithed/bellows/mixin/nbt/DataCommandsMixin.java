@@ -48,7 +48,7 @@ public abstract class DataCommandsMixin {
      * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
-        method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
+        method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/ArgProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;"))
     private static CompoundTag bellows_manipulateData_get(DataAccessor instance, Operation<CompoundTag> original, @Local(argsOnly = true) CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         NbtPathArgument.NbtPath nbtPath = NbtPathArgument.getPath(context, "targetPath");
@@ -64,7 +64,7 @@ public abstract class DataCommandsMixin {
      * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
-        method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
+        method = "manipulateData(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/ArgProvider;Lnet/minecraft/server/commands/data/DataCommands$DataManipulator;Ljava/util/List;)I",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;setData(Lnet/minecraft/nbt/CompoundTag;)V"))
     private static void bellows_manipulateData_set(DataAccessor instance, CompoundTag compoundTag, Operation<Void> original, @Local(argsOnly = true) CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         NbtPathArgument.NbtPath nbtPath = NbtPathArgument.getPath(context, "targetPath");
@@ -194,7 +194,7 @@ public abstract class DataCommandsMixin {
      * @throws CommandSyntaxException - (from vanilla)
      */
     @WrapOperation(
-        method = "resolveSourcePath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/data/DataCommands$DataProvider;)Ljava/util/List;",
+        method = "resolveSourcePath(Lcom/mojang/brigadier/context/CommandContext;Lnet/minecraft/server/commands/ArgProvider;)Ljava/util/List;",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/server/commands/data/DataAccessor;getData()Lnet/minecraft/nbt/CompoundTag;"))
     private static CompoundTag bellows_resolveSourcePath(DataAccessor instance, Operation<CompoundTag> original, @Local(argsOnly = true) CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         NbtPathArgument.NbtPath nbtPath = NbtPathArgument.getPath(context, "sourcePath");

@@ -31,8 +31,6 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
     @Shadow
     private int villagerXp;
     @Shadow
-    private boolean assignProfessionWhenSpawned;
-    @Shadow
     private long lastGossipDecayTime;
 
     /**
@@ -56,11 +54,6 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
             case "LastRestock" -> output.putLong("LastRestock", this.lastRestockGameTime);
             case "LastGossipDecay" -> output.putLong("LastGossipDecay", this.lastGossipDecayTime);
             case "RestocksToday" -> output.putInt("RestocksToday", this.numberOfRestocksToday);
-            case "AssignProfessionWhenSpawned" -> {
-                if (this.assignProfessionWhenSpawned) {
-                    output.putBoolean("AssignProfessionWhenSpawned", true);
-                }
-            }
             default -> {
                 return false;
             }
@@ -101,7 +94,6 @@ public abstract class VillagerMixin extends AbstractVillagerMixin {
             case "LastRestock" -> this.lastRestockGameTime = input.getLongOr("LastRestock", 0L);
             case "LastGossipDecay" -> this.lastGossipDecayTime = input.getLongOr("LastGossipDecay", 0L);
             case "RestocksToday" -> this.numberOfRestocksToday = input.getIntOr("RestocksToday", 0);
-            case "AssignProfessionWhenSpawned" -> this.assignProfessionWhenSpawned = input.getBooleanOr("AssignProfessionWhenSpawned", false);
             default -> {
                 return false;
             }

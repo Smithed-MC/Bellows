@@ -1,7 +1,9 @@
 package net.smithed.bellows.mixin.nbt.entity;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.ServerRecipeBook;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
@@ -64,6 +66,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements FilteredN
             case "spawn_extra_particles_on_fall" -> output.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
             case "raid_omen_position" -> output.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
             case "ender_pearls" -> this.saveEnderPearls(output);
+            case "post_effects" -> output.store("post_effects", Codec.list(Identifier.CODEC), entity.getPostEffects());
             case "ShoulderEntityLeft" -> {
                 if (!entity.getShoulderEntityLeft().isEmpty()) {
                     output.store("ShoulderEntityLeft", CompoundTag.CODEC, entity.getShoulderEntityLeft());

@@ -10,8 +10,6 @@
     "blockforceload.ExecuteCommandMixin",
     "blockforceload.LevelMixin",
     "blockforceload.ServerChunkCacheMixin",
-    "displaynames.CommandSourceStackMixin",
-    "displaynames.EntityMixin",
     "nbt.DataCommandsMixin",
     "nbt.EntityDataAccessorMixin",
     "nbt.EntitySelectorOptionsMixin",

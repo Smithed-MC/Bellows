@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "bellows",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "name": "Bellows",
   "description": "Targeted optimizations for Minecraft Commands/datapacks.",
   "authors": [
@@ -24,11 +24,11 @@
     "bellows.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "26.2",
+    "fabricloader": ">=0.19.0",
+    "minecraft": "26.3",
     "java": ">=25"
   },
   "suggests": {
-    "moonrise": ">=1.1.0"
+    "moonrise": ">=1.0.0"
   }
 }
