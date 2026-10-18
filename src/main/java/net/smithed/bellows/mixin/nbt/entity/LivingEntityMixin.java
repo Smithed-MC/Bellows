@@ -1,6 +1,7 @@
 package net.smithed.bellows.mixin.nbt.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityEquipment;
@@ -36,7 +37,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
     @Shadow @Final
     private static Logger LOGGER;
     @Shadow @Final
-    private Map<MobEffect, MobEffectInstance> activeEffects;
+    private Map<Holder<MobEffect>, MobEffectInstance> activeEffects;
     @Shadow @Final
     protected EntityEquipment equipment;
     @Shadow
@@ -143,7 +144,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements FilteredN
                 this.activeEffects.clear();
 
                 for(MobEffectInstance effect : effects) {
-                    this.activeEffects.put(effect.getEffect().value(), effect);
+                    this.activeEffects.put(effect.getEffect(), effect);
                     this.effectsDirty = true;
                 }
             }
