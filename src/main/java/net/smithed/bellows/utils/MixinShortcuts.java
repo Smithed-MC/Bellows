@@ -59,7 +59,7 @@ public class MixinShortcuts {
         if(Bellows.CONFIG.fixBlockAccessForceload && level instanceof LevelExtender extender) {
             return extender.bellows_getBlockStateNoLoad(blockPos);
         } else {
-            return original.call(blockPos);
+            return original.call(level, blockPos);
         }
     }
 
