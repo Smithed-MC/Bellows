@@ -237,7 +237,7 @@ public abstract class EntityMixin implements EntityExtender, FilteredNbtAccessEx
      */
     @Override
     public boolean bellows_loadFiltered(ValueInput input, String path) {
-        String topLevelNbt = path.split("[\\[.{]",1)[0];
+        String topLevelNbt = path.split("[\\[.{]")[0];
         Entity entity = ((Entity) (Object) this);
 
         try {
